@@ -1,0 +1,1134 @@
+!> @file datetime_mod.f90
+!> @brief Fortran module for datetime handling
+!>
+!> This module provides a Fortran interface to the C++ datetime library.
+!> It defines two derived types, TimeSpan and DateTime, which are implemented
+!> using 64-bit integers representing milliseconds. This approach avoids
+!> memory management issues while providing a clean Fortran API.
+
+module mod_datetime
+   use, intrinsic :: iso_c_binding, only: c_int, c_int64_t, c_char, c_null_char
+   implicit none
+
+   private
+   public :: t_timespan, t_datetime, now
+   public :: operator(+), operator(-), operator(*), operator(/), operator(==), &
+             operator(/=), operator(<), operator(>), operator(<=), operator(>=)
+
+   !> @brief A span of time with various components
+   !>
+   !> TimeSpan represents a duration that can be expressed in terms of days,
+   !> hours, minutes, seconds, and milliseconds. It is stored internally as
+   !> an integer number of milliseconds.
+   type :: t_timespan
+      private
+      integer(kind=c_int64_t) :: ms_count !< Total milliseconds in the timespan
+   contains
+      !> @brief Get the days component
+      procedure :: days => timespan_days
+      !> @brief Get the hours component
+      procedure :: hours => timespan_hours
+      !> @brief Get the minutes component
+      procedure :: minutes => timespan_minutes
+      !> @brief Get the seconds component
+      procedure :: seconds => timespan_seconds
+      !> @brief Get the milliseconds component
+      procedure :: milliseconds => timespan_milliseconds
+      !> @brief Get the total days
+      procedure :: total_days => timespan_total_days
+      !> @brief Get the total hours
+      procedure :: total_hours => timespan_total_hours
+      !> @brief Get the total minutes
+      procedure :: total_minutes => timespan_total_minutes
+      !> @brief Get the total seconds
+      procedure :: total_seconds => timespan_total_seconds
+      !> @brief Get the total milliseconds
+      procedure :: total_milliseconds => timespan_total_milliseconds
+      !> @brief Convert to a string representation
+      procedure :: to_string => timespan_to_string
+   end type t_timespan
+
+   !> @brief A point in time
+   !>
+   !> DateTime represents a specific point in time, with year, month, day,
+   !> hour, minute, second, and millisecond components. It is stored internally
+   !> as milliseconds since the Unix epoch (January 1, 1970, 00:00:00 UTC).
+   type :: t_datetime
+      private
+      integer(kind=c_int64_t) :: timestamp_ms !< Milliseconds since epoch
+   contains
+      !> @brief Get the year component
+      procedure :: year => datetime_year
+      !> @brief Get the month component
+      procedure :: month => datetime_month
+      !> @brief Get the day component
+      procedure :: day => datetime_day
+      !> @brief Get the hour component
+      procedure :: hour => datetime_hour
+      !> @brief Get the minute component
+      procedure :: minute => datetime_minute
+      !> @brief Get the second component
+      procedure :: second => datetime_second
+      !> @brief Get the millisecond component
+      procedure :: millisecond => datetime_millisecond
+      !> @brief Get the timestamp (milliseconds since epoch)
+      procedure :: timestamp => datetime_timestamp
+      !> @brief Format the datetime to a string
+      procedure :: format => datetime_format
+      !> @brief Convert to ISO 8601 string format
+      procedure :: to_iso_string => datetime_to_iso_string
+   end type t_datetime
+
+   ! Interface blocks for constructors
+   !> @brief Constructor interface for timespan
+   interface t_timespan
+      module procedure :: timespan_components
+   end interface t_timespan
+
+   !> @brief Constructor interface for datetime
+   interface t_datetime
+      module procedure :: datetime_default
+      module procedure :: datetime_ymd
+      module procedure :: datetime_ymd_hms
+      module procedure :: datetime_complete
+      module procedure :: datetime_from_timestamp
+      module procedure :: datetime_parse
+   end interface t_datetime
+
+   ! Operator interfaces
+   !> @brief Addition operator
+   interface operator(+)
+      module procedure :: timespan_add_timespan
+      module procedure :: datetime_add_timespan
+   end interface operator(+)
+
+   !> @brief Subtraction operator
+   interface operator(-)
+      module procedure :: timespan_subtract_timespan
+      module procedure :: datetime_subtract_timespan
+      module procedure :: datetime_difference
+   end interface operator(-)
+
+   !> @brief Multiplication operator
+   interface operator(*)
+      module procedure :: timespan_multiply
+   end interface operator(*)
+
+   !> @brief Division operator
+   interface operator(/)
+      module procedure :: timespan_divide
+   end interface operator(/)
+
+   !> @brief Equality operator
+   interface operator(==)
+      module procedure :: timespan_equals
+      module procedure :: datetime_equals
+   end interface operator(==)
+
+   !> @brief Inequality operator
+   interface operator(/=)
+      module procedure :: timespan_not_equals
+      module procedure :: datetime_not_equals
+   end interface operator(/=)
+
+   !> @brief Less than operator
+   interface operator(<)
+      module procedure :: timespan_less_than
+      module procedure :: datetime_less_than
+   end interface operator(<)
+
+   !> @brief Greater than operator
+   interface operator(>)
+      module procedure :: timespan_greater_than
+      module procedure :: datetime_greater_than
+   end interface operator(>)
+
+   !> @brief Less than or equal operator
+   interface operator(<=)
+      module procedure :: timespan_less_equal
+      module procedure :: datetime_less_equal
+   end interface operator(<=)
+
+   !> @brief Greater than or equal operator
+   interface operator(>=)
+      module procedure :: timespan_greater_equal
+      module procedure :: datetime_greater_equal
+   end interface operator(>=)
+
+   ! C function interfaces
+   interface
+      !> @brief Create a TimeSpan with components
+      function f_timespan_create(days, hours, minutes, seconds, milliseconds) &
+         result(ts_ms) bind(C, name="f_timespan_create")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int), intent(in), value :: days, hours, minutes, seconds, milliseconds
+         integer(c_int64_t) :: ts_ms
+      end function f_timespan_create
+
+      !> @brief Get days component from a TimeSpan
+      function f_timespan_get_days(ts_ms) result(days) bind(C, name="f_timespan_get_days")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int) :: days
+      end function f_timespan_get_days
+
+      !> @brief Get hours component from a TimeSpan
+      function f_timespan_get_hours(ts_ms) result(hours) bind(C, name="f_timespan_get_hours")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int) :: hours
+      end function f_timespan_get_hours
+
+      !> @brief Get minutes component from a TimeSpan
+      function f_timespan_get_minutes(ts_ms) result(minutes) bind(C, name="f_timespan_get_minutes")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int) :: minutes
+      end function f_timespan_get_minutes
+
+      !> @brief Get seconds component from a TimeSpan
+      function f_timespan_get_seconds(ts_ms) result(seconds) bind(C, name="f_timespan_get_seconds")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int) :: seconds
+      end function f_timespan_get_seconds
+
+      !> @brief Get milliseconds component from a TimeSpan
+      function f_timespan_get_milliseconds(ts_ms) result(ms) bind(C, name="f_timespan_get_milliseconds")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int) :: ms
+      end function f_timespan_get_milliseconds
+
+      !> @brief Get total days from a TimeSpan
+      function f_timespan_get_total_days(ts_ms) result(days) bind(C, name="f_timespan_get_total_days")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int64_t) :: days
+      end function f_timespan_get_total_days
+
+      !> @brief Get total hours from a TimeSpan
+      function f_timespan_get_total_hours(ts_ms) result(hours) bind(C, name="f_timespan_get_total_hours")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int64_t) :: hours
+      end function f_timespan_get_total_hours
+
+      !> @brief Get total minutes from a TimeSpan
+      function f_timespan_get_total_minutes(ts_ms) result(minutes) bind(C, name="f_timespan_get_total_minutes")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int64_t) :: minutes
+      end function f_timespan_get_total_minutes
+
+      !> @brief Get total seconds from a TimeSpan
+      function f_timespan_get_total_seconds(ts_ms) result(seconds) bind(C, name="f_timespan_get_total_seconds")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int64_t) :: seconds
+      end function f_timespan_get_total_seconds
+
+      !> @brief Add two TimeSpans
+      function f_timespan_add(ts1_ms, ts2_ms) result(sum_ms) bind(C, name="f_timespan_add")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
+         integer(c_int64_t) :: sum_ms
+      end function f_timespan_add
+
+      !> @brief Subtract one TimeSpan from another
+      function f_timespan_subtract(ts1_ms, ts2_ms) result(diff_ms) bind(C, name="f_timespan_subtract")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
+         integer(c_int64_t) :: diff_ms
+      end function f_timespan_subtract
+
+      !> @brief Multiply a TimeSpan by a factor
+      function f_timespan_multiply(ts_ms, factor) result(result_ms) bind(C, name="f_timespan_multiply")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int), intent(in), value :: factor
+         integer(c_int64_t) :: result_ms
+      end function f_timespan_multiply
+
+      !> @brief Divide a TimeSpan by a divisor
+      function f_timespan_divide(ts_ms, divisor) result(result_ms) bind(C, name="f_timespan_divide")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         integer(c_int), intent(in), value :: divisor
+         integer(c_int64_t) :: result_ms
+      end function f_timespan_divide
+
+      !> @brief Convert a TimeSpan to a string
+      subroutine f_timespan_to_string(ts_ms, buffer, buffer_size) bind(C, name="f_timespan_to_string")
+         import :: c_int64_t, c_int, c_char
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts_ms
+         character(kind=c_char), intent(inout) :: buffer(buffer_size)
+         integer(c_int), intent(in), value :: buffer_size
+      end subroutine f_timespan_to_string
+
+      !> @brief Check if two TimeSpans are equal
+      function f_timespan_equals(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_equals")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
+         integer(c_int) :: result
+      end function f_timespan_equals
+
+      !> @brief Check if one TimeSpan is less than another
+      function f_timespan_less_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_less_than")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
+         integer(c_int) :: result
+      end function f_timespan_less_than
+
+      !> @brief Check if one TimeSpan is greater than another
+      function f_timespan_greater_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_greater_than")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
+         integer(c_int) :: result
+      end function f_timespan_greater_than
+
+      !> @brief Check if one TimeSpan is less than or equal to another
+      function f_timespan_less_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_less_equal")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
+         integer(c_int) :: result
+      end function f_timespan_less_equal
+
+      !> @brief Check if one TimeSpan is greater than or equal to another
+      function f_timespan_greater_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_greater_equal")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
+         integer(c_int) :: result
+      end function f_timespan_greater_equal
+
+      ! DateTime C functions
+      !> @brief Create a DateTime from components
+      function f_datetime_create(year, month, day, hour, minute, second, millisecond) &
+         result(dt_ms) bind(C, name="f_datetime_create")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int), intent(in), value :: year, month, day, hour, minute, second, millisecond
+         integer(c_int64_t) :: dt_ms
+      end function f_datetime_create
+
+      !> @brief Get the current DateTime
+      function f_datetime_now() result(dt_ms) bind(C, name="f_datetime_now")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t) :: dt_ms
+      end function f_datetime_now
+
+      !> @brief Parse a DateTime from a string
+      function f_datetime_parse(str, fmt, str_len, format_len) result(dt_ms) &
+         bind(C, name="f_datetime_parse")
+         import :: c_int64_t, c_char, c_int
+         implicit none
+         character(kind=c_char), intent(in) :: fmt(format_len)
+         character(kind=c_char), intent(inout) :: str(str_len)
+         integer(c_int), intent(in), value :: str_len, format_len
+         integer(c_int64_t) :: dt_ms
+      end function f_datetime_parse
+
+      !> @brief Get the year component from a DateTime
+      function f_datetime_get_year(dt_ms) result(year) bind(C, name="f_datetime_get_year")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int) :: year
+      end function f_datetime_get_year
+
+      !> @brief Get the month component from a DateTime
+      function f_datetime_get_month(dt_ms) result(month) bind(C, name="f_datetime_get_month")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int) :: month
+      end function f_datetime_get_month
+
+      !> @brief Get the day component from a DateTime
+      function f_datetime_get_day(dt_ms) result(day) bind(C, name="f_datetime_get_day")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int) :: day
+      end function f_datetime_get_day
+
+      !> @brief Get the hour component from a DateTime
+      function f_datetime_get_hour(dt_ms) result(hour) bind(C, name="f_datetime_get_hour")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int) :: hour
+      end function f_datetime_get_hour
+
+      !> @brief Get the minute component from a DateTime
+      function f_datetime_get_minute(dt_ms) result(minute) bind(C, name="f_datetime_get_minute")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int) :: minute
+      end function f_datetime_get_minute
+
+      !> @brief Get the second component from a DateTime
+      function f_datetime_get_second(dt_ms) result(second) bind(C, name="f_datetime_get_second")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int) :: second
+      end function f_datetime_get_second
+
+      !> @brief Get the millisecond component from a DateTime
+      function f_datetime_get_millisecond(dt_ms) result(ms) bind(C, name="f_datetime_get_millisecond")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int) :: ms
+      end function f_datetime_get_millisecond
+
+      !> @brief Add a TimeSpan to a DateTime
+      function f_datetime_add_timespan(dt_ms, ts_ms) result(result_ms) &
+         bind(C, name="f_datetime_add_timespan")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms, ts_ms
+         integer(c_int64_t) :: result_ms
+      end function f_datetime_add_timespan
+
+      !> @brief Subtract a TimeSpan from a DateTime
+      function f_datetime_subtract_timespan(dt_ms, ts_ms) result(result_ms) &
+         bind(C, name="f_datetime_subtract_timespan")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms, ts_ms
+         integer(c_int64_t) :: result_ms
+      end function f_datetime_subtract_timespan
+
+      !> @brief Calculate the difference between two DateTimes
+      function f_datetime_difference(dt1_ms, dt2_ms) result(ts_ms) &
+         bind(C, name="f_datetime_difference")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
+         integer(c_int64_t) :: ts_ms
+      end function f_datetime_difference
+
+      !> @brief Format a DateTime to a string
+      subroutine f_datetime_format(dt_ms, format, buffer, format_len, buffer_size) &
+         bind(C, name="f_datetime_format")
+         import :: c_int64_t, c_char, c_int
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         character(kind=c_char), intent(in) :: format(format_len)
+         character(kind=c_char), intent(inout) :: buffer(buffer_size)
+         integer(c_int), intent(in), value :: format_len, buffer_size
+      end subroutine f_datetime_format
+
+      !> @brief Get the timestamp (milliseconds since epoch) from a DateTime
+      subroutine f_datetime_format_ms(dt_ms, format, buffer, format_len, buffer_size) &
+         bind(C, name="f_datetime_format_milliseconds")
+         import :: c_int64_t, c_char, c_int
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         character(kind=c_char), intent(in) :: format(format_len)
+         character(kind=c_char), intent(inout) :: buffer(buffer_size)
+         integer(c_int), intent(in), value :: format_len, buffer_size
+      end subroutine f_datetime_format_ms
+
+      !> @brief Convert a DateTime to an ISO 8601 string
+      subroutine f_datetime_to_iso_string(dt_ms, buffer, buffer_size) &
+         bind(C, name="f_datetime_to_iso_string")
+         import :: c_int64_t, c_char, c_int
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         character(kind=c_char), intent(inout) :: buffer(buffer_size)
+         integer(c_int), intent(in), value :: buffer_size
+      end subroutine f_datetime_to_iso_string
+
+      !> @brief Check if two DateTimes are equal
+      function f_datetime_equals(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_equals")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
+         integer(c_int) :: result
+      end function f_datetime_equals
+
+      !> @brief Check if one DateTime is less than another
+      function f_datetime_less_than(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_less_than")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
+         integer(c_int) :: result
+      end function f_datetime_less_than
+
+      !> @brief Check if one DateTime is greater than another
+      function f_datetime_greater_than(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_greater_than")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
+         integer(c_int) :: result
+      end function f_datetime_greater_than
+
+      !> @brief Check if one DateTime is less than or equal to another
+      function f_datetime_less_equal(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_less_equal")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
+         integer(c_int) :: result
+      end function f_datetime_less_equal
+
+      !> @brief Check if one DateTime is greater than or equal to another
+      function f_datetime_greater_equal(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_greater_equal")
+         import :: c_int, c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
+         integer(c_int) :: result
+      end function f_datetime_greater_equal
+   end interface
+
+contains
+
+   !===========================================================================
+   ! TimeSpan implementations
+   !===========================================================================
+
+   !> @brief Create a TimeSpan from days, hours, minutes, seconds, and milliseconds
+   !> @param days Number of days
+   !> @param hours Number of hours
+   !> @param minutes Number of minutes
+   !> @param seconds Number of seconds
+   !> @param milliseconds Number of milliseconds
+   !> @return TimeSpan with the specified duration
+   function timespan_components(days, hours, minutes, seconds, milliseconds) result(ts)
+      integer, intent(in), optional :: days, hours, minutes, seconds, milliseconds
+      type(t_timespan) :: ts
+      integer :: days_int, hours_int, minutes_int, seconds_int, milliseconds_int
+
+      ! Default values
+      if (.not. present(days)) then
+         days_int = 0
+      else
+         days_int = days
+      end if
+
+      if (.not. present(hours)) then
+         hours_int = 0
+      else
+         hours_int = hours
+      end if
+
+      if (.not. present(minutes)) then
+         minutes_int = 0
+      else
+         minutes_int = minutes
+      end if
+
+      if (.not. present(seconds)) then
+         seconds_int = 0
+      else
+         seconds_int = seconds
+      end if
+
+      if (.not. present(milliseconds)) then
+         milliseconds_int = 0
+      else
+         milliseconds_int = milliseconds
+      end if
+
+      ts%ms_count = f_timespan_create(days_int, hours_int, minutes_int, seconds_int, milliseconds_int)
+   end function timespan_components
+
+   !> @brief Get the days component from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Days component
+   function timespan_days(this) result(days)
+      class(t_timespan), intent(in) :: this
+      integer :: days
+      days = f_timespan_get_days(this%ms_count)
+   end function timespan_days
+
+   !> @brief Get the hours component from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Hours component
+   function timespan_hours(this) result(hours)
+      class(t_timespan), intent(in) :: this
+      integer :: hours
+      hours = f_timespan_get_hours(this%ms_count)
+   end function timespan_hours
+
+   !> @brief Get the minutes component from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Minutes component
+   function timespan_minutes(this) result(minutes)
+      class(t_timespan), intent(in) :: this
+      integer :: minutes
+      minutes = f_timespan_get_minutes(this%ms_count)
+   end function timespan_minutes
+
+   !> @brief Get the seconds component from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Seconds component
+   function timespan_seconds(this) result(seconds)
+      class(t_timespan), intent(in) :: this
+      integer :: seconds
+      seconds = f_timespan_get_seconds(this%ms_count)
+   end function timespan_seconds
+
+   !> @brief Get the milliseconds component from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Milliseconds component
+   function timespan_milliseconds(this) result(ms)
+      class(t_timespan), intent(in) :: this
+      integer :: ms
+      ms = f_timespan_get_milliseconds(this%ms_count)
+   end function timespan_milliseconds
+
+   !> @brief Get the total days from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Total days
+   function timespan_total_days(this) result(days)
+      class(t_timespan), intent(in) :: this
+      integer(kind=8) :: days
+      days = f_timespan_get_total_days(this%ms_count)
+   end function timespan_total_days
+
+   !> @brief Get the total hours from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Total hours
+   function timespan_total_hours(this) result(hours)
+      class(t_timespan), intent(in) :: this
+      integer(kind=8) :: hours
+      hours = f_timespan_get_total_hours(this%ms_count)
+   end function timespan_total_hours
+
+   !> @brief Get the total minutes from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Total minutes
+   function timespan_total_minutes(this) result(minutes)
+      class(t_timespan), intent(in) :: this
+      integer(kind=8) :: minutes
+      minutes = f_timespan_get_total_minutes(this%ms_count)
+   end function timespan_total_minutes
+
+   !> @brief Get the total seconds from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Total seconds
+   function timespan_total_seconds(this) result(seconds)
+      class(t_timespan), intent(in) :: this
+      integer(kind=8) :: seconds
+      seconds = f_timespan_get_total_seconds(this%ms_count)
+   end function timespan_total_seconds
+
+   !> @brief Get the total milliseconds from a TimeSpan
+   !> @param this TimeSpan object
+   !> @return Total milliseconds
+   function timespan_total_milliseconds(this) result(ms)
+      class(t_timespan), intent(in) :: this
+      integer(kind=8) :: ms
+      ms = this%ms_count
+   end function timespan_total_milliseconds
+
+   !> @brief Convert a TimeSpan to a string
+   !> @param this TimeSpan object
+   !> @return String representation of the TimeSpan
+   function timespan_to_string(this) result(str)
+      class(t_timespan), intent(in) :: this
+      character(len=64) :: str
+      character(kind=c_char), dimension(65) :: c_str
+
+      call f_timespan_to_string(this%ms_count, c_str, 65)
+      call c_f_string(c_str, str)
+   end function timespan_to_string
+
+   !> @brief Add two TimeSpans
+   !> @param ts1 First TimeSpan
+   !> @param ts2 Second TimeSpan
+   !> @return Sum of the two TimeSpans
+   function timespan_add_timespan(ts1, ts2) result(sum_ts)
+      type(t_timespan), intent(in) :: ts1, ts2
+      type(t_timespan) :: sum_ts
+
+      sum_ts%ms_count = f_timespan_add(ts1%ms_count, ts2%ms_count)
+   end function timespan_add_timespan
+
+   !> @brief Subtract one TimeSpan from another
+   !> @param ts1 First TimeSpan
+   !> @param ts2 Second TimeSpan
+   !> @return Difference of the two TimeSpans
+   function timespan_subtract_timespan(ts1, ts2) result(diff_ts)
+      type(t_timespan), intent(in) :: ts1, ts2
+      type(t_timespan) :: diff_ts
+
+      diff_ts%ms_count = f_timespan_subtract(ts1%ms_count, ts2%ms_count)
+   end function timespan_subtract_timespan
+
+   !> @brief Multiply a TimeSpan by a factor
+   !> @param ts TimeSpan to multiply
+   !> @param factor Multiplication factor
+   !> @return Multiplied TimeSpan
+   function timespan_multiply(ts, factor) result(product_ts)
+      type(t_timespan), intent(in) :: ts
+      integer, intent(in) :: factor
+      type(t_timespan) :: product_ts
+
+      product_ts%ms_count = f_timespan_multiply(ts%ms_count, factor)
+   end function timespan_multiply
+
+   !> @brief Divide a TimeSpan by a divisor
+   !> @param ts TimeSpan to divide
+   !> @param divisor Division factor
+   !> @return Divided TimeSpan
+   function timespan_divide(ts, divisor) result(quotient_ts)
+      type(t_timespan), intent(in) :: ts
+      integer, intent(in) :: divisor
+      type(t_timespan) :: quotient_ts
+
+      quotient_ts%ms_count = f_timespan_divide(ts%ms_count, divisor)
+   end function timespan_divide
+
+   !> @brief Check if two TimeSpans are equal
+   !> @param ts1 First TimeSpan
+   !> @param ts2 Second TimeSpan
+   !> @return True if equal, False otherwise
+   function timespan_equals(ts1, ts2) result(res)
+      type(t_timespan), intent(in) :: ts1, ts2
+      logical :: res
+
+      res = f_timespan_equals(ts1%ms_count, ts2%ms_count) /= 0
+   end function timespan_equals
+
+   !> @brief Check if two TimeSpans are not equal
+   !> @param ts1 First TimeSpan
+   !> @param ts2 Second TimeSpan
+   !> @return True if not equal, False otherwise
+   function timespan_not_equals(ts1, ts2) result(res)
+      type(t_timespan), intent(in) :: ts1, ts2
+      logical :: res
+
+      res = f_timespan_equals(ts1%ms_count, ts2%ms_count) == 0
+   end function timespan_not_equals
+
+   !> @brief Check if one TimeSpan is less than another
+   !> @param ts1 First TimeSpan
+   !> @param ts2 Second TimeSpan
+   !> @return True if ts1 < ts2, False otherwise
+   function timespan_less_than(ts1, ts2) result(res)
+      type(t_timespan), intent(in) :: ts1, ts2
+      logical :: res
+
+      res = f_timespan_less_than(ts1%ms_count, ts2%ms_count) /= 0
+   end function timespan_less_than
+
+   !> @brief Check if one TimeSpan is greater than another
+   !> @param ts1 First TimeSpan
+   !> @param ts2 Second TimeSpan
+   !> @return True if ts1 > ts2, False otherwise
+   function timespan_greater_than(ts1, ts2) result(res)
+      type(t_timespan), intent(in) :: ts1, ts2
+      logical :: res
+
+      res = f_timespan_greater_than(ts1%ms_count, ts2%ms_count) /= 0
+   end function timespan_greater_than
+
+   !> @brief Check if one TimeSpan is less than or equal to another
+   !> @param ts1 First TimeSpan
+   !> @param ts2 Second TimeSpan
+   !> @return True if ts1 <= ts2, False otherwise
+   function timespan_less_equal(ts1, ts2) result(res)
+      type(t_timespan), intent(in) :: ts1, ts2
+      logical :: res
+
+      res = f_timespan_less_equal(ts1%ms_count, ts2%ms_count) /= 0
+   end function timespan_less_equal
+
+   !> @brief Check if one TimeSpan is greater than or equal to another
+   !> @param ts1 First TimeSpan
+   !> @param ts2 Second TimeSpan
+   !> @return True if ts1 >= ts2, False otherwise
+   function timespan_greater_equal(ts1, ts2) result(res)
+      type(t_timespan), intent(in) :: ts1, ts2
+      logical :: res
+
+      res = f_timespan_greater_equal(ts1%ms_count, ts2%ms_count) /= 0
+   end function timespan_greater_equal
+
+   !===========================================================================
+   ! DateTime implementations
+   !===========================================================================
+
+   !> @brief Create a default DateTime (epoch)
+   !> @return DateTime at the epoch
+   function datetime_default() result(dt)
+      type(t_datetime) :: dt
+      dt%timestamp_ms = 0_c_int64_t
+   end function datetime_default
+
+   !> @brief Create a DateTime from year, month, and day
+   !> @param year Year
+   !> @param month Month (1-12)
+   !> @param day Day (1-31)
+   !> @return DateTime with the specified date
+   function datetime_ymd(year, month, day) result(dt)
+      integer, intent(in) :: year, month, day
+      type(t_datetime) :: dt
+
+      dt%timestamp_ms = f_datetime_create(year, month, day, 0, 0, 0, 0)
+   end function datetime_ymd
+
+   !> @brief Create a DateTime from year, month, day, hour, minute, and second
+   !> @param year Year
+   !> @param month Month (1-12)
+   !> @param day Day (1-31)
+   !> @param hour Hour (0-23)
+   !> @param minute Minute (0-59)
+   !> @param second Second (0-59)
+   !> @return DateTime with the specified date and time
+   function datetime_ymd_hms(year, month, day, hour, minute, second) result(dt)
+      integer, intent(in) :: year, month, day, hour, minute, second
+      type(t_datetime) :: dt
+
+      dt%timestamp_ms = f_datetime_create(year, month, day, hour, minute, second, 0)
+   end function datetime_ymd_hms
+
+   !> @brief Create a DateTime from all components
+   !> @param year Year
+   !> @param month Month (1-12)
+   !> @param day Day (1-31)
+   !> @param hour Hour (0-23)
+   !> @param minute Minute (0-59)
+   !> @param second Second (0-59)
+   !> @param millisecond Millisecond (0-999)
+   !> @return DateTime with the specified date and time
+   function datetime_complete(year, month, day, hour, minute, second, millisecond) result(dt)
+      integer, intent(in) :: year, month, day, hour, minute, second, millisecond
+      type(t_datetime) :: dt
+
+      dt%timestamp_ms = f_datetime_create(year, month, day, hour, minute, second, millisecond)
+   end function datetime_complete
+
+   !> @brief Create a DateTime from a timestamp
+   !> @param timestamp Milliseconds since the epoch
+   !> @return DateTime corresponding to the timestamp
+   function datetime_from_timestamp(timestamp) result(dt)
+      integer(kind=8), intent(in) :: timestamp
+      type(t_datetime) :: dt
+
+      dt%timestamp_ms = timestamp
+   end function datetime_from_timestamp
+
+   !> @brief Parse a DateTime from a string
+   !> @param str String representation of a DateTime
+   !> @param format Format specification (similar to strftime)
+   !> @return DateTime parsed from the string
+   function datetime_parse(str, format) result(dt)
+      implicit none
+      character(len=*), intent(in) :: str, format
+      type(t_datetime) :: dt
+
+      ! Convert Fortran strings to C-compatible character arrays
+      character(kind=c_char, len=1) :: c_str(len_trim(str) + 1), c_format(len_trim(format) + 1)
+      integer :: i
+      logical :: has_milliseconds
+
+      ! If the 4th character from the end of the format string is a dot, it indicates milliseconds
+      has_milliseconds = (len_trim(format) >= 4 .and. format(len_trim(format) - 3:len_trim(format) - 3) == '.')
+
+      do i = 1, len_trim(str)
+         c_str(i) = str(i:i)
+      end do
+      c_str(len_trim(str) + 1) = c_null_char
+
+      do i = 1, len_trim(format)
+         c_format(i) = format(i:i)
+      end do
+      c_format(len_trim(format) + 1) = c_null_char
+
+      dt%timestamp_ms = f_datetime_parse(c_str, c_format, len_trim(str), len_trim(format))
+   end function datetime_parse
+
+   !> @brief Get the current DateTime
+   !> @return DateTime representing the current time
+   function now() result(dt)
+      type(t_datetime) :: dt
+
+      dt%timestamp_ms = f_datetime_now()
+   end function now
+
+   !> @brief Get the year component from a DateTime
+   !> @param this DateTime object
+   !> @return Year component
+   function datetime_year(this) result(year)
+      class(t_datetime), intent(in) :: this
+      integer :: year
+
+      year = f_datetime_get_year(this%timestamp_ms)
+   end function datetime_year
+
+   !> @brief Get the month component from a DateTime
+   !> @param this DateTime object
+   !> @return Month component (1-12)
+   function datetime_month(this) result(month)
+      class(t_datetime), intent(in) :: this
+      integer :: month
+
+      month = f_datetime_get_month(this%timestamp_ms)
+   end function datetime_month
+
+   !> @brief Get the day component from a DateTime
+   !> @param this DateTime object
+   !> @return Day component (1-31)
+   function datetime_day(this) result(day)
+      class(t_datetime), intent(in) :: this
+      integer :: day
+
+      day = f_datetime_get_day(this%timestamp_ms)
+   end function datetime_day
+
+   !> @brief Get the hour component from a DateTime
+   !> @param this DateTime object
+   !> @return Hour component (0-23)
+   function datetime_hour(this) result(hour)
+      class(t_datetime), intent(in) :: this
+      integer :: hour
+
+      hour = f_datetime_get_hour(this%timestamp_ms)
+   end function datetime_hour
+
+   !> @brief Get the minute component from a DateTime
+   !> @param this DateTime object
+   !> @return Minute component (0-59)
+   function datetime_minute(this) result(minute)
+      class(t_datetime), intent(in) :: this
+      integer :: minute
+
+      minute = f_datetime_get_minute(this%timestamp_ms)
+   end function datetime_minute
+
+   !> @brief Get the second component from a DateTime
+   !> @param this DateTime object
+   !> @return Second component (0-59)
+   function datetime_second(this) result(second)
+      class(t_datetime), intent(in) :: this
+      integer :: second
+
+      second = f_datetime_get_second(this%timestamp_ms)
+   end function datetime_second
+
+   !> @brief Get the millisecond component from a DateTime
+   !> @param this DateTime object
+   !> @return Millisecond component (0-999)
+   function datetime_millisecond(this) result(ms)
+      class(t_datetime), intent(in) :: this
+      integer :: ms
+
+      ms = f_datetime_get_millisecond(this%timestamp_ms)
+   end function datetime_millisecond
+
+   !> @brief Get the timestamp from a DateTime
+   !> @param this DateTime object
+   !> @return Timestamp (milliseconds since epoch)
+   function datetime_timestamp(this) result(timestamp)
+      class(t_datetime), intent(in) :: this
+      integer(kind=8) :: timestamp
+
+      timestamp = this%timestamp_ms
+   end function datetime_timestamp
+
+   !> @brief Format a DateTime to a string
+   !> @param this DateTime object
+   !> @param format Format specification (similar to strftime)
+   !> @return String representation of the DateTime
+   function datetime_format(this, date_format, show_milliseconds) result(str)
+      class(t_datetime), intent(in) :: this
+      character(len=*), intent(in) :: date_format
+      logical, intent(in), optional :: show_milliseconds
+      character(len=64) :: str
+
+      ! Convert Fortran string to C-compatible character array
+      character(kind=c_char, len=1) :: c_format(len_trim(date_format) + 1), c_str(65)
+      integer :: i
+      logical :: show_milliseconds_l
+
+      do i = 1, len_trim(date_format)
+         c_format(i) = date_format(i:i)
+      end do
+      c_format(len_trim(date_format) + 1) = c_null_char
+
+      if (present(show_milliseconds)) then
+         show_milliseconds_l = show_milliseconds
+      else
+         show_milliseconds_l = .false.
+      end if
+
+      if (show_milliseconds_l) then
+         call f_datetime_format_ms(this%timestamp_ms, c_format, c_str, len_trim(date_format), 65)
+      else
+         call f_datetime_format(this%timestamp_ms, c_format, c_str, len_trim(date_format), 65)
+      end if
+
+      call c_f_string(c_str, str)
+
+   end function datetime_format
+
+   !> @brief Convert a DateTime to an ISO 8601 string
+   !> @param this DateTime object
+   !> @param msec Flag to include milliseconds in the output
+   !> @return ISO 8601 string representation of the DateTime
+   function datetime_to_iso_string(this, msec) result(str)
+      class(t_datetime), intent(in) :: this
+      character(len=64) :: str
+      logical, intent(in), optional :: msec
+
+      character(kind=c_char, len=1) :: c_str(65)
+      logical :: msec_l
+
+      if (present(msec)) then
+         msec_l = msec
+      else
+         msec_l = .false.
+      end if
+
+      if (msec_l) then
+         str = datetime_format(this, "%Y-%m-%dT%H:%M:%S", .true.)
+      else
+         str = datetime_format(this, "%Y-%m-%dT%H:%M:%S", .false.)
+      end if
+
+   end function datetime_to_iso_string
+
+   !> @brief Add a TimeSpan to a DateTime
+   !> @param dt DateTime
+   !> @param ts TimeSpan
+   !> @return DateTime resulting from the addition
+   function datetime_add_timespan(dt, ts) result(result_dt)
+      type(t_datetime), intent(in) :: dt
+      type(t_timespan), intent(in) :: ts
+      type(t_datetime) :: result_dt
+
+      result_dt%timestamp_ms = f_datetime_add_timespan(dt%timestamp_ms, ts%ms_count)
+   end function datetime_add_timespan
+
+   !> @brief Subtract a TimeSpan from a DateTime
+   !> @param dt DateTime
+   !> @param ts TimeSpan
+   !> @return DateTime resulting from the subtraction
+   function datetime_subtract_timespan(dt, ts) result(result_dt)
+      type(t_datetime), intent(in) :: dt
+      type(t_timespan), intent(in) :: ts
+      type(t_datetime) :: result_dt
+
+      result_dt%timestamp_ms = f_datetime_subtract_timespan(dt%timestamp_ms, ts%ms_count)
+   end function datetime_subtract_timespan
+
+   !> @brief Calculate the difference between two DateTimes
+   !> @param dt1 First DateTime
+   !> @param dt2 Second DateTime
+   !> @return TimeSpan representing the difference
+   function datetime_difference(dt1, dt2) result(ts)
+      type(t_datetime), intent(in) :: dt1, dt2
+      type(t_timespan) :: ts
+
+      ts%ms_count = f_datetime_difference(dt1%timestamp_ms, dt2%timestamp_ms)
+   end function datetime_difference
+
+   !> @brief Check if two DateTimes are equal
+   !> @param dt1 First DateTime
+   !> @param dt2 Second DateTime
+   !> @return True if equal, False otherwise
+   function datetime_equals(dt1, dt2) result(res)
+      type(t_datetime), intent(in) :: dt1, dt2
+      logical :: res
+
+      res = f_datetime_equals(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+   end function datetime_equals
+
+   !> @brief Check if two DateTimes are not equal
+   !> @param dt1 First DateTime
+   !> @param dt2 Second DateTime
+   !> @return True if not equal, False otherwise
+   function datetime_not_equals(dt1, dt2) result(res)
+      type(t_datetime), intent(in) :: dt1, dt2
+      logical :: res
+
+      res = f_datetime_equals(dt1%timestamp_ms, dt2%timestamp_ms) == 0
+   end function datetime_not_equals
+
+   !> @brief Check if one DateTime is less than another
+   !> @param dt1 First DateTime
+   !> @param dt2 Second DateTime
+   !> @return True if dt1 < dt2, False otherwise
+   function datetime_less_than(dt1, dt2) result(res)
+      type(t_datetime), intent(in) :: dt1, dt2
+      logical :: res
+
+      res = f_datetime_less_than(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+   end function datetime_less_than
+
+   !> @brief Check if one DateTime is greater than another
+   !> @param dt1 First DateTime
+   !> @param dt2 Second DateTime
+   !> @return True if dt1 > dt2, False otherwise
+   function datetime_greater_than(dt1, dt2) result(res)
+      type(t_datetime), intent(in) :: dt1, dt2
+      logical :: res
+
+      res = f_datetime_greater_than(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+   end function datetime_greater_than
+
+   !> @brief Check if one DateTime is less than or equal to another
+   !> @param dt1 First DateTime
+   !> @param dt2 Second DateTime
+   !> @return True if dt1 <= dt2, False otherwise
+   function datetime_less_equal(dt1, dt2) result(res)
+      type(t_datetime), intent(in) :: dt1, dt2
+      logical :: res
+
+      res = f_datetime_less_equal(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+   end function datetime_less_equal
+
+   !> @brief Check if one DateTime is greater than or equal to another
+   !> @param dt1 First DateTime
+   !> @param dt2 Second DateTime
+   !> @return True if dt1 >= dt2, False otherwise
+   function datetime_greater_equal(dt1, dt2) result(res)
+      type(t_datetime), intent(in) :: dt1, dt2
+      logical :: res
+
+      res = f_datetime_greater_equal(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+   end function datetime_greater_equal
+
+   !> @brief Helper function to convert C string to Fortran string
+   !> @param c_string C string
+   !> @param f_string Fortran string
+   subroutine c_f_string(c_string, f_string)
+      character(kind=c_char), dimension(65), intent(in) :: c_string
+      character(len=64), intent(out) :: f_string
+      integer :: i
+
+      f_string = ""
+      do i = 1, len(f_string)
+         if (c_string(i) == c_null_char) exit
+         f_string(i:i) = c_string(i)
+      end do
+   end subroutine c_f_string
+
+end module mod_datetime
