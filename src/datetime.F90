@@ -565,7 +565,6 @@ contains
       integer(c_int64_t) :: days64
       integer :: days
       days64 = f_timespan_get_days(this%ms_count)
-      write (*, *) "Days: ", days64
       days = int(days64)
    end function timespan_days
 

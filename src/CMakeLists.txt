@@ -1,6 +1,10 @@
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/SystemLink.cmake)
 
-set(FDATE_SOURCES datetime_wrapper.cpp datetime.F90)
+set(FDATE_SOURCES datetime_wrapper.cpp)
+
+if(FDATE_ENABLE_FORTRAN)
+  set(FDATE_SOURCES ${FDATE_SOURCES} datetime.F90)
+endif()
 
 # Check for features
 include(CheckCXXSourceCompiles)

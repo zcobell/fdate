@@ -13,7 +13,7 @@
 #include <optional>
 #include <string>
 
-#include "datetime.hpp"
+#include "DateTime.hpp"
 
 extern "C" {
 
@@ -213,7 +213,7 @@ auto f_timespan_subtract(const int64_t ts1_ms, const int64_t ts2_ms)
  * @return int64_t Resulting TimeSpan as milliseconds
  */
 auto f_timespan_multiply(const int64_t ts_ms, const int factor) -> int64_t {
-  return ts_ms * factor;
+  return ts_ms * static_cast<int64_t>(factor);
 }
 
 /**
@@ -223,8 +223,8 @@ auto f_timespan_multiply(const int64_t ts_ms, const int factor) -> int64_t {
  * @param divisor Division factor
  * @return int64_t Resulting TimeSpan as milliseconds
  */
-auto f_timespan_divide(const int64_t ts_ms, const int64_t divisor) -> int64_t {
-  return ts_ms / divisor;
+auto f_timespan_divide(const int64_t ts_ms, const int divisor) -> int64_t {
+  return ts_ms / static_cast<int64_t>(divisor);
 }
 
 /**
