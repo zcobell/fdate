@@ -17,9 +17,13 @@ foreach(test ${TestList})
 
   if(CDATE_ENABLE_COVERAGE)
     set_target_properties(
-      ${test_name} PROPERTIES COMPILE_FLAGS ${CDATE_COVERAGE_COMPILE_FLAGS}
-                              LINK_FLAGS ${CDATE_COVERAGE_LINK_FLAGS})
+      ${test_name} PROPERTIES COMPILE_FLAGS ${FDATE_COVERAGE_COMPILE_FLAGS}
+                              LINK_FLAGS ${FDATE_COVERAGE_LINK_FLAGS})
   endif()
+
+  target_include_directories(
+    ${test_name} SYSTEM
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/date_hh)
 
   target_link_libraries(${test_name} PRIVATE Catch2::Catch2WithMain)
   set_target_properties(

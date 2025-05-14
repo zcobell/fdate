@@ -311,8 +311,8 @@ class DateTime {
 
   [[nodiscard]] auto format(const std::string& fmt = "%Y-%m-%d %H:%M:%S") const
       -> std::string {
-    std::ostringstream oss;
     auto tp_sec = std::chrono::time_point_cast<std::chrono::seconds>(m_tp);
+    std::ostringstream oss;
     date::to_stream(oss, fmt.c_str(), tp_sec);
     return oss.str();
   }
