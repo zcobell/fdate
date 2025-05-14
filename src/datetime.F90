@@ -7,7 +7,7 @@
 !> memory management issues while providing a clean Fortran API.
 
 module mod_datetime
-   use, intrinsic :: iso_c_binding, only: c_int, c_int64_t, c_char, c_null_char
+   use, intrinsic :: iso_c_binding, only: c_int, c_int64_t, c_char, c_null_char, c_bool
    implicit none
 
    private
@@ -171,7 +171,7 @@ module mod_datetime
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
-         integer(c_int) :: days
+         integer(c_int64_t) :: days
       end function f_timespan_get_days
 
       !> @brief Get hours component from a TimeSpan
@@ -179,7 +179,7 @@ module mod_datetime
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
-         integer(c_int) :: hours
+         integer(c_int64_t) :: hours
       end function f_timespan_get_hours
 
       !> @brief Get minutes component from a TimeSpan
@@ -187,7 +187,7 @@ module mod_datetime
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
-         integer(c_int) :: minutes
+         integer(c_int64_t) :: minutes
       end function f_timespan_get_minutes
 
       !> @brief Get seconds component from a TimeSpan
@@ -195,7 +195,7 @@ module mod_datetime
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
-         integer(c_int) :: seconds
+         integer(c_int64_t) :: seconds
       end function f_timespan_get_seconds
 
       !> @brief Get milliseconds component from a TimeSpan
@@ -203,7 +203,7 @@ module mod_datetime
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
-         integer(c_int) :: ms
+         integer(c_int64_t) :: ms
       end function f_timespan_get_milliseconds
 
       !> @brief Get total days from a TimeSpan
@@ -283,42 +283,42 @@ module mod_datetime
 
       !> @brief Check if two TimeSpans are equal
       function f_timespan_equals(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_equals")
-         import :: c_int, c_int64_t
+         import :: c_int, c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_timespan_equals
 
       !> @brief Check if one TimeSpan is less than another
       function f_timespan_less_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_less_than")
-         import :: c_int, c_int64_t
+         import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_timespan_less_than
 
       !> @brief Check if one TimeSpan is greater than another
       function f_timespan_greater_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_greater_than")
-         import :: c_int, c_int64_t
+         import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_timespan_greater_than
 
       !> @brief Check if one TimeSpan is less than or equal to another
       function f_timespan_less_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_less_equal")
-         import :: c_int, c_int64_t
+         import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_timespan_less_equal
 
       !> @brief Check if one TimeSpan is greater than or equal to another
       function f_timespan_greater_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_greater_equal")
-         import :: c_int, c_int64_t
+         import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_timespan_greater_equal
 
       ! DateTime C functions
@@ -466,42 +466,42 @@ module mod_datetime
 
       !> @brief Check if two DateTimes are equal
       function f_datetime_equals(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_equals")
-         import :: c_int, c_int64_t
+         import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_datetime_equals
 
       !> @brief Check if one DateTime is less than another
       function f_datetime_less_than(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_less_than")
-         import :: c_int, c_int64_t
+         import :: c_bool, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_datetime_less_than
 
       !> @brief Check if one DateTime is greater than another
       function f_datetime_greater_than(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_greater_than")
-         import :: c_int, c_int64_t
+         import :: c_bool, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_datetime_greater_than
 
       !> @brief Check if one DateTime is less than or equal to another
       function f_datetime_less_equal(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_less_equal")
-         import :: c_int, c_int64_t
+         import :: c_bool, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_datetime_less_equal
 
       !> @brief Check if one DateTime is greater than or equal to another
       function f_datetime_greater_equal(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_greater_equal")
-         import :: c_int, c_int64_t
+         import :: c_bool, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
-         integer(c_int) :: result
+         logical(c_bool) :: result
       end function f_datetime_greater_equal
    end interface
 
@@ -562,8 +562,11 @@ contains
    !> @return Days component
    function timespan_days(this) result(days)
       class(t_timespan), intent(in) :: this
+      integer(c_int64_t) :: days64
       integer :: days
-      days = f_timespan_get_days(this%ms_count)
+      days64 = f_timespan_get_days(this%ms_count)
+      write (*, *) "Days: ", days64
+      days = int(days64)
    end function timespan_days
 
    !> @brief Get the hours component from a TimeSpan
@@ -571,8 +574,10 @@ contains
    !> @return Hours component
    function timespan_hours(this) result(hours)
       class(t_timespan), intent(in) :: this
+      integer(c_int64_t) :: hours64
       integer :: hours
-      hours = f_timespan_get_hours(this%ms_count)
+      hours64 = f_timespan_get_hours(this%ms_count)
+      hours = int(hours64)
    end function timespan_hours
 
    !> @brief Get the minutes component from a TimeSpan
@@ -580,8 +585,10 @@ contains
    !> @return Minutes component
    function timespan_minutes(this) result(minutes)
       class(t_timespan), intent(in) :: this
+      integer(c_int64_t) :: minutes64
       integer :: minutes
-      minutes = f_timespan_get_minutes(this%ms_count)
+      minutes64 = f_timespan_get_minutes(this%ms_count)
+      minutes = int(minutes64)
    end function timespan_minutes
 
    !> @brief Get the seconds component from a TimeSpan
@@ -589,8 +596,10 @@ contains
    !> @return Seconds component
    function timespan_seconds(this) result(seconds)
       class(t_timespan), intent(in) :: this
+      integer(c_int64_t) :: seconds64
       integer :: seconds
-      seconds = f_timespan_get_seconds(this%ms_count)
+      seconds64 = f_timespan_get_seconds(this%ms_count)
+      seconds = int(seconds64)
    end function timespan_seconds
 
    !> @brief Get the milliseconds component from a TimeSpan
@@ -598,8 +607,10 @@ contains
    !> @return Milliseconds component
    function timespan_milliseconds(this) result(ms)
       class(t_timespan), intent(in) :: this
+      integer(c_int64_t) :: ms64
       integer :: ms
-      ms = f_timespan_get_milliseconds(this%ms_count)
+      ms64 = f_timespan_get_milliseconds(this%ms_count)
+      ms = int(ms64)
    end function timespan_milliseconds
 
    !> @brief Get the total days from a TimeSpan
@@ -711,9 +722,11 @@ contains
    !> @return True if equal, False otherwise
    function timespan_equals(ts1, ts2) result(res)
       type(t_timespan), intent(in) :: ts1, ts2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_timespan_equals(ts1%ms_count, ts2%ms_count) /= 0
+      res_t = f_timespan_equals(ts1%ms_count, ts2%ms_count)
+      res = logical(res_t, 4)
    end function timespan_equals
 
    !> @brief Check if two TimeSpans are not equal
@@ -722,9 +735,11 @@ contains
    !> @return True if not equal, False otherwise
    function timespan_not_equals(ts1, ts2) result(res)
       type(t_timespan), intent(in) :: ts1, ts2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_timespan_equals(ts1%ms_count, ts2%ms_count) == 0
+      res_t = f_timespan_equals(ts1%ms_count, ts2%ms_count)
+      res = .not. logical(res_t, 4)
    end function timespan_not_equals
 
    !> @brief Check if one TimeSpan is less than another
@@ -733,9 +748,11 @@ contains
    !> @return True if ts1 < ts2, False otherwise
    function timespan_less_than(ts1, ts2) result(res)
       type(t_timespan), intent(in) :: ts1, ts2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_timespan_less_than(ts1%ms_count, ts2%ms_count) /= 0
+      res_t = f_timespan_less_than(ts1%ms_count, ts2%ms_count)
+      res = logical(res_t, 4)
    end function timespan_less_than
 
    !> @brief Check if one TimeSpan is greater than another
@@ -744,9 +761,11 @@ contains
    !> @return True if ts1 > ts2, False otherwise
    function timespan_greater_than(ts1, ts2) result(res)
       type(t_timespan), intent(in) :: ts1, ts2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_timespan_greater_than(ts1%ms_count, ts2%ms_count) /= 0
+      res_t = f_timespan_greater_than(ts1%ms_count, ts2%ms_count)
+      res = logical(res_t, 4)
    end function timespan_greater_than
 
    !> @brief Check if one TimeSpan is less than or equal to another
@@ -755,9 +774,11 @@ contains
    !> @return True if ts1 <= ts2, False otherwise
    function timespan_less_equal(ts1, ts2) result(res)
       type(t_timespan), intent(in) :: ts1, ts2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_timespan_less_equal(ts1%ms_count, ts2%ms_count) /= 0
+      res_t = f_timespan_less_equal(ts1%ms_count, ts2%ms_count)
+      res = logical(res_t, 4)
    end function timespan_less_equal
 
    !> @brief Check if one TimeSpan is greater than or equal to another
@@ -766,9 +787,11 @@ contains
    !> @return True if ts1 >= ts2, False otherwise
    function timespan_greater_equal(ts1, ts2) result(res)
       type(t_timespan), intent(in) :: ts1, ts2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_timespan_greater_equal(ts1%ms_count, ts2%ms_count) /= 0
+      res_t = f_timespan_greater_equal(ts1%ms_count, ts2%ms_count)
+      res = logical(res_t, 4)
    end function timespan_greater_equal
 
    !===========================================================================
@@ -1056,9 +1079,11 @@ contains
    !> @return True if equal, False otherwise
    function datetime_equals(dt1, dt2) result(res)
       type(t_datetime), intent(in) :: dt1, dt2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_datetime_equals(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+      res_t = f_datetime_equals(dt1%timestamp_ms, dt2%timestamp_ms)
+      res = logical(res_t, 4)
    end function datetime_equals
 
    !> @brief Check if two DateTimes are not equal
@@ -1067,9 +1092,11 @@ contains
    !> @return True if not equal, False otherwise
    function datetime_not_equals(dt1, dt2) result(res)
       type(t_datetime), intent(in) :: dt1, dt2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_datetime_equals(dt1%timestamp_ms, dt2%timestamp_ms) == 0
+      res_t = f_datetime_equals(dt1%timestamp_ms, dt2%timestamp_ms)
+      res = .not. logical(res_t, 4)
    end function datetime_not_equals
 
    !> @brief Check if one DateTime is less than another
@@ -1078,9 +1105,11 @@ contains
    !> @return True if dt1 < dt2, False otherwise
    function datetime_less_than(dt1, dt2) result(res)
       type(t_datetime), intent(in) :: dt1, dt2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_datetime_less_than(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+      res_t = f_datetime_less_than(dt1%timestamp_ms, dt2%timestamp_ms)
+      res = logical(res_t, 4)
    end function datetime_less_than
 
    !> @brief Check if one DateTime is greater than another
@@ -1089,9 +1118,11 @@ contains
    !> @return True if dt1 > dt2, False otherwise
    function datetime_greater_than(dt1, dt2) result(res)
       type(t_datetime), intent(in) :: dt1, dt2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_datetime_greater_than(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+      res_t = f_datetime_greater_than(dt1%timestamp_ms, dt2%timestamp_ms)
+      res = logical(res_t, 4)
    end function datetime_greater_than
 
    !> @brief Check if one DateTime is less than or equal to another
@@ -1100,9 +1131,11 @@ contains
    !> @return True if dt1 <= dt2, False otherwise
    function datetime_less_equal(dt1, dt2) result(res)
       type(t_datetime), intent(in) :: dt1, dt2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_datetime_less_equal(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+      res_t = f_datetime_less_equal(dt1%timestamp_ms, dt2%timestamp_ms)
+      res = logical(res_t, 4)
    end function datetime_less_equal
 
    !> @brief Check if one DateTime is greater than or equal to another
@@ -1111,9 +1144,11 @@ contains
    !> @return True if dt1 >= dt2, False otherwise
    function datetime_greater_equal(dt1, dt2) result(res)
       type(t_datetime), intent(in) :: dt1, dt2
+      logical(c_bool) :: res_t
       logical :: res
 
-      res = f_datetime_greater_equal(dt1%timestamp_ms, dt2%timestamp_ms) /= 0
+      res_t = f_datetime_greater_equal(dt1%timestamp_ms, dt2%timestamp_ms)
+      res = logical(res_t, 4)
    end function datetime_greater_equal
 
    !> @brief Helper function to convert C string to Fortran string
