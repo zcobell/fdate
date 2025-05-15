@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 enable_language(CXX)
 enable_language(Fortran)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/dependencies.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/PreventInSourceBuilds.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/ProjectOptions.cmake)
 fdate_setup_options()
@@ -21,6 +21,8 @@ fdate_local_options()
 add_library(fdate::fdate_options ALIAS fdate_options)
 add_library(fdate::fdate_warnings ALIAS fdate_warnings)
 fdate_setup_dependencies()
+
+option(FDATE_ENABLE_FORTRAN "Build Fortran interface" ON)
 
 add_subdirectory(src)
 option(FDATE_BUILD_SHARED "Build shared FDATE library" OFF)

@@ -22,7 +22,7 @@ class DateTime {
       -std::numeric_limits<int64_t>::max();
 
   // Constructors
-  constexpr DateTime() noexcept = default;
+  constexpr DateTime() noexcept : m_tp(std::chrono::milliseconds(0)) {};
 
   ~DateTime() = default;
 
