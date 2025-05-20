@@ -115,8 +115,6 @@ macro(fdate_setup_options)
            ${DEFAULT_FUZZER})
   endif()
 
-  option(FDATE_ENABLE_PETSC_CLI "Enable PETSc command line interface" ON)
-
 endmacro()
 
 macro(fdate_global_options)

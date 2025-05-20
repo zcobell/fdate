@@ -94,8 +94,7 @@ TEST_CASE("TimeSpan basic functionality", "[timespan]") {
     
     SECTION("Assignment operator") {
         TimeSpan ts1(1, 2, 3, 4, 5);
-        TimeSpan ts2;
-        ts2 = ts1;
+        const auto ts2 = ts1;
         CHECK(ts2.days() == 1);
         CHECK(ts2.hours() == 2);
         CHECK(ts2.minutes() == 3);

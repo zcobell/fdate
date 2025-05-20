@@ -1,11 +1,13 @@
 #pragma once
 
+#include <array>
 #include <chrono>
 #include <iostream>
 #include <limits>
 #include <optional>
 #include <sstream>
 #include <string>
+#include <string_view>
 
 #include "TimeSpan.hpp"
 #include "date_hh.h"
@@ -49,9 +51,30 @@ class DateTime {
   constexpr DateTime(DateTime&&) noexcept = default;
   constexpr auto operator=(DateTime&&) noexcept -> DateTime& = default;
 
+  static auto parse(const std::string& str, const std::string& format = "auto")
+      -> std::optional<DateTime> {
+    if (format == "auto") {
+      // Set of formats to try
+      static const std::array<std::string, 8> format_options = {
+          "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S",
+          "%Y/%m/%d %H:%M:%S", "%Y/%m/%d %H:%M",
+          "%Y/%m/%d",          "%Y-%m-%d",
+          "%Y%m%d%H%M%S",      "%Y%m%d"};
+
+      for (const auto& fmt : format_options) {
+        if (auto result = DateTime::parse_string(str, fmt)) {
+          return result;
+        }
+      }
+      return std::nullopt;  // Parsing failed for all formats
+    } else {
+      return parse_string(str, format);
+    }
+  }
+
   // Parse from string (not constexpr due to parsing)
-  static auto parse(const std::string& str,
-                    const std::string& format = "%Y-%m-%d %H:%M:%S")
+  static auto parse_string(const std::string& str,
+                           const std::string& format = "%Y-%m-%d %H:%M:%S")
       -> std::optional<DateTime> {
     std::istringstream input_stream(str);
     date::sys_time<std::chrono::milliseconds> this_time_point;

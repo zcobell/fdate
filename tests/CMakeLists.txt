@@ -34,26 +34,56 @@ endforeach()
 # ##############################################################################
 
 # ##############################################################################
+# Check CXX results against Python results
+# ##############################################################################
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND)
+  add_executable(datetime_interface
+                 ${CMAKE_CURRENT_SOURCE_DIR}/cxx/cxx_test_interface.cpp)
+  target_include_directories(datetime_interface
+                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+  target_include_directories(
+    datetime_interface SYSTEM
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/date_hh)
+
+  # Add a test which calls the Python script that runs random tests against
+  # python's datetime library
+  add_test(
+    NAME TEST_python_fuzz_parse
+    COMMAND
+      ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/cxx/cxx_python_fuzz_wrapper.py --test-count
+      1000 --test parse --exe ${CMAKE_BINARY_DIR}/tests/datetime_interface
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+  add_test(
+    NAME TEST_python_fuzz_arithmetic
+    COMMAND
+      ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/cxx/cxx_python_fuzz_wrapper.py --test-count
+      1000 --test arithmetic --exe ${CMAKE_BINARY_DIR}/tests/datetime_interface
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
+# ##############################################################################
 # ... Fortran TESTS
 # ##############################################################################
-if(FDATE_ENABLE_FORTRAN)
-  file(GLOB_RECURSE TestList ${CMAKE_CURRENT_SOURCE_DIR}/fortran/TEST_ftn_*.F90)
-  foreach(test ${TestList})
-    get_filename_component(test_name ${test} NAME_WE)
-    add_executable(${test_name} ${test})
-    add_test(
-      NAME ${test_name}
-      COMMAND ${test_name}
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    target_include_directories(${test_name} PRIVATE ${CMAKE_BINARY_DIR}/mod)
+file(GLOB_RECURSE TestList ${CMAKE_CURRENT_SOURCE_DIR}/fortran/TEST_ftn_*.F90)
+foreach(test ${TestList})
+  get_filename_component(test_name ${test} NAME_WE)
+  add_executable(${test_name} ${test})
+  add_test(
+    NAME ${test_name}
+    COMMAND ${test_name}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  target_include_directories(${test_name} PRIVATE ${CMAKE_BINARY_DIR}/mod)
 
-    target_link_libraries(${test_name} PRIVATE fdate)
-    set_target_properties(
-      ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-                              ${CMAKE_CURRENT_BINARY_DIR}/tests)
-    add_dependencies(${test_name} fdate)
-  endforeach()
-endif()
+  target_link_libraries(${test_name} PRIVATE fdate)
+  set_target_properties(
+    ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+                            ${CMAKE_CURRENT_BINARY_DIR}/tests)
+  add_dependencies(${test_name} fdate)
+endforeach()
 # ##############################################################################
 
 # Now conditionally add fuzzing tests when using Clang
