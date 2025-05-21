@@ -63,37 +63,43 @@ if(Python3_FOUND)
     datetime_ftn_interface PRIVATE fdate fdate::fdate_warnings
                                    fdate::fdate_options)
 
+  set_target_properties(datetime_ftn_interface PROPERTIES LINKER_LANGUAGE
+                                                          Fortran)
+
+  set(FDATE_FUZZ_TEST_DURATION 10)
+
   # Add a test which calls the Python script that runs random tests against
   # python's datetime library
   add_test(
     NAME TEST_cxx_python_fuzz_parse
     COMMAND
       ${Python3_EXECUTABLE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --test-count
-      2000 --test parse --exe ${CMAKE_BINARY_DIR}/tests/datetime_interface
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --timeout
+      ${FDATE_FUZZ_TEST_DURATION} --test parse --exe
+      ${CMAKE_BINARY_DIR}/tests/datetime_interface)
 
   add_test(
     NAME TEST_cxx_python_fuzz_arithmetic
     COMMAND
       ${Python3_EXECUTABLE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --test-count
-      2000 --test arithmetic --exe ${CMAKE_BINARY_DIR}/tests/datetime_interface
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --timeout
+      ${FDATE_FUZZ_TEST_DURATION} --test arithmetic --exe
+      ${CMAKE_BINARY_DIR}/tests/datetime_interface)
 
   add_test(
     NAME TEST_ftn_python_fuzz_parse
     COMMAND
       ${Python3_EXECUTABLE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --test-count
-      2000 --test parse --exe ${CMAKE_BINARY_DIR}/tests/datetime_ftn_interface)
+      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --timeout
+      ${FDATE_FUZZ_TEST_DURATION} --test parse --exe
+      ${CMAKE_BINARY_DIR}/tests/datetime_ftn_interface)
 
   add_test(
     NAME TEST_ftn_python_fuzz_arithmetic
     COMMAND
       ${Python3_EXECUTABLE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --test-count
-      2000 --test arithmetic --exe
+      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --timeout
+      ${FDATE_FUZZ_TEST_DURATION} --test arithmetic --exe
       ${CMAKE_BINARY_DIR}/tests/datetime_ftn_interface)
 
 endif()
@@ -113,6 +119,9 @@ foreach(test ${TestList})
 
   target_link_libraries(${test_name} PRIVATE fdate fdate::fdate_warnings
                                              fdate::fdate_options)
+
+  # Set the linker language to Fortran
+  set_target_properties(${test_name} PROPERTIES LINKER_LANGUAGE Fortran)
 
   set_target_properties(
     ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY

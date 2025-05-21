@@ -89,7 +89,7 @@ end program datetime_examples
 
 ```fortran
 program timespan_examples
-   use mod_datetime
+   use mod_datetime, only: t_timespan, t_datetime, operator(+), operator(-), operator(*), operator(/)
    implicit none
    
    type(t_timespan) :: ts1, ts2, ts_result
@@ -125,7 +125,7 @@ end program timespan_examples
 
 ```fortran
 program date_arithmetic
-   use mod_datetime
+   use mod_datetime, only: t_datetime, t_timespan, operator(+), operator(-), operator(<), operator(>), operator(==)
    implicit none
    
    type(t_datetime) :: meeting_time, deadline, reminder
@@ -165,7 +165,7 @@ end program date_arithmetic
 
 ```fortran
 program string_operations
-   use mod_datetime
+   use mod_datetime, only: t_datetime
    implicit none
    
    type(t_datetime) :: dt, parsed_dt
@@ -184,6 +184,12 @@ program string_operations
    ! ISO 8601 format
    formatted_string = dt%to_iso_string()
    write(*,*) 'ISO format: ', trim(formatted_string)
+   
+   ! Some Custom formats
+   formatted_string = dt%format('%A, %B %d, %Y') ! Full weekday and month names
+   write(*,*) 'Custom format: ', trim(formatted_string)
+   formatted_string = dt%format('%Y-%m-%dT%H:%M:%S',.true.) ! ISO with milliseconds
+   write(*,*) 'ISO with milliseconds: ', trim(formatted_string)
    
    ! Parse from string (assuming you have the parse functionality exposed)
    ! This would require additional wrapper functions for string parsing

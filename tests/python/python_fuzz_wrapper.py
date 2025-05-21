@@ -47,7 +47,24 @@ def random_timedelta() -> timedelta:
 def run_arithmetic_tests(args):
     import subprocess
 
-    for i in range(args.test_count):
+    # If the user has specified a timeout, then the number of tests is effectively infinite
+    test_count = args.test_count if args.timeout is None else int(1e6)
+
+    # To track the timeout, we get the current time and add a timeout to it
+    if args.timeout is not None:
+        timeout_time = datetime.now(tz=timezone.utc) + timedelta(seconds=args.timeout)
+    else:
+        timeout_time = datetime(2050, 1, 1, tzinfo=timezone.utc)
+
+    for i in range(test_count):
+
+        if args.timeout is not None:
+            # Check if the current time has exceeded the timeout
+            current_time = datetime.now(tz=timezone.utc)
+            if current_time > timeout_time:
+                print(f"[INFO] Test timeout ({args.timeout} seconds) reached after {i} tests.")
+                break
+
         random_start_time = random_date()
         random_delta = random_timedelta()
         python_result = random_start_time + random_delta
@@ -115,7 +132,24 @@ def run_parse_tests(args):
         "%Y%m%d",
     ]
 
-    for i in range(args.test_count):
+    # If the user has specified a timeout, then the number of tests is effectively infinite
+    test_count = args.test_count if args.timeout is None else int(1e6)
+
+    # To track the timeout, we get the current time and add a timeout to it
+    if args.timeout is not None:
+        timeout_time = datetime.now(tz=timezone.utc) + timedelta(seconds=args.timeout)
+    else:
+        timeout_time = datetime(2050, 1, 1, tzinfo=timezone.utc)
+
+    for i in range(test_count):
+
+        if args.timeout is not None:
+            # Check if the current time has exceeded the timeout
+            current_time = datetime.now(tz=timezone.utc)
+            if current_time > timeout_time:
+                print(f"[INFO] Test timeout ({args.timeout} seconds) reached after {i} tests.")
+                break
+
         random_datetime = random_date()
         format_str = random.choice(format_strings)
         datetime_str = random_datetime.strftime(format_str)
@@ -159,6 +193,12 @@ def main():
         type=int,
         default=100,
         help="Number of tests to run (default: 100)",
+    )
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=None,
+        help="Timeout for each test in seconds (default: None, no timeout)",
     )
     parser.add_argument(
         "--exe", type=str, required=True, help="Path to the C++ executable"
