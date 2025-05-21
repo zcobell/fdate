@@ -1,12 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
-project(FortranDate)
+project(fdate VERSION 0.0.1)
+include(CPack)
 
-# Add an option for the user where they can select either 17 or 20
-set(FDATE_CXX_STANDARD
-    20
-    CACHE STRING "C++ standard to use" FORCE)
-set_property(CACHE FDATE_CXX_STANDARD PROPERTY STRINGS "17;20")
-set(CMAKE_CXX_STANDARD ${FDATE_CXX_STANDARD})
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_language(CXX)
@@ -25,15 +21,29 @@ fdate_setup_dependencies()
 option(FDATE_ENABLE_FORTRAN "Build Fortran interface" ON)
 
 add_subdirectory(src)
-option(FDATE_BUILD_SHARED "Build shared FDATE library" OFF)
-if(FDATE_BUILD_SHARED)
-  set(FDATE_LIBRARY_TYPE SHARED)
-else()
-  set(FDATE_LIBRARY_TYPE STATIC)
-endif()
+option(FDATE_BUILD_SHARED "Build shared FDATE library" ON)
 
 option(FDATE_ENABLE_TESTING "Enable FDATE testing" OFF)
 if(FDATE_ENABLE_TESTING)
   enable_testing()
   add_subdirectory(tests)
+endif()
+
+# Configure CPack for packaging
+set(CPACK_PACKAGE_NAME "fdate")
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
+set(CPACK_PACKAGE_VENDOR "Zach Cobell")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+
+# Add uninstall target
+if(NOT TARGET uninstall)
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake" IMMEDIATE @ONLY)
+
+  add_custom_target(
+    uninstall COMMAND ${CMAKE_COMMAND} -P
+                      ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 endif()

@@ -8,7 +8,7 @@ on:
 
 jobs:
   unit_testing:
-    name: Build Containers
+    name: Build library
     uses: ./.github/workflows/unit_testing.yaml
   pre_commit:
     name: Pre-commit checks
