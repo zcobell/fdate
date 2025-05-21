@@ -639,4 +639,14 @@ auto f_datetime_greater_equal(const int64_t dt1_ms, const int64_t dt2_ms)
   return dt1_ms >= dt2_ms;
 }
 
+/**
+ * @brief Check if a DateTime is valid
+ *
+ * @param dt_ms DateTime as milliseconds since epoch
+ * @return true if valid, false otherwise
+ */
+auto f_datetime_is_valid(const int64_t dt_ms) -> bool {
+  return dt_ms != DateTime::INVALID_TIMESTAMP;
+}
+
 }  // extern "C"

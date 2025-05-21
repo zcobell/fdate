@@ -57,6 +57,10 @@ class DateTime {
   static constexpr auto INVALID_TIMESTAMP =
       -std::numeric_limits<int64_t>::max();
 
+  /** @brief Constant representing an invalid DateTime object */
+  static constexpr auto INVALID_TIME_POINT =
+      time_point(std::chrono::milliseconds(INVALID_TIMESTAMP));
+
   // Constructors
 
   /**
@@ -520,4 +524,14 @@ class DateTime {
         std::chrono::system_clock::now());
     return DateTime(now_tp);
   }
+
+  /**
+   * @brief Checks if the DateTime is valid (not equal to INVALID_TIME_POINT)
+   *
+   * @return bool True if the DateTime is valid, false otherwise
+   */
+  [[nodiscard]] constexpr auto valid() const noexcept -> bool {
+    return m_tp != INVALID_TIME_POINT;
+  }
+
 };

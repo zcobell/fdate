@@ -94,6 +94,8 @@ module mod_datetime
       procedure :: format => datetime_format
       !> @brief Convert to ISO 8601 string format
       procedure :: to_iso_string => datetime_to_iso_string
+      !> @brief Check if the datetime object is valid
+      procedure :: valid => datetime_is_valid
    end type t_datetime
 
    ! Interface blocks for constructors
@@ -521,6 +523,14 @@ module mod_datetime
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
          logical(c_bool) :: result
       end function f_datetime_greater_equal
+
+      !> @brief Check if a DateTime object is valid
+      function f_datetime_is_valid(dt_ms) result(valid) bind(C, name="f_datetime_is_valid")
+         import :: c_int64_t, c_bool
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         logical(c_bool) :: valid
+      end function f_datetime_is_valid
    end interface
 
 contains
@@ -537,6 +547,7 @@ contains
    !> @param milliseconds Number of milliseconds
    !> @return TimeSpan with the specified duration
    function timespan_components(days, hours, minutes, seconds, milliseconds) result(ts)
+      implicit none
       integer, intent(in), optional :: days, hours, minutes, seconds, milliseconds
       type(t_timespan) :: ts
       integer :: days_int, hours_int, minutes_int, seconds_int, milliseconds_int
@@ -579,6 +590,7 @@ contains
    !> @param this TimeSpan object
    !> @return Days component
    function timespan_days(this) result(days)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(c_int64_t) :: days64
       integer :: days
@@ -590,6 +602,7 @@ contains
    !> @param this TimeSpan object
    !> @return Hours component
    function timespan_hours(this) result(hours)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(c_int64_t) :: hours64
       integer :: hours
@@ -601,6 +614,7 @@ contains
    !> @param this TimeSpan object
    !> @return Minutes component
    function timespan_minutes(this) result(minutes)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(c_int64_t) :: minutes64
       integer :: minutes
@@ -612,6 +626,7 @@ contains
    !> @param this TimeSpan object
    !> @return Seconds component
    function timespan_seconds(this) result(seconds)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(c_int64_t) :: seconds64
       integer :: seconds
@@ -623,6 +638,7 @@ contains
    !> @param this TimeSpan object
    !> @return Milliseconds component
    function timespan_milliseconds(this) result(ms)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(c_int64_t) :: ms64
       integer :: ms
@@ -634,6 +650,7 @@ contains
    !> @param this TimeSpan object
    !> @return Total days
    function timespan_total_days(this) result(days)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(kind=8) :: days
       days = f_timespan_get_total_days(this%ms_count)
@@ -643,6 +660,7 @@ contains
    !> @param this TimeSpan object
    !> @return Total hours
    function timespan_total_hours(this) result(hours)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(kind=8) :: hours
       hours = f_timespan_get_total_hours(this%ms_count)
@@ -652,6 +670,7 @@ contains
    !> @param this TimeSpan object
    !> @return Total minutes
    function timespan_total_minutes(this) result(minutes)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(kind=8) :: minutes
       minutes = f_timespan_get_total_minutes(this%ms_count)
@@ -661,6 +680,7 @@ contains
    !> @param this TimeSpan object
    !> @return Total seconds
    function timespan_total_seconds(this) result(seconds)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(kind=8) :: seconds
       seconds = f_timespan_get_total_seconds(this%ms_count)
@@ -670,6 +690,7 @@ contains
    !> @param this TimeSpan object
    !> @return Total milliseconds
    function timespan_total_milliseconds(this) result(ms)
+      implicit none
       class(t_timespan), intent(in) :: this
       integer(kind=8) :: ms
       ms = this%ms_count
@@ -679,6 +700,7 @@ contains
    !> @param this TimeSpan object
    !> @return String representation of the TimeSpan
    function timespan_to_string(this) result(str)
+      implicit none
       class(t_timespan), intent(in) :: this
       character(len=64) :: str
       character(kind=c_char), dimension(65) :: c_str
@@ -692,6 +714,7 @@ contains
    !> @param ts2 Second TimeSpan
    !> @return Sum of the two TimeSpans
    function timespan_add_timespan(ts1, ts2) result(sum_ts)
+      implicit none
       type(t_timespan), intent(in) :: ts1, ts2
       type(t_timespan) :: sum_ts
 
@@ -703,6 +726,7 @@ contains
    !> @param ts2 Second TimeSpan
    !> @return Difference of the two TimeSpans
    function timespan_subtract_timespan(ts1, ts2) result(diff_ts)
+      implicit none
       type(t_timespan), intent(in) :: ts1, ts2
       type(t_timespan) :: diff_ts
 
@@ -714,6 +738,7 @@ contains
    !> @param factor Multiplication factor
    !> @return Multiplied TimeSpan
    function timespan_multiply(ts, factor) result(product_ts)
+      implicit none
       type(t_timespan), intent(in) :: ts
       integer, intent(in) :: factor
       type(t_timespan) :: product_ts
@@ -726,6 +751,7 @@ contains
    !> @param divisor Division factor
    !> @return Divided TimeSpan
    function timespan_divide(ts, divisor) result(quotient_ts)
+      implicit none
       type(t_timespan), intent(in) :: ts
       integer, intent(in) :: divisor
       type(t_timespan) :: quotient_ts
@@ -738,6 +764,7 @@ contains
    !> @param ts2 Second TimeSpan
    !> @return True if equal, False otherwise
    function timespan_equals(ts1, ts2) result(res)
+      implicit none
       type(t_timespan), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
@@ -751,6 +778,7 @@ contains
    !> @param ts2 Second TimeSpan
    !> @return True if not equal, False otherwise
    function timespan_not_equals(ts1, ts2) result(res)
+      implicit none
       type(t_timespan), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
@@ -764,6 +792,7 @@ contains
    !> @param ts2 Second TimeSpan
    !> @return True if ts1 < ts2, False otherwise
    function timespan_less_than(ts1, ts2) result(res)
+      implicit none
       type(t_timespan), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
@@ -777,6 +806,7 @@ contains
    !> @param ts2 Second TimeSpan
    !> @return True if ts1 > ts2, False otherwise
    function timespan_greater_than(ts1, ts2) result(res)
+      implicit none
       type(t_timespan), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
@@ -790,6 +820,7 @@ contains
    !> @param ts2 Second TimeSpan
    !> @return True if ts1 <= ts2, False otherwise
    function timespan_less_equal(ts1, ts2) result(res)
+      implicit none
       type(t_timespan), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
@@ -803,6 +834,7 @@ contains
    !> @param ts2 Second TimeSpan
    !> @return True if ts1 >= ts2, False otherwise
    function timespan_greater_equal(ts1, ts2) result(res)
+      implicit none
       type(t_timespan), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
@@ -818,6 +850,7 @@ contains
    !> @brief Create a default DateTime (epoch)
    !> @return DateTime at the epoch
    function datetime_default() result(dt)
+      implicit none
       type(t_datetime) :: dt
       dt%timestamp_ms = 0_c_int64_t
    end function datetime_default
@@ -828,6 +861,7 @@ contains
    !> @param day Day (1-31)
    !> @return DateTime with the specified date
    function datetime_ymd(year, month, day) result(dt)
+      implicit none
       integer, intent(in) :: year, month, day
       type(t_datetime) :: dt
 
@@ -843,6 +877,7 @@ contains
    !> @param second Second (0-59)
    !> @return DateTime with the specified date and time
    function datetime_ymd_hms(year, month, day, hour, minute, second) result(dt)
+      implicit none
       integer, intent(in) :: year, month, day, hour, minute, second
       type(t_datetime) :: dt
 
@@ -859,6 +894,7 @@ contains
    !> @param millisecond Millisecond (0-999)
    !> @return DateTime with the specified date and time
    function datetime_complete(year, month, day, hour, minute, second, millisecond) result(dt)
+      implicit none
       integer, intent(in) :: year, month, day, hour, minute, second, millisecond
       type(t_datetime) :: dt
 
@@ -869,6 +905,7 @@ contains
    !> @param timestamp Milliseconds since the epoch
    !> @return DateTime corresponding to the timestamp
    function datetime_from_timestamp(timestamp) result(dt)
+      implicit none
       integer(kind=8), intent(in) :: timestamp
       type(t_datetime) :: dt
 
@@ -918,6 +955,7 @@ contains
    !> @brief Get the current DateTime
    !> @return DateTime representing the current time
    function now() result(dt)
+      implicit none
       type(t_datetime) :: dt
 
       dt%timestamp_ms = f_datetime_now()
@@ -927,6 +965,7 @@ contains
    !> @param this DateTime object
    !> @return Year component
    function datetime_year(this) result(year)
+      implicit none
       class(t_datetime), intent(in) :: this
       integer :: year
 
@@ -937,6 +976,7 @@ contains
    !> @param this DateTime object
    !> @return Month component (1-12)
    function datetime_month(this) result(month)
+      implicit none
       class(t_datetime), intent(in) :: this
       integer :: month
 
@@ -947,6 +987,7 @@ contains
    !> @param this DateTime object
    !> @return Day component (1-31)
    function datetime_day(this) result(day)
+      implicit none
       class(t_datetime), intent(in) :: this
       integer :: day
 
@@ -957,6 +998,7 @@ contains
    !> @param this DateTime object
    !> @return Hour component (0-23)
    function datetime_hour(this) result(hour)
+      implicit none
       class(t_datetime), intent(in) :: this
       integer :: hour
 
@@ -967,6 +1009,7 @@ contains
    !> @param this DateTime object
    !> @return Minute component (0-59)
    function datetime_minute(this) result(minute)
+      implicit none
       class(t_datetime), intent(in) :: this
       integer :: minute
 
@@ -977,6 +1020,7 @@ contains
    !> @param this DateTime object
    !> @return Second component (0-59)
    function datetime_second(this) result(second)
+      implicit none
       class(t_datetime), intent(in) :: this
       integer :: second
 
@@ -987,6 +1031,7 @@ contains
    !> @param this DateTime object
    !> @return Millisecond component (0-999)
    function datetime_millisecond(this) result(ms)
+      implicit none
       class(t_datetime), intent(in) :: this
       integer :: ms
 
@@ -997,6 +1042,7 @@ contains
    !> @param this DateTime object
    !> @return Timestamp (milliseconds since epoch)
    function datetime_timestamp(this) result(timestamp)
+      implicit none
       class(t_datetime), intent(in) :: this
       integer(kind=8) :: timestamp
 
@@ -1008,6 +1054,7 @@ contains
    !> @param format Format specification (similar to strftime)
    !> @return String representation of the DateTime
    function datetime_format(this, date_format, show_milliseconds) result(str)
+      implicit none
       class(t_datetime), intent(in) :: this
       character(len=*), intent(in) :: date_format
       logical, intent(in), optional :: show_milliseconds
@@ -1044,6 +1091,7 @@ contains
    !> @param msec Flag to include milliseconds in the output
    !> @return ISO 8601 string representation of the DateTime
    function datetime_to_iso_string(this, msec) result(str)
+      implicit none
       class(t_datetime), intent(in) :: this
       character(len=64) :: str
       logical, intent(in), optional :: msec
@@ -1070,6 +1118,7 @@ contains
    !> @param ts TimeSpan
    !> @return DateTime resulting from the addition
    function datetime_add_timespan(dt, ts) result(result_dt)
+      implicit none
       type(t_datetime), intent(in) :: dt
       type(t_timespan), intent(in) :: ts
       type(t_datetime) :: result_dt
@@ -1082,6 +1131,7 @@ contains
    !> @param ts TimeSpan
    !> @return DateTime resulting from the subtraction
    function datetime_subtract_timespan(dt, ts) result(result_dt)
+      implicit none
       type(t_datetime), intent(in) :: dt
       type(t_timespan), intent(in) :: ts
       type(t_datetime) :: result_dt
@@ -1094,6 +1144,7 @@ contains
    !> @param dt2 Second DateTime
    !> @return TimeSpan representing the difference
    function datetime_difference(dt1, dt2) result(ts)
+      implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       type(t_timespan) :: ts
 
@@ -1105,6 +1156,7 @@ contains
    !> @param dt2 Second DateTime
    !> @return True if equal, False otherwise
    function datetime_equals(dt1, dt2) result(res)
+      implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
       logical :: res
@@ -1118,6 +1170,7 @@ contains
    !> @param dt2 Second DateTime
    !> @return True if not equal, False otherwise
    function datetime_not_equals(dt1, dt2) result(res)
+      implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
       logical :: res
@@ -1131,6 +1184,7 @@ contains
    !> @param dt2 Second DateTime
    !> @return True if dt1 < dt2, False otherwise
    function datetime_less_than(dt1, dt2) result(res)
+      implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
       logical :: res
@@ -1144,6 +1198,7 @@ contains
    !> @param dt2 Second DateTime
    !> @return True if dt1 > dt2, False otherwise
    function datetime_greater_than(dt1, dt2) result(res)
+      implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
       logical :: res
@@ -1157,6 +1212,7 @@ contains
    !> @param dt2 Second DateTime
    !> @return True if dt1 <= dt2, False otherwise
    function datetime_less_equal(dt1, dt2) result(res)
+      implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
       logical :: res
@@ -1170,6 +1226,7 @@ contains
    !> @param dt2 Second DateTime
    !> @return True if dt1 >= dt2, False otherwise
    function datetime_greater_equal(dt1, dt2) result(res)
+      implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
       logical :: res
@@ -1178,10 +1235,24 @@ contains
       res = logical(res_t, 4)
    end function datetime_greater_equal
 
+   !> @brief Check if a given datetime object is valid
+   !> @param dt DateTime object
+   !> @return True if valid, False otherwise
+   function datetime_is_valid(dt) result(is_valid)
+      implicit none
+      class(t_datetime), intent(in) :: dt
+      logical :: is_valid
+      logical(c_bool) :: is_valid_c
+
+      is_valid_c = f_datetime_is_valid(dt%timestamp_ms)
+      is_valid = logical(is_valid_c, 4)
+   end function datetime_is_valid
+
    !> @brief Helper function to convert C string to Fortran string
    !> @param c_string C string
    !> @param f_string Fortran string
    subroutine c_f_string(c_string, f_string)
+      implicit none
       character(kind=c_char), dimension(65), intent(in) :: c_string
       character(len=64), intent(out) :: f_string
       integer :: i

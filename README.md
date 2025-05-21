@@ -191,9 +191,16 @@ program string_operations
    formatted_string = dt%format('%Y-%m-%dT%H:%M:%S',.true.) ! ISO with milliseconds
    write(*,*) 'ISO with milliseconds: ', trim(formatted_string)
    
-   ! Parse from string (assuming you have the parse functionality exposed)
-   ! This would require additional wrapper functions for string parsing
-   ! parsed_dt = t_datetime('2024-03-14 09:26:53', '%Y-%m-%d %H:%M:%S')
+   ! Parse a date string
+   parsed_dt = t_datetime('2024-03-14 09:26:53', 'auto') ! Note, 'auto' as a format string is provided 
+                                                         ! as a default if no format is specified 
+  
+   ! Check if parsing was successful
+   if (parsed_dt%valid()) then
+       write(*,*) 'Parsed date: ', parsed_dt%format('%Y-%m-%d %H:%M:%S')
+   else
+       write(*,*) 'Failed to parse date string'
+   end if
    
 end program string_operations
 ```
