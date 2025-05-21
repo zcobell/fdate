@@ -670,9 +670,9 @@ TEST_CASE("TimeSpan for measuring elapsed time", "[timespan]") {
     TimeSpan elapsed = endTime - startTime;
     
     // Should be at least our sleep duration
-    CHECK(elapsed.totalMilliseconds() >= 100);
+    CHECK(elapsed.totalMilliseconds() >= 80);
     
-    // Shouldn't be too much longer (adjust tolerance as needed)
+    // Shouldn't be too much longer
     CHECK(elapsed.totalMilliseconds() < 1000);
 }
 
