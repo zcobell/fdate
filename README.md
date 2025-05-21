@@ -1,4 +1,8 @@
 # FDate Library
+[![CI](https://github.com/zcobell/fdate/actions/workflows/push.yaml/badge.svg)](https://github.com/zcobell/fdate/actions/workflows/push.yaml)
+[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-yellow.svg)](https://opensource.org/licenses/GPL-3.0)
+[![CMake](https://img.shields.io/badge/CMake-3.14%2B-blue.svg)](https://cmake.org/)
+[![Fortran](https://img.shields.io/badge/Fortran-2008%2B-blue.svg)](https://fortran-lang.org/)
 
 A modern datetime library for Fortran that provides comprehensive date and time manipulation capabilities through a clean Fortran interface built on top of Howard Hinnant's acclaimed date library.
 
@@ -43,9 +47,12 @@ The library uses a design where both `t_DateTime` and `t_TimeSpan` objects are r
 ### Building
 ```bash
 mkdir build && cd build
-cmake ..
-make
+cmake .. -DCMAKE_INSTALL_PREFIX=/path/to/install
+make && make install
 ```
+This will build a shared library and place it at the specified installation location. From there, you
+can use it in your Fortran projects by linking against the installed library and including the Fortran 
+module file in the installed include directory.
 
 ### CMake Options
 - `FDATE_BUILD_SHARED`: Build shared library (default: OFF)
