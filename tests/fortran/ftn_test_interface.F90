@@ -1,6 +1,6 @@
 
 module test_fortran_datetime
-   use mod_datetime, only: t_datetime, t_timespan, operator(+)
+   use mod_datetime, only: t_datetime, t_timedelta, operator(+)
    implicit none
 
    public
@@ -24,10 +24,10 @@ contains
       character(len=*), intent(in) :: date_string
       integer, intent(in) :: days, hours, minutes, seconds
       type(t_datetime) :: dt
-      type(t_timespan) :: ts
+      type(t_timedelta) :: ts
 
       dt = t_datetime(date_string)
-      ts = t_timespan(days, hours, minutes, seconds)
+      ts = t_timedelta(days, hours, minutes, seconds)
       dt = dt + ts
       write (*, *) dt%format("%Y-%m-%dT%H:%M:%S")
 

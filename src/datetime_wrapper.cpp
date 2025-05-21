@@ -26,284 +26,286 @@
 extern "C" {
 
 //=============================================================================
-// TimeSpan functions
+// TimeDelta functions
 //=============================================================================
 
 /**
- * @brief Create a TimeSpan from days, hours, minutes, seconds, and milliseconds
+ * @brief Create a TimeDelta from days, hours, minutes, seconds, and
+ * milliseconds
  *
  * @param days Number of days
  * @param hours Number of hours
  * @param minutes Number of minutes
  * @param seconds Number of seconds
  * @param milliseconds Number of milliseconds
- * @return int64_t Total milliseconds representation of the TimeSpan
+ * @return int64_t Total milliseconds representation of the TimeDelta
  */
-auto f_timespan_create(int days, int hours, int minutes, int seconds,
-                       int milliseconds) -> int64_t {
-  const TimeSpan time_span(days, hours, minutes, seconds, milliseconds);
-  return time_span.totalMilliseconds();
+auto f_timedelta_create(int days, int hours, int minutes, int seconds,
+                        int milliseconds) -> int64_t {
+  const TimeDelta time_delta(days, hours, minutes, seconds, milliseconds);
+  return time_delta.totalMilliseconds();
 }
 
 /**
- * @brief Create a TimeSpan from a number of days
+ * @brief Create a TimeDelta from a number of days
  *
  * @param days Number of days
- * @return int64_t Total milliseconds representation of the TimeSpan
+ * @return int64_t Total milliseconds representation of the TimeDelta
  */
-auto f_timespan_from_days(const int64_t days) -> int64_t {
-  return TimeSpan::fromDays(days).totalMilliseconds();
+auto f_timedelta_from_days(const int64_t days) -> int64_t {
+  return TimeDelta::fromDays(days).totalMilliseconds();
 }
 
 /**
- * @brief Create a TimeSpan from a number of hours
+ * @brief Create a TimeDelta from a number of hours
  *
  * @param hours Number of hours
- * @return int64_t Total milliseconds representation of the TimeSpan
+ * @return int64_t Total milliseconds representation of the TimeDelta
  */
-auto f_timespan_from_hours(const int64_t hours) -> int64_t {
-  return TimeSpan::fromHours(hours).totalMilliseconds();
+auto f_timedelta_from_hours(const int64_t hours) -> int64_t {
+  return TimeDelta::fromHours(hours).totalMilliseconds();
 }
 
 /**
- * @brief Create a TimeSpan from a number of minutes
+ * @brief Create a TimeDelta from a number of minutes
  *
  * @param minutes Number of minutes
- * @return int64_t Total milliseconds representation of the TimeSpan
+ * @return int64_t Total milliseconds representation of the TimeDelta
  */
-auto f_timespan_from_minutes(const int64_t minutes) -> int64_t {
-  return TimeSpan::fromMinutes(minutes).totalMilliseconds();
+auto f_timedelta_from_minutes(const int64_t minutes) -> int64_t {
+  return TimeDelta::fromMinutes(minutes).totalMilliseconds();
 }
 
 /**
- * @brief Create a TimeSpan from a number of seconds
+ * @brief Create a TimeDelta from a number of seconds
  *
  * @param seconds Number of seconds
- * @return int64_t Total milliseconds representation of the TimeSpan
+ * @return int64_t Total milliseconds representation of the TimeDelta
  */
-auto f_timespan_from_seconds(const int64_t seconds) -> int64_t {
-  return TimeSpan::fromSeconds(seconds).totalMilliseconds();
+auto f_timedelta_from_seconds(const int64_t seconds) -> int64_t {
+  return TimeDelta::fromSeconds(seconds).totalMilliseconds();
 }
 
 /**
- * @brief Create a TimeSpan from a number of milliseconds
+ * @brief Create a TimeDelta from a number of milliseconds
  *
  * @param milliseconds Number of milliseconds
- * @return int64_t Total milliseconds representation of the TimeSpan
+ * @return int64_t Total milliseconds representation of the TimeDelta
  */
-auto f_timespan_from_milliseconds(const int64_t milliseconds) -> int64_t {
-  return TimeSpan::fromMilliseconds(milliseconds).totalMilliseconds();
+auto f_timedelta_from_milliseconds(const int64_t milliseconds) -> int64_t {
+  return TimeDelta::fromMilliseconds(milliseconds).totalMilliseconds();
 }
 
 /**
- * @brief Get the days component from a TimeSpan
+ * @brief Get the days component from a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int Days component
  */
-auto f_timespan_get_days(const int64_t ts_ms) -> int64_t {
-  return TimeSpan::to_components(ts_ms).days;
+auto f_timedelta_get_days(const int64_t ts_ms) -> int64_t {
+  return TimeDelta::to_components(ts_ms).days;
 }
 
 /**
- * @brief Get the hours component from a TimeSpan
+ * @brief Get the hours component from a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int Hours component
  */
-auto f_timespan_get_hours(const int64_t ts_ms) -> int64_t {
-  return TimeSpan::to_components(ts_ms).hours;
+auto f_timedelta_get_hours(const int64_t ts_ms) -> int64_t {
+  return TimeDelta::to_components(ts_ms).hours;
   ;
 }
 
 /**
- * @brief Get the minute component from a TimeSpan
+ * @brief Get the minute component from a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int Minutes component
  */
-auto f_timespan_get_minutes(const int64_t ts_ms) -> int64_t {
-  return TimeSpan::to_components(ts_ms).minutes;
+auto f_timedelta_get_minutes(const int64_t ts_ms) -> int64_t {
+  return TimeDelta::to_components(ts_ms).minutes;
 }
 
 /**
- * @brief Get the second component from a TimeSpan
+ * @brief Get the second component from a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int Seconds component
  */
-auto f_timespan_get_seconds(const int64_t ts_ms) -> int64_t {
-  return TimeSpan::to_components(ts_ms).seconds;
+auto f_timedelta_get_seconds(const int64_t ts_ms) -> int64_t {
+  return TimeDelta::to_components(ts_ms).seconds;
 }
 
 /**
- * @brief Get the millisecond component from a TimeSpan
+ * @brief Get the millisecond component from a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int Milliseconds component
  */
-auto f_timespan_get_milliseconds(const int64_t ts_ms) -> int64_t {
-  return TimeSpan::to_components(ts_ms).milliseconds;
+auto f_timedelta_get_milliseconds(const int64_t ts_ms) -> int64_t {
+  return TimeDelta::to_components(ts_ms).milliseconds;
 }
 
 /**
- * @brief Get the total days representation of a TimeSpan
+ * @brief Get the total days representation of a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int64_t Total days
  */
-auto f_timespan_get_total_days(const int64_t ts_ms) -> int64_t {
-  const TimeSpan time_span(TimeSpan::to_components(ts_ms));
-  return time_span.totalDays();
+auto f_timedelta_get_total_days(const int64_t ts_ms) -> int64_t {
+  const TimeDelta time_delta(TimeDelta::to_components(ts_ms));
+  return time_delta.totalDays();
 }
 
 /**
- * @brief Get the total hours representation of a TimeSpan
+ * @brief Get the total hours representation of a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int64_t Total hours
  */
-auto f_timespan_get_total_hours(const int64_t ts_ms) -> int64_t {
-  const TimeSpan time_span(TimeSpan::to_components(ts_ms));
-  return time_span.totalHours();
+auto f_timedelta_get_total_hours(const int64_t ts_ms) -> int64_t {
+  const TimeDelta time_delta(TimeDelta::to_components(ts_ms));
+  return time_delta.totalHours();
 }
 
 /**
- * @brief Get the total minutes representation of a TimeSpan
+ * @brief Get the total minutes representation of a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int64_t Total minutes
  */
-auto f_timespan_get_total_minutes(const int64_t ts_ms) -> int64_t {
-  const TimeSpan time_span(TimeSpan::to_components(ts_ms));
-  return time_span.totalMinutes();
+auto f_timedelta_get_total_minutes(const int64_t ts_ms) -> int64_t {
+  const TimeDelta time_delta(TimeDelta::to_components(ts_ms));
+  return time_delta.totalMinutes();
 }
 
 /**
- * @brief Get the total seconds representation of a TimeSpan
+ * @brief Get the total seconds representation of a TimeDelta
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int64_t Total seconds
  */
-auto f_timespan_get_total_seconds(const int64_t ts_ms) -> int64_t {
-  const TimeSpan time_span(TimeSpan::to_components(ts_ms));
-  return time_span.totalSeconds();
+auto f_timedelta_get_total_seconds(const int64_t ts_ms) -> int64_t {
+  const TimeDelta time_delta(TimeDelta::to_components(ts_ms));
+  return time_delta.totalSeconds();
 }
 
 /**
- * @brief Add two TimeSpans together
+ * @brief Add two TimeDeltas together
  *
- * @param ts1_ms First TimeSpan as milliseconds
- * @param ts2_ms Second TimeSpan as milliseconds
- * @return int64_t Resulting TimeSpan as milliseconds
+ * @param ts1_ms First TimeDelta as milliseconds
+ * @param ts2_ms Second TimeDelta as milliseconds
+ * @return int64_t Resulting TimeDelta as milliseconds
  */
-auto f_timespan_add(const int64_t ts1_ms, const int64_t ts2_ms) -> int64_t {
+auto f_timedelta_add(const int64_t ts1_ms, const int64_t ts2_ms) -> int64_t {
   return ts1_ms + ts2_ms;
 }
 
 /**
- * @brief Subtract one TimeSpan from another
+ * @brief Subtract one TimeDelta from another
  *
- * @param ts1_ms First TimeSpan as milliseconds
- * @param ts2_ms Second TimeSpan as milliseconds
- * @return int64_t Resulting TimeSpan as milliseconds
+ * @param ts1_ms First TimeDelta as milliseconds
+ * @param ts2_ms Second TimeDelta as milliseconds
+ * @return int64_t Resulting TimeDelta as milliseconds
  */
-auto f_timespan_subtract(const int64_t ts1_ms, const int64_t ts2_ms)
+auto f_timedelta_subtract(const int64_t ts1_ms, const int64_t ts2_ms)
     -> int64_t {
   return ts1_ms - ts2_ms;
 }
 
 /**
- * @brief Multiply a TimeSpan by a factor
+ * @brief Multiply a TimeDelta by a factor
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @param factor Multiplication factor
- * @return int64_t Resulting TimeSpan as milliseconds
+ * @return int64_t Resulting TimeDelta as milliseconds
  */
-auto f_timespan_multiply(const int64_t ts_ms, const int factor) -> int64_t {
+auto f_timedelta_multiply(const int64_t ts_ms, const int factor) -> int64_t {
   return ts_ms * static_cast<int64_t>(factor);
 }
 
 /**
- * @brief Divide a TimeSpan by a divisor
+ * @brief Divide a TimeDelta by a divisor
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @param divisor Division factor
- * @return int64_t Resulting TimeSpan as milliseconds
+ * @return int64_t Resulting TimeDelta as milliseconds
  */
-auto f_timespan_divide(const int64_t ts_ms, const int divisor) -> int64_t {
+auto f_timedelta_divide(const int64_t ts_ms, const int divisor) -> int64_t {
   return ts_ms / static_cast<int64_t>(divisor);
 }
 
 /**
- * @brief Convert a TimeSpan to a string representation
+ * @brief Convert a TimeDelta to a string representation
  *
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @param buffer Output buffer for the string
  * @param buffer_size Size of the output buffer
  */
-void f_timespan_to_string(const int64_t ts_ms, char* buffer,
-                          const int buffer_size) {
-  const TimeSpan time_span(TimeSpan::to_components(ts_ms));
-  const std::string str = time_span.toString();
+void f_timedelta_to_string(const int64_t ts_ms, char* buffer,
+                           const int buffer_size) {
+  const TimeDelta time_delta(TimeDelta::to_components(ts_ms));
+  const std::string str = time_delta.toString();
   const auto buffer_size_t = static_cast<size_t>(buffer_size - 1);
   strncpy(buffer, str.c_str(), buffer_size_t);
   buffer[buffer_size - 1] = '\0';
 }
 
 /**
- * @brief Compare two TimeSpans for equality
+ * @brief Compare two TimeDeltas for equality
  *
- * @param ts1_ms First TimeSpan as milliseconds
- * @param ts2_ms Second TimeSpan as milliseconds
+ * @param ts1_ms First TimeDelta as milliseconds
+ * @param ts2_ms Second TimeDelta as milliseconds
  * @return true if equal, false otherwise
  */
-auto f_timespan_equals(const int64_t ts1_ms, const int64_t ts2_ms) -> bool {
+auto f_timedelta_equals(const int64_t ts1_ms, const int64_t ts2_ms) -> bool {
   return ts1_ms == ts2_ms;
 }
 
 /**
- * @brief Check if one TimeSpan is less than another
+ * @brief Check if one TimeDelta is less than another
  *
- * @param ts1_ms First TimeSpan as milliseconds
- * @param ts2_ms Second TimeSpan as milliseconds
+ * @param ts1_ms First TimeDelta as milliseconds
+ * @param ts2_ms Second TimeDelta as milliseconds
  * @return true if ts1 < ts2, false otherwise
  */
-auto f_timespan_less_than(const int64_t ts1_ms, const int64_t ts2_ms) -> bool {
+auto f_timedelta_less_than(const int64_t ts1_ms, const int64_t ts2_ms) -> bool {
   return ts1_ms < ts2_ms;
 }
 
 /**
- * @brief Check if one TimeSpan is greater than another
+ * @brief Check if one TimeDelta is greater than another
  *
- * @param ts1_ms First TimeSpan as milliseconds
- * @param ts2_ms Second TimeSpan as milliseconds
+ * @param ts1_ms First TimeDelta as milliseconds
+ * @param ts2_ms Second TimeDelta as milliseconds
  * @return true if ts1 > ts2, false otherwise
  */
-auto f_timespan_greater_than(const int64_t ts1_ms, const int64_t ts2_ms)
+auto f_timedelta_greater_than(const int64_t ts1_ms, const int64_t ts2_ms)
     -> bool {
   return ts1_ms > ts2_ms;
 }
 
 /**
- * @brief Check if one TimeSpan is less than or equal to another
+ * @brief Check if one TimeDelta is less than or equal to another
  *
- * @param ts1_ms First TimeSpan as milliseconds
- * @param ts2_ms Second TimeSpan as milliseconds
+ * @param ts1_ms First TimeDelta as milliseconds
+ * @param ts2_ms Second TimeDelta as milliseconds
  * @return int 1 if ts1 <= ts2, 0 otherwise
  */
-auto f_timespan_less_equal(const int64_t ts1_ms, const int64_t ts2_ms) -> int {
+auto f_timedelta_less_equal(const int64_t ts1_ms, const int64_t ts2_ms) -> int {
   return ts1_ms <= ts2_ms ? 1 : 0;
 }
 
 /**
- * @brief Check if one TimeSpan is greater than or equal to another
+ * @brief Check if one TimeDelta is greater than or equal to another
  *
- * @param ts1_ms First TimeSpan as milliseconds
- * @param ts2_ms Second TimeSpan as milliseconds
+ * @param ts1_ms First TimeDelta as milliseconds
+ * @param ts2_ms Second TimeDelta as milliseconds
  * @return int 1 if ts1 >= ts2, 0 otherwise
  */
-auto f_timespan_greater_equal(const int64_t ts1_ms, const int64_t ts2_ms) -> int {
+auto f_timedelta_greater_equal(const int64_t ts1_ms, const int64_t ts2_ms)
+    -> int {
   return ts1_ms >= ts2_ms ? 1 : 0;
 }
 
@@ -465,31 +467,31 @@ auto f_datetime_get_millisecond(const int64_t dt_ms) -> int64_t {
 }
 
 /**
- * @brief Add a TimeSpan to a DateTime
+ * @brief Add a TimeDelta to a DateTime
  *
  * @param dt_ms DateTime as milliseconds since epoch
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int64_t Resulting DateTime as milliseconds since epoch
  */
-auto f_datetime_add_timespan(const int64_t dt_ms, const int64_t ts_ms)
+auto f_datetime_add_timedelta(const int64_t dt_ms, const int64_t ts_ms)
     -> int64_t {
   const DateTime date(dt_ms);
-  const TimeSpan time_span(TimeSpan::to_components(ts_ms));
-  return (date + time_span).timestamp();
+  const TimeDelta time_delta(TimeDelta::to_components(ts_ms));
+  return (date + time_delta).timestamp();
 }
 
 /**
- * @brief Subtract a TimeSpan from a DateTime
+ * @brief Subtract a TimeDelta from a DateTime
  *
  * @param dt_ms DateTime as milliseconds since epoch
- * @param ts_ms TimeSpan as milliseconds
+ * @param ts_ms TimeDelta as milliseconds
  * @return int64_t Resulting DateTime as milliseconds since epoch
  */
-auto f_datetime_subtract_timespan(const int64_t dt_ms, const int64_t ts_ms)
+auto f_datetime_subtract_timedelta(const int64_t dt_ms, const int64_t ts_ms)
     -> int64_t {
   const DateTime date(dt_ms);
-  const TimeSpan time_span(TimeSpan::to_components(ts_ms));
-  return (date - time_span).timestamp();
+  const TimeDelta time_delta(TimeDelta::to_components(ts_ms));
+  return (date - time_delta).timestamp();
 }
 
 /**
@@ -497,7 +499,7 @@ auto f_datetime_subtract_timespan(const int64_t dt_ms, const int64_t ts_ms)
  *
  * @param dt1_ms First DateTime as milliseconds since epoch
  * @param dt2_ms Second DateTime as milliseconds since epoch
- * @return int64_t Resulting TimeSpan as milliseconds
+ * @return int64_t Resulting TimeDelta as milliseconds
  */
 auto f_datetime_difference(const int64_t dt1_ms, const int64_t dt2_ms)
     -> int64_t {
@@ -568,7 +570,6 @@ void f_datetime_format_milliseconds(const int64_t dt_ms, const char* format,
  */
 void f_datetime_to_iso_string(const int64_t dt_ms, char* buffer,
                               const int buffer_size) {
-
   if (buffer_size <= 0) {
     std::cerr << "Invalid buffer size\n";
     return;

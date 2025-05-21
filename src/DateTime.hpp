@@ -25,7 +25,7 @@
 #include <sstream>
 #include <string>
 
-#include "TimeSpan.hpp"
+#include "TimeDelta.hpp"
 #include "date_hh.h"
 
 /**
@@ -34,14 +34,14 @@
  * The DateTime class provides a comprehensive interface for date and time
  * operations with millisecond precision. It supports parsing from multiple
  * string formats, formatting to various output formats, and arithmetic
- * operations with TimeSpan objects.
+ * operations with TimeDelta objects.
  *
  * The class uses std::chrono internally for time calculations and the Howard
  * Hinnant date library for parsing and formatting operations.
  *
  * @note All timestamps are stored as milliseconds since the Unix epoch
  * (1970-01-01 00:00:00 UTC)
- * @see TimeSpan for time duration operations
+ * @see TimeDelta for time duration operations
  */
 class DateTime {
  private:
@@ -398,29 +398,29 @@ class DateTime {
     return m_tp;
   }
 
-  // TimeSpan operations
+  // TimeDelta operations
 
   /**
-   * @brief Adds a TimeSpan to this DateTime
+   * @brief Adds a TimeDelta to this DateTime
    *
-   * @param span The TimeSpan to add
+   * @param span The TimeDelta to add
    * @return DateTime A new DateTime representing this time plus the span
    *
-   * @see operator-(const TimeSpan&) for subtraction
+   * @see operator-(const TimeDelta&) for subtraction
    */
-  constexpr auto operator+(const TimeSpan& span) const noexcept -> DateTime {
+  constexpr auto operator+(const TimeDelta& span) const noexcept -> DateTime {
     return DateTime(m_tp + span.duration());
   }
 
   /**
-   * @brief Subtracts a TimeSpan from this DateTime
+   * @brief Subtracts a TimeDelta from this DateTime
    *
-   * @param span The TimeSpan to subtract
+   * @param span The TimeDelta to subtract
    * @return DateTime A new DateTime representing this time minus the span
    *
-   * @see operator+(const TimeSpan&) for addition
+   * @see operator+(const TimeDelta&) for addition
    */
-  constexpr auto operator-(const TimeSpan& span) const noexcept -> DateTime {
+  constexpr auto operator-(const TimeDelta& span) const noexcept -> DateTime {
     return DateTime(m_tp - span.duration());
   }
 
@@ -428,13 +428,13 @@ class DateTime {
    * @brief Calculates the time difference between two DateTimes
    *
    * @param other The DateTime to subtract from this one
-   * @return TimeSpan The time difference (this - other)
+   * @return TimeDelta The time difference (this - other)
    *
    * @note If other is later than this DateTime, the result will be negative
    */
-  constexpr auto operator-(const DateTime& other) const noexcept -> TimeSpan {
+  constexpr auto operator-(const DateTime& other) const noexcept -> TimeDelta {
     const auto dt_diff = m_tp - other.m_tp;
-    return TimeSpan::fromMilliseconds(dt_diff.count());
+    return TimeDelta::fromMilliseconds(dt_diff.count());
   }
 
   // Comparison operators
@@ -533,5 +533,4 @@ class DateTime {
   [[nodiscard]] constexpr auto valid() const noexcept -> bool {
     return m_tp != INVALID_TIME_POINT;
   }
-
 };

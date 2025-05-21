@@ -19,7 +19,7 @@
 !> @brief Fortran module for datetime handling
 !>
 !> This module provides a Fortran interface to the C++ datetime library.
-!> It defines two derived types, TimeSpan and DateTime, which are implemented
+!> It defines two derived types, TimeDelta and DateTime, which are implemented
 !> using 64-bit integers representing milliseconds. This approach avoids
 !> memory management issues while providing a clean Fortran API.
 
@@ -28,42 +28,42 @@ module mod_datetime
    implicit none
 
    private
-   public :: t_timespan, t_datetime, now
+   public :: t_timedelta, t_datetime, now
    public :: operator(+), operator(-), operator(*), operator(/), operator(==), &
              operator(/=), operator(<), operator(>), operator(<=), operator(>=)
 
    !> @brief A span of time with various components
    !>
-   !> TimeSpan represents a duration that can be expressed in terms of days,
+   !> TimeDelta represents a duration that can be expressed in terms of days,
    !> hours, minutes, seconds, and milliseconds. It is stored internally as
    !> an integer number of milliseconds.
-   type :: t_timespan
+   type :: t_timedelta
       private
-      integer(kind=c_int64_t) :: ms_count !< Total milliseconds in the timespan
+      integer(kind=c_int64_t) :: ms_count !< Total milliseconds in the timedelta
    contains
       !> @brief Get the days component
-      procedure :: days => timespan_days
+      procedure :: days => timedelta_days
       !> @brief Get the hours component
-      procedure :: hours => timespan_hours
+      procedure :: hours => timedelta_hours
       !> @brief Get the minutes component
-      procedure :: minutes => timespan_minutes
+      procedure :: minutes => timedelta_minutes
       !> @brief Get the seconds component
-      procedure :: seconds => timespan_seconds
+      procedure :: seconds => timedelta_seconds
       !> @brief Get the milliseconds component
-      procedure :: milliseconds => timespan_milliseconds
+      procedure :: milliseconds => timedelta_milliseconds
       !> @brief Get the total days
-      procedure :: total_days => timespan_total_days
+      procedure :: total_days => timedelta_total_days
       !> @brief Get the total hours
-      procedure :: total_hours => timespan_total_hours
+      procedure :: total_hours => timedelta_total_hours
       !> @brief Get the total minutes
-      procedure :: total_minutes => timespan_total_minutes
+      procedure :: total_minutes => timedelta_total_minutes
       !> @brief Get the total seconds
-      procedure :: total_seconds => timespan_total_seconds
+      procedure :: total_seconds => timedelta_total_seconds
       !> @brief Get the total milliseconds
-      procedure :: total_milliseconds => timespan_total_milliseconds
+      procedure :: total_milliseconds => timedelta_total_milliseconds
       !> @brief Convert to a string representation
-      procedure :: to_string => timespan_to_string
-   end type t_timespan
+      procedure :: to_string => timedelta_to_string
+   end type t_timedelta
 
    !> @brief A point in time
    !>
@@ -99,10 +99,10 @@ module mod_datetime
    end type t_datetime
 
    ! Interface blocks for constructors
-   !> @brief Constructor interface for timespan
-   interface t_timespan
-      module procedure :: timespan_components
-   end interface t_timespan
+   !> @brief Constructor interface for timedelta
+   interface t_timedelta
+      module procedure :: timedelta_components
+   end interface t_timedelta
 
    !> @brief Constructor interface for datetime
    interface t_datetime
@@ -118,228 +118,228 @@ module mod_datetime
    ! Operator interfaces
    !> @brief Addition operator
    interface operator(+)
-      module procedure :: timespan_add_timespan
-      module procedure :: datetime_add_timespan
+      module procedure :: timedelta_add_timedelta
+      module procedure :: datetime_add_timedelta
    end interface operator(+)
 
    !> @brief Subtraction operator
    interface operator(-)
-      module procedure :: timespan_subtract_timespan
-      module procedure :: datetime_subtract_timespan
+      module procedure :: timedelta_subtract_timedelta
+      module procedure :: datetime_subtract_timedelta
       module procedure :: datetime_difference
    end interface operator(-)
 
    !> @brief Multiplication operator
    interface operator(*)
-      module procedure :: timespan_multiply
+      module procedure :: timedelta_multiply
    end interface operator(*)
 
    !> @brief Division operator
    interface operator(/)
-      module procedure :: timespan_divide
+      module procedure :: timedelta_divide
    end interface operator(/)
 
    !> @brief Equality operator
    interface operator(==)
-      module procedure :: timespan_equals
+      module procedure :: timedelta_equals
       module procedure :: datetime_equals
    end interface operator(==)
 
    !> @brief Inequality operator
    interface operator(/=)
-      module procedure :: timespan_not_equals
+      module procedure :: timedelta_not_equals
       module procedure :: datetime_not_equals
    end interface operator(/=)
 
    !> @brief Less than operator
    interface operator(<)
-      module procedure :: timespan_less_than
+      module procedure :: timedelta_less_than
       module procedure :: datetime_less_than
    end interface operator(<)
 
    !> @brief Greater than operator
    interface operator(>)
-      module procedure :: timespan_greater_than
+      module procedure :: timedelta_greater_than
       module procedure :: datetime_greater_than
    end interface operator(>)
 
    !> @brief Less than or equal operator
    interface operator(<=)
-      module procedure :: timespan_less_equal
+      module procedure :: timedelta_less_equal
       module procedure :: datetime_less_equal
    end interface operator(<=)
 
    !> @brief Greater than or equal operator
    interface operator(>=)
-      module procedure :: timespan_greater_equal
+      module procedure :: timedelta_greater_equal
       module procedure :: datetime_greater_equal
    end interface operator(>=)
 
    ! C function interfaces
    interface
-      !> @brief Create a TimeSpan with components
-      function f_timespan_create(days, hours, minutes, seconds, milliseconds) &
-         result(ts_ms) bind(C, name="f_timespan_create")
+      !> @brief Create a TimeDelta with components
+      function f_timedelta_create(days, hours, minutes, seconds, milliseconds) &
+         result(ts_ms) bind(C, name="f_timedelta_create")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int), intent(in), value :: days, hours, minutes, seconds, milliseconds
          integer(c_int64_t) :: ts_ms
-      end function f_timespan_create
+      end function f_timedelta_create
 
-      !> @brief Get days component from a TimeSpan
-      function f_timespan_get_days(ts_ms) result(days) bind(C, name="f_timespan_get_days")
+      !> @brief Get days component from a TimeDelta
+      function f_timedelta_get_days(ts_ms) result(days) bind(C, name="f_timedelta_get_days")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: days
-      end function f_timespan_get_days
+      end function f_timedelta_get_days
 
-      !> @brief Get hours component from a TimeSpan
-      function f_timespan_get_hours(ts_ms) result(hours) bind(C, name="f_timespan_get_hours")
+      !> @brief Get hours component from a TimeDelta
+      function f_timedelta_get_hours(ts_ms) result(hours) bind(C, name="f_timedelta_get_hours")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: hours
-      end function f_timespan_get_hours
+      end function f_timedelta_get_hours
 
-      !> @brief Get minutes component from a TimeSpan
-      function f_timespan_get_minutes(ts_ms) result(minutes) bind(C, name="f_timespan_get_minutes")
+      !> @brief Get minutes component from a TimeDelta
+      function f_timedelta_get_minutes(ts_ms) result(minutes) bind(C, name="f_timedelta_get_minutes")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: minutes
-      end function f_timespan_get_minutes
+      end function f_timedelta_get_minutes
 
-      !> @brief Get seconds component from a TimeSpan
-      function f_timespan_get_seconds(ts_ms) result(seconds) bind(C, name="f_timespan_get_seconds")
+      !> @brief Get seconds component from a TimeDelta
+      function f_timedelta_get_seconds(ts_ms) result(seconds) bind(C, name="f_timedelta_get_seconds")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: seconds
-      end function f_timespan_get_seconds
+      end function f_timedelta_get_seconds
 
-      !> @brief Get milliseconds component from a TimeSpan
-      function f_timespan_get_milliseconds(ts_ms) result(ms) bind(C, name="f_timespan_get_milliseconds")
+      !> @brief Get milliseconds component from a TimeDelta
+      function f_timedelta_get_milliseconds(ts_ms) result(ms) bind(C, name="f_timedelta_get_milliseconds")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: ms
-      end function f_timespan_get_milliseconds
+      end function f_timedelta_get_milliseconds
 
-      !> @brief Get total days from a TimeSpan
-      function f_timespan_get_total_days(ts_ms) result(days) bind(C, name="f_timespan_get_total_days")
+      !> @brief Get total days from a TimeDelta
+      function f_timedelta_get_total_days(ts_ms) result(days) bind(C, name="f_timedelta_get_total_days")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: days
-      end function f_timespan_get_total_days
+      end function f_timedelta_get_total_days
 
-      !> @brief Get total hours from a TimeSpan
-      function f_timespan_get_total_hours(ts_ms) result(hours) bind(C, name="f_timespan_get_total_hours")
+      !> @brief Get total hours from a TimeDelta
+      function f_timedelta_get_total_hours(ts_ms) result(hours) bind(C, name="f_timedelta_get_total_hours")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: hours
-      end function f_timespan_get_total_hours
+      end function f_timedelta_get_total_hours
 
-      !> @brief Get total minutes from a TimeSpan
-      function f_timespan_get_total_minutes(ts_ms) result(minutes) bind(C, name="f_timespan_get_total_minutes")
+      !> @brief Get total minutes from a TimeDelta
+      function f_timedelta_get_total_minutes(ts_ms) result(minutes) bind(C, name="f_timedelta_get_total_minutes")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: minutes
-      end function f_timespan_get_total_minutes
+      end function f_timedelta_get_total_minutes
 
-      !> @brief Get total seconds from a TimeSpan
-      function f_timespan_get_total_seconds(ts_ms) result(seconds) bind(C, name="f_timespan_get_total_seconds")
+      !> @brief Get total seconds from a TimeDelta
+      function f_timedelta_get_total_seconds(ts_ms) result(seconds) bind(C, name="f_timedelta_get_total_seconds")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int64_t) :: seconds
-      end function f_timespan_get_total_seconds
+      end function f_timedelta_get_total_seconds
 
-      !> @brief Add two TimeSpans
-      function f_timespan_add(ts1_ms, ts2_ms) result(sum_ms) bind(C, name="f_timespan_add")
+      !> @brief Add two TimeDeltas
+      function f_timedelta_add(ts1_ms, ts2_ms) result(sum_ms) bind(C, name="f_timedelta_add")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
          integer(c_int64_t) :: sum_ms
-      end function f_timespan_add
+      end function f_timedelta_add
 
-      !> @brief Subtract one TimeSpan from another
-      function f_timespan_subtract(ts1_ms, ts2_ms) result(diff_ms) bind(C, name="f_timespan_subtract")
+      !> @brief Subtract one TimeDelta from another
+      function f_timedelta_subtract(ts1_ms, ts2_ms) result(diff_ms) bind(C, name="f_timedelta_subtract")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
          integer(c_int64_t) :: diff_ms
-      end function f_timespan_subtract
+      end function f_timedelta_subtract
 
-      !> @brief Multiply a TimeSpan by a factor
-      function f_timespan_multiply(ts_ms, factor) result(result_ms) bind(C, name="f_timespan_multiply")
+      !> @brief Multiply a TimeDelta by a factor
+      function f_timedelta_multiply(ts_ms, factor) result(result_ms) bind(C, name="f_timedelta_multiply")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int), intent(in), value :: factor
          integer(c_int64_t) :: result_ms
-      end function f_timespan_multiply
+      end function f_timedelta_multiply
 
-      !> @brief Divide a TimeSpan by a divisor
-      function f_timespan_divide(ts_ms, divisor) result(result_ms) bind(C, name="f_timespan_divide")
+      !> @brief Divide a TimeDelta by a divisor
+      function f_timedelta_divide(ts_ms, divisor) result(result_ms) bind(C, name="f_timedelta_divide")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int), intent(in), value :: divisor
          integer(c_int64_t) :: result_ms
-      end function f_timespan_divide
+      end function f_timedelta_divide
 
-      !> @brief Convert a TimeSpan to a string
-      subroutine f_timespan_to_string(ts_ms, buffer, buffer_size) bind(C, name="f_timespan_to_string")
+      !> @brief Convert a TimeDelta to a string
+      subroutine f_timedelta_to_string(ts_ms, buffer, buffer_size) bind(C, name="f_timedelta_to_string")
          import :: c_int64_t, c_int, c_char
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          character(kind=c_char), intent(inout) :: buffer(buffer_size)
          integer(c_int), intent(in), value :: buffer_size
-      end subroutine f_timespan_to_string
+      end subroutine f_timedelta_to_string
 
-      !> @brief Check if two TimeSpans are equal
-      function f_timespan_equals(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_equals")
+      !> @brief Check if two TimeDeltas are equal
+      function f_timedelta_equals(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_equals")
          import :: c_int, c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
          logical(c_bool) :: result
-      end function f_timespan_equals
+      end function f_timedelta_equals
 
-      !> @brief Check if one TimeSpan is less than another
-      function f_timespan_less_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_less_than")
+      !> @brief Check if one TimeDelta is less than another
+      function f_timedelta_less_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_less_than")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
          logical(c_bool) :: result
-      end function f_timespan_less_than
+      end function f_timedelta_less_than
 
-      !> @brief Check if one TimeSpan is greater than another
-      function f_timespan_greater_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_greater_than")
+      !> @brief Check if one TimeDelta is greater than another
+      function f_timedelta_greater_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_greater_than")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
          logical(c_bool) :: result
-      end function f_timespan_greater_than
+      end function f_timedelta_greater_than
 
-      !> @brief Check if one TimeSpan is less than or equal to another
-      function f_timespan_less_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_less_equal")
+      !> @brief Check if one TimeDelta is less than or equal to another
+      function f_timedelta_less_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_less_equal")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
          logical(c_bool) :: result
-      end function f_timespan_less_equal
+      end function f_timedelta_less_equal
 
-      !> @brief Check if one TimeSpan is greater than or equal to another
-      function f_timespan_greater_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timespan_greater_equal")
+      !> @brief Check if one TimeDelta is greater than or equal to another
+      function f_timedelta_greater_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_greater_equal")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
          logical(c_bool) :: result
-      end function f_timespan_greater_equal
+      end function f_timedelta_greater_equal
 
       ! DateTime C functions
       !> @brief Create a DateTime from components
@@ -425,23 +425,23 @@ module mod_datetime
          integer(c_int) :: ms
       end function f_datetime_get_millisecond
 
-      !> @brief Add a TimeSpan to a DateTime
-      function f_datetime_add_timespan(dt_ms, ts_ms) result(result_ms) &
-         bind(C, name="f_datetime_add_timespan")
+      !> @brief Add a TimeDelta to a DateTime
+      function f_datetime_add_timedelta(dt_ms, ts_ms) result(result_ms) &
+         bind(C, name="f_datetime_add_timedelta")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms, ts_ms
          integer(c_int64_t) :: result_ms
-      end function f_datetime_add_timespan
+      end function f_datetime_add_timedelta
 
-      !> @brief Subtract a TimeSpan from a DateTime
-      function f_datetime_subtract_timespan(dt_ms, ts_ms) result(result_ms) &
-         bind(C, name="f_datetime_subtract_timespan")
+      !> @brief Subtract a TimeDelta from a DateTime
+      function f_datetime_subtract_timedelta(dt_ms, ts_ms) result(result_ms) &
+         bind(C, name="f_datetime_subtract_timedelta")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms, ts_ms
          integer(c_int64_t) :: result_ms
-      end function f_datetime_subtract_timespan
+      end function f_datetime_subtract_timedelta
 
       !> @brief Calculate the difference between two DateTimes
       function f_datetime_difference(dt1_ms, dt2_ms) result(ts_ms) &
@@ -536,20 +536,20 @@ module mod_datetime
 contains
 
    !===========================================================================
-   ! TimeSpan implementations
+   ! TimeDelta implementations
    !===========================================================================
 
-   !> @brief Create a TimeSpan from days, hours, minutes, seconds, and milliseconds
+   !> @brief Create a TimeDelta from days, hours, minutes, seconds, and milliseconds
    !> @param days Number of days
    !> @param hours Number of hours
    !> @param minutes Number of minutes
    !> @param seconds Number of seconds
    !> @param milliseconds Number of milliseconds
-   !> @return TimeSpan with the specified duration
-   function timespan_components(days, hours, minutes, seconds, milliseconds) result(ts)
+   !> @return TimeDelta with the specified duration
+   function timedelta_components(days, hours, minutes, seconds, milliseconds) result(ts)
       implicit none
       integer, intent(in), optional :: days, hours, minutes, seconds, milliseconds
-      type(t_timespan) :: ts
+      type(t_timedelta) :: ts
       integer :: days_int, hours_int, minutes_int, seconds_int, milliseconds_int
 
       ! Default values
@@ -583,265 +583,265 @@ contains
          milliseconds_int = milliseconds
       end if
 
-      ts%ms_count = f_timespan_create(days_int, hours_int, minutes_int, seconds_int, milliseconds_int)
-   end function timespan_components
+      ts%ms_count = f_timedelta_create(days_int, hours_int, minutes_int, seconds_int, milliseconds_int)
+   end function timedelta_components
 
-   !> @brief Get the days component from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the days component from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Days component
-   function timespan_days(this) result(days)
+   function timedelta_days(this) result(days)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: days64
       integer :: days
-      days64 = f_timespan_get_days(this%ms_count)
+      days64 = f_timedelta_get_days(this%ms_count)
       days = int(days64)
-   end function timespan_days
+   end function timedelta_days
 
-   !> @brief Get the hours component from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the hours component from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Hours component
-   function timespan_hours(this) result(hours)
+   function timedelta_hours(this) result(hours)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: hours64
       integer :: hours
-      hours64 = f_timespan_get_hours(this%ms_count)
+      hours64 = f_timedelta_get_hours(this%ms_count)
       hours = int(hours64)
-   end function timespan_hours
+   end function timedelta_hours
 
-   !> @brief Get the minutes component from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the minutes component from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Minutes component
-   function timespan_minutes(this) result(minutes)
+   function timedelta_minutes(this) result(minutes)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: minutes64
       integer :: minutes
-      minutes64 = f_timespan_get_minutes(this%ms_count)
+      minutes64 = f_timedelta_get_minutes(this%ms_count)
       minutes = int(minutes64)
-   end function timespan_minutes
+   end function timedelta_minutes
 
-   !> @brief Get the seconds component from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the seconds component from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Seconds component
-   function timespan_seconds(this) result(seconds)
+   function timedelta_seconds(this) result(seconds)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: seconds64
       integer :: seconds
-      seconds64 = f_timespan_get_seconds(this%ms_count)
+      seconds64 = f_timedelta_get_seconds(this%ms_count)
       seconds = int(seconds64)
-   end function timespan_seconds
+   end function timedelta_seconds
 
-   !> @brief Get the milliseconds component from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the milliseconds component from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Milliseconds component
-   function timespan_milliseconds(this) result(ms)
+   function timedelta_milliseconds(this) result(ms)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: ms64
       integer :: ms
-      ms64 = f_timespan_get_milliseconds(this%ms_count)
+      ms64 = f_timedelta_get_milliseconds(this%ms_count)
       ms = int(ms64)
-   end function timespan_milliseconds
+   end function timedelta_milliseconds
 
-   !> @brief Get the total days from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the total days from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Total days
-   function timespan_total_days(this) result(days)
+   function timedelta_total_days(this) result(days)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(kind=8) :: days
-      days = f_timespan_get_total_days(this%ms_count)
-   end function timespan_total_days
+      days = f_timedelta_get_total_days(this%ms_count)
+   end function timedelta_total_days
 
-   !> @brief Get the total hours from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the total hours from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Total hours
-   function timespan_total_hours(this) result(hours)
+   function timedelta_total_hours(this) result(hours)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(kind=8) :: hours
-      hours = f_timespan_get_total_hours(this%ms_count)
-   end function timespan_total_hours
+      hours = f_timedelta_get_total_hours(this%ms_count)
+   end function timedelta_total_hours
 
-   !> @brief Get the total minutes from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the total minutes from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Total minutes
-   function timespan_total_minutes(this) result(minutes)
+   function timedelta_total_minutes(this) result(minutes)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(kind=8) :: minutes
-      minutes = f_timespan_get_total_minutes(this%ms_count)
-   end function timespan_total_minutes
+      minutes = f_timedelta_get_total_minutes(this%ms_count)
+   end function timedelta_total_minutes
 
-   !> @brief Get the total seconds from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the total seconds from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Total seconds
-   function timespan_total_seconds(this) result(seconds)
+   function timedelta_total_seconds(this) result(seconds)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(kind=8) :: seconds
-      seconds = f_timespan_get_total_seconds(this%ms_count)
-   end function timespan_total_seconds
+      seconds = f_timedelta_get_total_seconds(this%ms_count)
+   end function timedelta_total_seconds
 
-   !> @brief Get the total milliseconds from a TimeSpan
-   !> @param this TimeSpan object
+   !> @brief Get the total milliseconds from a TimeDelta
+   !> @param this TimeDelta object
    !> @return Total milliseconds
-   function timespan_total_milliseconds(this) result(ms)
+   function timedelta_total_milliseconds(this) result(ms)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       integer(kind=8) :: ms
       ms = this%ms_count
-   end function timespan_total_milliseconds
+   end function timedelta_total_milliseconds
 
-   !> @brief Convert a TimeSpan to a string
-   !> @param this TimeSpan object
-   !> @return String representation of the TimeSpan
-   function timespan_to_string(this) result(str)
+   !> @brief Convert a TimeDelta to a string
+   !> @param this TimeDelta object
+   !> @return String representation of the TimeDelta
+   function timedelta_to_string(this) result(str)
       implicit none
-      class(t_timespan), intent(in) :: this
+      class(t_timedelta), intent(in) :: this
       character(len=64) :: str
       character(kind=c_char), dimension(65) :: c_str
 
-      call f_timespan_to_string(this%ms_count, c_str, 65)
+      call f_timedelta_to_string(this%ms_count, c_str, 65)
       call c_f_string(c_str, str)
-   end function timespan_to_string
+   end function timedelta_to_string
 
-   !> @brief Add two TimeSpans
-   !> @param ts1 First TimeSpan
-   !> @param ts2 Second TimeSpan
-   !> @return Sum of the two TimeSpans
-   function timespan_add_timespan(ts1, ts2) result(sum_ts)
+   !> @brief Add two TimeDeltas
+   !> @param ts1 First TimeDelta
+   !> @param ts2 Second TimeDelta
+   !> @return Sum of the two TimeDeltas
+   function timedelta_add_timedelta(ts1, ts2) result(sum_ts)
       implicit none
-      type(t_timespan), intent(in) :: ts1, ts2
-      type(t_timespan) :: sum_ts
+      type(t_timedelta), intent(in) :: ts1, ts2
+      type(t_timedelta) :: sum_ts
 
-      sum_ts%ms_count = f_timespan_add(ts1%ms_count, ts2%ms_count)
-   end function timespan_add_timespan
+      sum_ts%ms_count = f_timedelta_add(ts1%ms_count, ts2%ms_count)
+   end function timedelta_add_timedelta
 
-   !> @brief Subtract one TimeSpan from another
-   !> @param ts1 First TimeSpan
-   !> @param ts2 Second TimeSpan
-   !> @return Difference of the two TimeSpans
-   function timespan_subtract_timespan(ts1, ts2) result(diff_ts)
+   !> @brief Subtract one TimeDelta from another
+   !> @param ts1 First TimeDelta
+   !> @param ts2 Second TimeDelta
+   !> @return Difference of the two TimeDeltas
+   function timedelta_subtract_timedelta(ts1, ts2) result(diff_ts)
       implicit none
-      type(t_timespan), intent(in) :: ts1, ts2
-      type(t_timespan) :: diff_ts
+      type(t_timedelta), intent(in) :: ts1, ts2
+      type(t_timedelta) :: diff_ts
 
-      diff_ts%ms_count = f_timespan_subtract(ts1%ms_count, ts2%ms_count)
-   end function timespan_subtract_timespan
+      diff_ts%ms_count = f_timedelta_subtract(ts1%ms_count, ts2%ms_count)
+   end function timedelta_subtract_timedelta
 
-   !> @brief Multiply a TimeSpan by a factor
-   !> @param ts TimeSpan to multiply
+   !> @brief Multiply a TimeDelta by a factor
+   !> @param ts TimeDelta to multiply
    !> @param factor Multiplication factor
-   !> @return Multiplied TimeSpan
-   function timespan_multiply(ts, factor) result(product_ts)
+   !> @return Multiplied TimeDelta
+   function timedelta_multiply(ts, factor) result(product_ts)
       implicit none
-      type(t_timespan), intent(in) :: ts
+      type(t_timedelta), intent(in) :: ts
       integer, intent(in) :: factor
-      type(t_timespan) :: product_ts
+      type(t_timedelta) :: product_ts
 
-      product_ts%ms_count = f_timespan_multiply(ts%ms_count, factor)
-   end function timespan_multiply
+      product_ts%ms_count = f_timedelta_multiply(ts%ms_count, factor)
+   end function timedelta_multiply
 
-   !> @brief Divide a TimeSpan by a divisor
-   !> @param ts TimeSpan to divide
+   !> @brief Divide a TimeDelta by a divisor
+   !> @param ts TimeDelta to divide
    !> @param divisor Division factor
-   !> @return Divided TimeSpan
-   function timespan_divide(ts, divisor) result(quotient_ts)
+   !> @return Divided TimeDelta
+   function timedelta_divide(ts, divisor) result(quotient_ts)
       implicit none
-      type(t_timespan), intent(in) :: ts
+      type(t_timedelta), intent(in) :: ts
       integer, intent(in) :: divisor
-      type(t_timespan) :: quotient_ts
+      type(t_timedelta) :: quotient_ts
 
-      quotient_ts%ms_count = f_timespan_divide(ts%ms_count, divisor)
-   end function timespan_divide
+      quotient_ts%ms_count = f_timedelta_divide(ts%ms_count, divisor)
+   end function timedelta_divide
 
-   !> @brief Check if two TimeSpans are equal
-   !> @param ts1 First TimeSpan
-   !> @param ts2 Second TimeSpan
+   !> @brief Check if two TimeDeltas are equal
+   !> @param ts1 First TimeDelta
+   !> @param ts2 Second TimeDelta
    !> @return True if equal, False otherwise
-   function timespan_equals(ts1, ts2) result(res)
+   function timedelta_equals(ts1, ts2) result(res)
       implicit none
-      type(t_timespan), intent(in) :: ts1, ts2
+      type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
 
-      res_t = f_timespan_equals(ts1%ms_count, ts2%ms_count)
+      res_t = f_timedelta_equals(ts1%ms_count, ts2%ms_count)
       res = logical(res_t, 4)
-   end function timespan_equals
+   end function timedelta_equals
 
-   !> @brief Check if two TimeSpans are not equal
-   !> @param ts1 First TimeSpan
-   !> @param ts2 Second TimeSpan
+   !> @brief Check if two TimeDeltas are not equal
+   !> @param ts1 First TimeDelta
+   !> @param ts2 Second TimeDelta
    !> @return True if not equal, False otherwise
-   function timespan_not_equals(ts1, ts2) result(res)
+   function timedelta_not_equals(ts1, ts2) result(res)
       implicit none
-      type(t_timespan), intent(in) :: ts1, ts2
+      type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
 
-      res_t = f_timespan_equals(ts1%ms_count, ts2%ms_count)
+      res_t = f_timedelta_equals(ts1%ms_count, ts2%ms_count)
       res = .not. logical(res_t, 4)
-   end function timespan_not_equals
+   end function timedelta_not_equals
 
-   !> @brief Check if one TimeSpan is less than another
-   !> @param ts1 First TimeSpan
-   !> @param ts2 Second TimeSpan
+   !> @brief Check if one TimeDelta is less than another
+   !> @param ts1 First TimeDelta
+   !> @param ts2 Second TimeDelta
    !> @return True if ts1 < ts2, False otherwise
-   function timespan_less_than(ts1, ts2) result(res)
+   function timedelta_less_than(ts1, ts2) result(res)
       implicit none
-      type(t_timespan), intent(in) :: ts1, ts2
+      type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
 
-      res_t = f_timespan_less_than(ts1%ms_count, ts2%ms_count)
+      res_t = f_timedelta_less_than(ts1%ms_count, ts2%ms_count)
       res = logical(res_t, 4)
-   end function timespan_less_than
+   end function timedelta_less_than
 
-   !> @brief Check if one TimeSpan is greater than another
-   !> @param ts1 First TimeSpan
-   !> @param ts2 Second TimeSpan
+   !> @brief Check if one TimeDelta is greater than another
+   !> @param ts1 First TimeDelta
+   !> @param ts2 Second TimeDelta
    !> @return True if ts1 > ts2, False otherwise
-   function timespan_greater_than(ts1, ts2) result(res)
+   function timedelta_greater_than(ts1, ts2) result(res)
       implicit none
-      type(t_timespan), intent(in) :: ts1, ts2
+      type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
 
-      res_t = f_timespan_greater_than(ts1%ms_count, ts2%ms_count)
+      res_t = f_timedelta_greater_than(ts1%ms_count, ts2%ms_count)
       res = logical(res_t, 4)
-   end function timespan_greater_than
+   end function timedelta_greater_than
 
-   !> @brief Check if one TimeSpan is less than or equal to another
-   !> @param ts1 First TimeSpan
-   !> @param ts2 Second TimeSpan
+   !> @brief Check if one TimeDelta is less than or equal to another
+   !> @param ts1 First TimeDelta
+   !> @param ts2 Second TimeDelta
    !> @return True if ts1 <= ts2, False otherwise
-   function timespan_less_equal(ts1, ts2) result(res)
+   function timedelta_less_equal(ts1, ts2) result(res)
       implicit none
-      type(t_timespan), intent(in) :: ts1, ts2
+      type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
 
-      res_t = f_timespan_less_equal(ts1%ms_count, ts2%ms_count)
+      res_t = f_timedelta_less_equal(ts1%ms_count, ts2%ms_count)
       res = logical(res_t, 4)
-   end function timespan_less_equal
+   end function timedelta_less_equal
 
-   !> @brief Check if one TimeSpan is greater than or equal to another
-   !> @param ts1 First TimeSpan
-   !> @param ts2 Second TimeSpan
+   !> @brief Check if one TimeDelta is greater than or equal to another
+   !> @param ts1 First TimeDelta
+   !> @param ts2 Second TimeDelta
    !> @return True if ts1 >= ts2, False otherwise
-   function timespan_greater_equal(ts1, ts2) result(res)
+   function timedelta_greater_equal(ts1, ts2) result(res)
       implicit none
-      type(t_timespan), intent(in) :: ts1, ts2
+      type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
       logical :: res
 
-      res_t = f_timespan_greater_equal(ts1%ms_count, ts2%ms_count)
+      res_t = f_timedelta_greater_equal(ts1%ms_count, ts2%ms_count)
       res = logical(res_t, 4)
-   end function timespan_greater_equal
+   end function timedelta_greater_equal
 
    !===========================================================================
    ! DateTime implementations
@@ -1113,40 +1113,40 @@ contains
 
    end function datetime_to_iso_string
 
-   !> @brief Add a TimeSpan to a DateTime
+   !> @brief Add a TimeDelta to a DateTime
    !> @param dt DateTime
-   !> @param ts TimeSpan
+   !> @param ts TimeDelta
    !> @return DateTime resulting from the addition
-   function datetime_add_timespan(dt, ts) result(result_dt)
+   function datetime_add_timedelta(dt, ts) result(result_dt)
       implicit none
       type(t_datetime), intent(in) :: dt
-      type(t_timespan), intent(in) :: ts
+      type(t_timedelta), intent(in) :: ts
       type(t_datetime) :: result_dt
 
-      result_dt%timestamp_ms = f_datetime_add_timespan(dt%timestamp_ms, ts%ms_count)
-   end function datetime_add_timespan
+      result_dt%timestamp_ms = f_datetime_add_timedelta(dt%timestamp_ms, ts%ms_count)
+   end function datetime_add_timedelta
 
-   !> @brief Subtract a TimeSpan from a DateTime
+   !> @brief Subtract a TimeDelta from a DateTime
    !> @param dt DateTime
-   !> @param ts TimeSpan
+   !> @param ts TimeDelta
    !> @return DateTime resulting from the subtraction
-   function datetime_subtract_timespan(dt, ts) result(result_dt)
+   function datetime_subtract_timedelta(dt, ts) result(result_dt)
       implicit none
       type(t_datetime), intent(in) :: dt
-      type(t_timespan), intent(in) :: ts
+      type(t_timedelta), intent(in) :: ts
       type(t_datetime) :: result_dt
 
-      result_dt%timestamp_ms = f_datetime_subtract_timespan(dt%timestamp_ms, ts%ms_count)
-   end function datetime_subtract_timespan
+      result_dt%timestamp_ms = f_datetime_subtract_timedelta(dt%timestamp_ms, ts%ms_count)
+   end function datetime_subtract_timedelta
 
    !> @brief Calculate the difference between two DateTimes
    !> @param dt1 First DateTime
    !> @param dt2 Second DateTime
-   !> @return TimeSpan representing the difference
+   !> @return TimeDelta representing the difference
    function datetime_difference(dt1, dt2) result(ts)
       implicit none
       type(t_datetime), intent(in) :: dt1, dt2
-      type(t_timespan) :: ts
+      type(t_timedelta) :: ts
 
       ts%ms_count = f_datetime_difference(dt1%timestamp_ms, dt2%timestamp_ms)
    end function datetime_difference
