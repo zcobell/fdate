@@ -1,3 +1,20 @@
+/*
+ * FDate - A Fortran Date and Time Library based on C++
+ * Copyright (C) 2025 Zach Cobell
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 #include <array>
@@ -7,27 +24,66 @@
 #include <optional>
 #include <sstream>
 #include <string>
-#include <string_view>
 
 #include "TimeSpan.hpp"
 #include "date_hh.h"
 
+/**
+ * @brief A high-precision DateTime class with millisecond accuracy
+ *
+ * The DateTime class provides a comprehensive interface for date and time
+ * operations with millisecond precision. It supports parsing from multiple
+ * string formats, formatting to various output formats, and arithmetic
+ * operations with TimeSpan objects.
+ *
+ * The class uses std::chrono internally for time calculations and the Howard
+ * Hinnant date library for parsing and formatting operations.
+ *
+ * @note All timestamps are stored as milliseconds since the Unix epoch
+ * (1970-01-01 00:00:00 UTC)
+ * @see TimeSpan for time duration operations
+ */
 class DateTime {
  private:
+  /** @brief Internal time point type with millisecond precision */
   using time_point = std::chrono::time_point<std::chrono::system_clock,
                                              std::chrono::milliseconds>;
+
+  /** @brief Internal time point storage */
   time_point m_tp;
 
  public:
-  // Invalid Timestamp
+  /** @brief Constant representing an invalid timestamp value */
   static constexpr auto INVALID_TIMESTAMP =
       -std::numeric_limits<int64_t>::max();
 
   // Constructors
+
+  /**
+   * @brief Default constructor creating a DateTime at Unix epoch (1970-01-01
+   * 00:00:00.000)
+   */
   constexpr DateTime() noexcept : m_tp(std::chrono::milliseconds(0)) {};
 
+  /**
+   * @brief Default destructor
+   */
   ~DateTime() = default;
 
+  /**
+   * @brief Constructs a DateTime from individual date and time components
+   *
+   * @param year The year (e.g., 2023)
+   * @param month The month (1-12)
+   * @param day The day of month (1-31)
+   * @param hour The hour (0-23, default: 0)
+   * @param minute The minute (0-59, default: 0)
+   * @param second The second (0-59, default: 0)
+   * @param millisecond The millisecond (0-999, default: 0)
+   *
+   * @note No validation is performed on input values. Invalid dates may produce
+   * unexpected results.
+   */
   constexpr DateTime(int year, unsigned month, unsigned day, unsigned hour = 0,
                      unsigned minute = 0, unsigned second = 0,
                      unsigned millisecond = 0) noexcept
@@ -38,42 +94,123 @@ class DateTime {
             std::chrono::seconds{second} +
             std::chrono::milliseconds{millisecond})) {}
 
-  // Constructor from timestamp (milliseconds since epoch)
+  /**
+   * @brief Constructs a DateTime from a timestamp
+   *
+   * @param timestamp Milliseconds since Unix epoch (1970-01-01 00:00:00.000
+   * UTC)
+   */
   explicit constexpr DateTime(int64_t timestamp) noexcept
       : m_tp(time_point(std::chrono::milliseconds(timestamp))) {}
 
-  // Constructor from time_point64_t (to help with operator implementations)
+  /**
+   * @brief Constructs a DateTime from a time_point
+   *
+   * @param milliseconds A std::chrono::time_point with millisecond precision
+   */
   constexpr explicit DateTime(const time_point& milliseconds) noexcept
       : m_tp(milliseconds) {}
 
+  /**
+   * @brief Copy constructor
+   */
   constexpr DateTime(const DateTime&) noexcept = default;
+
+  /**
+   * @brief Copy assignment operator
+   * @return Reference to this DateTime object
+   */
   constexpr auto operator=(const DateTime&) noexcept -> DateTime& = default;
+
+  /**
+   * @brief Move constructor
+   */
   constexpr DateTime(DateTime&&) noexcept = default;
+
+  /**
+   * @brief Move assignment operator
+   * @return Reference to this DateTime object
+   */
   constexpr auto operator=(DateTime&&) noexcept -> DateTime& = default;
 
+  /**
+   * @brief Parses a DateTime from a string using automatic or specified format
+   * detection
+   *
+   * When format is "auto", the function attempts to parse the string using a
+   * predefined list of common date/time formats. All auto-detected formats use
+   * YYYY-MM-DD date component ordering to avoid ambiguity.
+   *
+   * Supported auto-detection formats:
+   * - "%Y-%m-%d %H:%M:%S" (2023-12-01 14:30:25)
+   * - "%Y-%m-%dT%H:%M:%SZ" (2023-12-01T14:30:25Z - ISO with timezone)
+   * - "%Y-%m-%dT%H:%M:%S" (2023-12-01T14:30:25 - ISO format)
+   * - "%Y/%m/%d %H:%M:%S" (2023/12/01 14:30:25)
+   * - "%Y.%m.%d %H:%M:%S" (2023.12.01 14:30:25)
+   * - "%Y%m%d%H%M%S" (20231201143025 - compact format)
+   * - "%Y/%m/%d %H:%M" (2023/12/01 14:30)
+   * - "%Y-%m-%d" (2023-12-01)
+   * - "%Y/%m/%d" (2023/12/01)
+   * - "%Y.%m.%d" (2023.12.01)
+   * - "%Y%m%d" (20231201 - compact date only)
+   *
+   * @param str The string to parse
+   * @param format The format string to use, or "auto" for automatic detection
+   * (default: "auto")
+   * @return std::optional<DateTime> containing the parsed DateTime, or
+   * std::nullopt if parsing failed
+   *
+   * @note Formats are tried in order from most specific to least specific
+   * @see parse_string() for single format parsing
+   */
   static auto parse(const std::string& str, const std::string& format = "auto")
       -> std::optional<DateTime> {
     if (format == "auto") {
-      // Set of formats to try
-      static const std::array<std::string, 8> format_options = {
-          "%Y-%m-%d %H:%M:%S", "%Y-%m-%dT%H:%M:%S",
-          "%Y/%m/%d %H:%M:%S", "%Y/%m/%d %H:%M",
-          "%Y/%m/%d",          "%Y-%m-%d",
-          "%Y%m%d%H%M%S",      "%Y%m%d"};
+      // All formats use YYYY-MM-DD ordering to avoid ambiguity
+      // Ordered from the most specific to the least specific
+      static const std::array<std::string, 11> format_options = {
+          "%Y-%m-%d %H:%M:%S",   // 2023-12-01 14:30:25
+          "%Y-%m-%dT%H:%M:%SZ",  // 2023-12-01T14:30:25Z (ISO with timezone)
+          "%Y-%m-%dT%H:%M:%S",   // 2023-12-01T14:30:25 (ISO)
+          "%Y/%m/%d %H:%M:%S",   // 2023/12/01 14:30:25
+          "%Y.%m.%d %H:%M:%S",   // 2023.12.01 14:30:25
+          "%Y%m%d%H%M%S",        // 20231201143025
+          "%Y/%m/%d %H:%M",      // 2023/12/01 14:30
+          "%Y-%m-%d",            // 2023-12-01
+          "%Y/%m/%d",            // 2023/12/01
+          "%Y.%m.%d",            // 2023.12.01
+          "%Y%m%d"               // 20231201
+      };
 
       for (const auto& fmt : format_options) {
-        const auto result = DateTime::parse_string(str,fmt);
-        if (result) {
+        const auto result = parse_string(str, fmt);
+        if (result.has_value()) {
           return result;
         }
       }
-      return std::nullopt;  // Parsing failed for all formats
+      return std::nullopt;
     } else {
       return parse_string(str, format);
     }
   }
 
-  // Parse from string (not constexpr due to parsing)
+  /**
+   * @brief Parses a DateTime from a string using a specific format
+   *
+   * Uses the Howard Hinnant date library for parsing. Automatically detects
+   * and handles millisecond precision based on the presence of a decimal point
+   * in the appropriate position within the input string.
+   *
+   * @param str The string to parse
+   * @param format The strftime-style format string (default: "%Y-%m-%d
+   * %H:%M:%S")
+   * @return std::optional<DateTime> containing the parsed DateTime, or
+   * std::nullopt if parsing failed
+   *
+   * @note If the string has a '.' at position (length-4), millisecond parsing
+   * is attempted
+   * @see parse() for automatic format detection
+   */
   static auto parse_string(const std::string& str,
                            const std::string& format = "%Y-%m-%d %H:%M:%S")
       -> std::optional<DateTime> {
@@ -101,11 +238,25 @@ class DateTime {
     return std::make_optional<DateTime>(this_time_point);
   }
 
-  // Get timestamp (milliseconds since epoch)
+  /**
+   * @brief Gets the timestamp as milliseconds since Unix epoch
+   *
+   * @return int64_t The number of milliseconds since 1970-01-01 00:00:00.000
+   * UTC
+   */
   [[nodiscard]] constexpr auto timestamp() const noexcept -> int64_t {
     return m_tp.time_since_epoch().count();
   }
 
+  /**
+   * @brief Formats the DateTime as a string without milliseconds
+   *
+   * @param fmt The strftime-style format string (default: "%Y-%m-%d %H:%M:%S")
+   * @return std::string The formatted date/time string
+   *
+   * @note This method truncates to seconds precision
+   * @see format_w_milliseconds() for millisecond precision formatting
+   */
   [[nodiscard]] auto format(const std::string& fmt = "%Y-%m-%d %H:%M:%S") const
       -> std::string {
     auto tp_sec = std::chrono::time_point_cast<std::chrono::seconds>(m_tp);
@@ -114,6 +265,14 @@ class DateTime {
     return oss.str();
   }
 
+  /**
+   * @brief Formats the DateTime as a string with millisecond precision
+   *
+   * @param fmt The strftime-style format string (default: "%Y-%m-%d %H:%M:%S")
+   * @return std::string The formatted date/time string including milliseconds
+   *
+   * @see format() for seconds precision formatting
+   */
   [[nodiscard]] auto format_w_milliseconds(
       const std::string& fmt = "%Y-%m-%d %H:%M:%S") const -> std::string {
     std::ostringstream oss;
@@ -121,36 +280,75 @@ class DateTime {
     return oss.str();
   }
 
-  // Convert to ISO 8601 format
+  /**
+   * @brief Converts to ISO 8601 format string without milliseconds
+   *
+   * @return std::string The DateTime in format "YYYY-MM-DDTHH:MM:SS"
+   *
+   * @see toISOStringMsec() for ISO format with milliseconds
+   */
   [[nodiscard]] auto toISOString() const -> std::string {
     return format("%Y-%m-%dT%H:%M:%S");
   }
 
+  /**
+   * @brief Converts to ISO 8601 format string with milliseconds
+   *
+   * @return std::string The DateTime in format "YYYY-MM-DDTHH:MM:SS.mmm"
+   *
+   * @see toISOString() for ISO format without milliseconds
+   */
   [[nodiscard]] auto toISOStringMsec() const -> std::string {
     return format_w_milliseconds("%Y-%m-%dT%H:%M:%S");
   }
 
   // Getters
+
+  /**
+   * @brief Gets the year component
+   *
+   * @return int64_t The year (e.g., 2023)
+   */
   [[nodiscard]] constexpr auto year() const noexcept -> int64_t {
     return static_cast<int>(
         date::year_month_day{date::floor<date::days>(m_tp)}.year());
   }
 
+  /**
+   * @brief Gets the month component
+   *
+   * @return unsigned The month (1-12, where 1 = January)
+   */
   [[nodiscard]] constexpr auto month() const noexcept -> unsigned {
     return static_cast<unsigned>(
         date::year_month_day{date::floor<date::days>(m_tp)}.month());
   }
 
+  /**
+   * @brief Gets the day of month component
+   *
+   * @return unsigned The day (1-31)
+   */
   [[nodiscard]] constexpr auto day() const noexcept -> unsigned {
     return static_cast<unsigned>(
         date::year_month_day{date::floor<date::days>(m_tp)}.day());
   }
 
+  /**
+   * @brief Gets the hour component
+   *
+   * @return unsigned The hour (0-23)
+   */
   [[nodiscard]] constexpr auto hour() const noexcept -> unsigned {
     return static_cast<unsigned>((m_tp - date::floor<date::days>(m_tp)) /
                                  std::chrono::hours(1));
   }
 
+  /**
+   * @brief Gets the minute component
+   *
+   * @return unsigned The minute (0-59)
+   */
   [[nodiscard]] constexpr auto minute() const noexcept -> unsigned {
     const auto time_since_midnight = m_tp - date::floor<date::days>(m_tp);
     return static_cast<unsigned>(
@@ -158,6 +356,11 @@ class DateTime {
         std::chrono::minutes(1));
   }
 
+  /**
+   * @brief Gets the second component
+   *
+   * @return unsigned The second (0-59)
+   */
   [[nodiscard]] constexpr auto second() const noexcept -> unsigned {
     const auto time_since_midnight = m_tp - date::floor<date::days>(m_tp);
     return static_cast<unsigned>((time_since_midnight -
@@ -166,6 +369,11 @@ class DateTime {
                                  std::chrono::seconds(1));
   }
 
+  /**
+   * @brief Gets the millisecond component
+   *
+   * @return unsigned The millisecond (0-999)
+   */
   [[nodiscard]] constexpr auto millisecond() const noexcept -> unsigned {
     const auto time_since_midnight = m_tp - date::floor<date::days>(m_tp);
     return static_cast<unsigned>(
@@ -174,58 +382,141 @@ class DateTime {
         std::chrono::milliseconds(1));
   }
 
+  /**
+   * @brief Gets the internal time_point representation
+   *
+   * @return time_point The internal std::chrono::time_point with millisecond
+   * precision
+   *
+   * @note This method provides direct access to the internal representation
+   */
   [[nodiscard]] constexpr auto get_time_point() const noexcept -> time_point {
     return m_tp;
   }
 
   // TimeSpan operations
+
+  /**
+   * @brief Adds a TimeSpan to this DateTime
+   *
+   * @param span The TimeSpan to add
+   * @return DateTime A new DateTime representing this time plus the span
+   *
+   * @see operator-(const TimeSpan&) for subtraction
+   */
   constexpr auto operator+(const TimeSpan& span) const noexcept -> DateTime {
     return DateTime(m_tp + span.duration());
   }
 
+  /**
+   * @brief Subtracts a TimeSpan from this DateTime
+   *
+   * @param span The TimeSpan to subtract
+   * @return DateTime A new DateTime representing this time minus the span
+   *
+   * @see operator+(const TimeSpan&) for addition
+   */
   constexpr auto operator-(const TimeSpan& span) const noexcept -> DateTime {
     return DateTime(m_tp - span.duration());
   }
 
-  // Calculate the difference between two DateTimes
+  /**
+   * @brief Calculates the time difference between two DateTimes
+   *
+   * @param other The DateTime to subtract from this one
+   * @return TimeSpan The time difference (this - other)
+   *
+   * @note If other is later than this DateTime, the result will be negative
+   */
   constexpr auto operator-(const DateTime& other) const noexcept -> TimeSpan {
     const auto dt_diff = m_tp - other.m_tp;
     return TimeSpan::fromMilliseconds(dt_diff.count());
   }
 
   // Comparison operators
+
+  /**
+   * @brief Equality comparison operator
+   *
+   * @param other The DateTime to compare with
+   * @return bool True if both DateTimes represent the exact same point in time
+   */
   constexpr auto operator==(const DateTime& other) const noexcept -> bool {
     return m_tp == other.m_tp;
   }
 
+  /**
+   * @brief Less than comparison operator
+   *
+   * @param other The DateTime to compare with
+   * @return bool True if this DateTime is earlier than other
+   */
   constexpr auto operator<(const DateTime& other) const noexcept -> bool {
     return m_tp < other.m_tp;
   }
 
+  /**
+   * @brief Greater than comparison operator
+   *
+   * @param other The DateTime to compare with
+   * @return bool True if this DateTime is later than other
+   */
   constexpr auto operator>(const DateTime& other) const noexcept -> bool {
     return m_tp > other.m_tp;
   }
 
+  /**
+   * @brief Less than or equal comparison operator
+   *
+   * @param other The DateTime to compare with
+   * @return bool True if this DateTime is earlier than or equal to other
+   */
   constexpr auto operator<=(const DateTime& other) const noexcept -> bool {
     return m_tp <= other.m_tp;
   }
 
+  /**
+   * @brief Greater than or equal comparison operator
+   *
+   * @param other The DateTime to compare with
+   * @return bool True if this DateTime is later than or equal to other
+   */
   constexpr auto operator>=(const DateTime& other) const noexcept -> bool {
     return m_tp >= other.m_tp;
   }
 
-  // Convert to string representation (for ease of use)
+  /**
+   * @brief Converts the DateTime to a string representation
+   *
+   * @return std::string The DateTime formatted as "YYYY-MM-DD HH:MM:SS"
+   *
+   * @note This is a convenience method equivalent to format() with default
+   * parameters
+   */
   [[nodiscard]] auto toString() const -> std::string { return format(); }
 
-  // Stream insertion operator for easy printing
+  /**
+   * @brief Stream insertion operator for easy printing
+   *
+   * @param output_stream The output stream to write to
+   * @param date_time The DateTime to output
+   * @return std::ostream& Reference to the output stream for chaining
+   */
   friend auto operator<<(std::ostream& output_stream, const DateTime& date_time)
       -> std::ostream& {
     return output_stream << date_time.toString();
   }
 
-  // Static method to create DateTime from the current time
+  /**
+   * @brief Creates a DateTime representing the current system time
+   *
+   * @return DateTime A new DateTime object set to the current system time with
+   * millisecond precision
+   *
+   * @note Uses std::chrono::system_clock::now() internally
+   */
   [[nodiscard]] static auto now() -> DateTime {
-    auto now_tp = std::chrono::time_point_cast<std::chrono::milliseconds>(
+    const auto now_tp = std::chrono::time_point_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now());
     return DateTime(now_tp);
   }

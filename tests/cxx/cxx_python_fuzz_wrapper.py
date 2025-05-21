@@ -101,12 +101,15 @@ def run_parse_tests(args):
 
     format_strings = [
         "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%dT%H:%M:%SZ",
         "%Y-%m-%dT%H:%M:%S",
         "%Y/%m/%d %H:%M:%S",
-        "%Y/%m/%d %H:%M",
-        "%Y/%m/%d",
-        "%Y-%m-%d",
+        "%Y.%m.%d %H:%M:%S",
         "%Y%m%d%H%M%S",
+        "%Y/%m/%d %H:%M",
+        "%Y-%m-%d",
+        "%Y/%m/%d",
+        "%Y.%m.%d",
         "%Y%m%d",
     ]
 

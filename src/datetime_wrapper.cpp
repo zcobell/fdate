@@ -1,11 +1,19 @@
-/**
- * @file datetime_fortran.cpp
- * @brief C++ wrapper for Fortran interoperability with the datetime library
+/*
+ * FDate - A Fortran Date and Time Library based on C++
+ * Copyright (C) 2025 Zach Cobell
  *
- * This file implements C-style functions with extern "C" linkage for calling
- * the C++ datetime library functionality from Fortran. Instead of using opaque
- * pointers, we use int64_t values to represent both TimeSpan and DateTime
- * objects.
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include <cstdint>
@@ -238,7 +246,7 @@ void f_timespan_to_string(const int64_t ts_ms, char* buffer,
                           const int buffer_size) {
   const TimeSpan time_span(TimeSpan::to_components(ts_ms));
   const std::string str = time_span.toString();
-  const size_t buffer_size_t = static_cast<size_t>(buffer_size - 1);
+  const auto buffer_size_t = static_cast<size_t>(buffer_size - 1);
   strncpy(buffer, str.c_str(), buffer_size_t);
   buffer[buffer_size - 1] = '\0';
 }

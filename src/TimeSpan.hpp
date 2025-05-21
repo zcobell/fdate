@@ -1,7 +1,20 @@
-//
-// Created by Zach Cobell on 5/14/25.
-//
-
+/*
+ * FDate - A Fortran Date and Time Library based on C++
+ * Copyright (C) 2024 Zach Cobell (zcobell@gmail.com)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 #pragma once
 
 #include <chrono>
@@ -12,41 +25,64 @@
 #include "date_hh.h"
 
 /**
- * @brief Class representing a time span with millisecond precision
+ * @brief A high-precision time duration class with millisecond accuracy
  *
- * This class allows the representation of time intervals which can
- * be used to add/subtract from themselves or from DateTime objects.
+ * The TimeSpan class represents time intervals or durations with millisecond
+ * precision. It can be used for time arithmetic operations and provides
+ * convenient methods for creating time spans from various time units (days,
+ * hours, minutes, seconds, milliseconds).
+ *
+ * TimeSpan objects can be added to or subtracted from DateTime objects, and can
+ * be combined with other TimeSpan objects using standard arithmetic operations.
+ *
+ * The class provides both individual component access (e.g., days(), hours())
+ * and total duration access (e.g., totalDays(), totalHours()) for flexible time
+ * calculations.
+ *
+ * @note All internal calculations use std::chrono::milliseconds for precision
+ * @note Negative time spans are supported and handled correctly
+ * @see DateTime for date and time point operations
  */
 class TimeSpan {
  private:
+  /** @brief Internal duration storage with millisecond precision */
   std::chrono::milliseconds m_duration;
 
   /**
-   * @brief Constructor from milliseconds to initialize the TimeSpan
-   * @param milliseconds
+   * @brief Private constructor from milliseconds to initialize the TimeSpan
+   *
+   * @param milliseconds The duration in milliseconds
+   *
+   * @note This constructor is private to enforce the use of factory methods and
+   * public constructors
    */
   explicit constexpr TimeSpan(std::chrono::milliseconds milliseconds) noexcept
       : m_duration(milliseconds) {}
 
  public:
-  // Wrapper for the components
+  /**
+   * @brief Structure to hold the decomposed components of a TimeSpan
+   *
+   * This structure represents a TimeSpan broken down into its constituent
+   * parts. All components can be negative if the overall TimeSpan is negative.
+   */
   struct s_TimespanComponents {
-    int64_t days;
-    int64_t hours;
-    int64_t minutes;
-    int64_t seconds;
-    int64_t milliseconds;
+    int64_t days;          ///< Number of days component
+    int64_t hours;         ///< Number of hours component (0-23)
+    int64_t minutes;       ///< Number of minutes component (0-59)
+    int64_t seconds;       ///< Number of seconds component (0-59)
+    int64_t milliseconds;  ///< Number of milliseconds component (0-999)
   };
 
   // Constructors
 
   /**
-   * @brief Default constructor initializes the TimeSpan to zero milliseconds
+   * @brief Default constructor initializes the TimeSpan to zero duration
    */
   constexpr TimeSpan() noexcept : m_duration(std::chrono::milliseconds{0}) {}
 
   /**
-   * Destructor
+   * @brief Default destructor
    */
   ~TimeSpan() = default;
 
@@ -56,8 +92,12 @@ class TimeSpan {
   constexpr TimeSpan(TimeSpan&&) noexcept = default;
 
   /**
-   * @brief Initializes the TimeSpan from a components structure
-   * @param components
+   * @brief Constructs a TimeSpan from a components structure
+   *
+   * @param components A structure containing the individual time components
+   *
+   * @note All components are summed to create the total duration
+   * @note Negative components are handled correctly
    */
   constexpr explicit TimeSpan(const s_TimespanComponents& components) noexcept
       : m_duration(std::chrono::milliseconds{
@@ -67,12 +107,18 @@ class TimeSpan {
             std::chrono::milliseconds(components.milliseconds)}) {}
 
   /**
-   * @brief Initializes the TimeSpan from individual components
+   * @brief Constructs a TimeSpan from individual time components
+   *
    * @param days Number of days
    * @param hours Number of hours
    * @param minutes Number of minutes
    * @param seconds Number of seconds
    * @param milliseconds Number of milliseconds
+   *
+   * @note All components are summed to create the total duration
+   * @note Negative values are allowed and handled correctly
+   * @note No validation is performed; values outside typical ranges (e.g.,
+   * hours > 23) are accepted
    */
   explicit constexpr TimeSpan(const int days, const int hours,
                               const int minutes, const int seconds,
@@ -80,20 +126,38 @@ class TimeSpan {
       : TimeSpan(s_TimespanComponents{days, hours, minutes, seconds,
                                       milliseconds}) {}
 
+  /**
+   * @brief Copy constructor
+   */
   constexpr TimeSpan(const TimeSpan&) noexcept = default;
 
+  /**
+   * @brief Copy assignment operator
+   *
+   * @param other The TimeSpan to copy from
+   * @return Reference to this TimeSpan object
+   */
   [[nodiscard]] constexpr auto operator=(const TimeSpan&) noexcept
       -> TimeSpan& = default;
 
+  /**
+   * @brief Move assignment operator
+   *
+   * @param other The TimeSpan to move from
+   * @return Reference to this TimeSpan object
+   */
   [[nodiscard]] constexpr auto operator=(TimeSpan&&) noexcept
       -> TimeSpan& = default;
 
   // Static factory methods
 
   /**
-   * @brief Create a TimeSpan from a number of days
-   * @param days Number of days
-   * @return TimeSpan object representing the duration
+   * @brief Creates a TimeSpan from a number of days
+   *
+   * @param days Number of days (can be negative)
+   * @return TimeSpan object representing the specified duration
+   *
+   * @see fromHours(), fromMinutes(), fromSeconds(), fromMilliseconds()
    */
   [[nodiscard]] static constexpr auto fromDays(const int64_t days) noexcept
       -> TimeSpan {
@@ -101,9 +165,12 @@ class TimeSpan {
   }
 
   /**
-   * @brief Create a TimeSpan from a number of hours
-   * @param hours Number of hours
-   * @return TimeSpan object representing the duration
+   * @brief Creates a TimeSpan from a number of hours
+   *
+   * @param hours Number of hours (can be negative)
+   * @return TimeSpan object representing the specified duration
+   *
+   * @see fromDays(), fromMinutes(), fromSeconds(), fromMilliseconds()
    */
   [[nodiscard]] static constexpr auto fromHours(const int64_t hours) noexcept
       -> TimeSpan {
@@ -111,9 +178,12 @@ class TimeSpan {
   }
 
   /**
-   * @brief Create a TimeSpan from a number of minutes
-   * @param minutes Number of minutes
-   * @return TimeSpan object representing the duration
+   * @brief Creates a TimeSpan from a number of minutes
+   *
+   * @param minutes Number of minutes (can be negative)
+   * @return TimeSpan object representing the specified duration
+   *
+   * @see fromDays(), fromHours(), fromSeconds(), fromMilliseconds()
    */
   [[nodiscard]] static constexpr auto fromMinutes(
       const int64_t minutes) noexcept -> TimeSpan {
@@ -121,9 +191,12 @@ class TimeSpan {
   }
 
   /**
-   * @brief Create a TimeSpan from a number of seconds
-   * @param seconds Number of seconds
-   * @return TimeSpan object representing the duration
+   * @brief Creates a TimeSpan from a number of seconds
+   *
+   * @param seconds Number of seconds (can be negative)
+   * @return TimeSpan object representing the specified duration
+   *
+   * @see fromDays(), fromHours(), fromMinutes(), fromMilliseconds()
    */
   [[nodiscard]] static constexpr auto fromSeconds(
       const int64_t seconds) noexcept -> TimeSpan {
@@ -131,9 +204,12 @@ class TimeSpan {
   }
 
   /**
-   * @brief Create a TimeSpan from a number of milliseconds
-   * @param milliseconds Number of milliseconds
-   * @return TimeSpan object representing the duration
+   * @brief Creates a TimeSpan from a number of milliseconds
+   *
+   * @param milliseconds Number of milliseconds (can be negative)
+   * @return TimeSpan object representing the specified duration
+   *
+   * @see fromDays(), fromHours(), fromMinutes(), fromSeconds()
    */
   [[nodiscard]] static constexpr auto fromMilliseconds(
       const int64_t milliseconds) noexcept -> TimeSpan {
@@ -141,19 +217,33 @@ class TimeSpan {
   }
 
   /**
-   * @brief Get the components of the TimeSpan
-   * @return Component structure containing the days, hours, minutes, seconds,
-   * and milliseconds
+   * @brief Gets the TimeSpan decomposed into its constituent components
+   *
+   * @return s_TimespanComponents structure containing days, hours, minutes,
+   * seconds, and milliseconds
+   *
+   * @note For negative TimeSpans, all components will be negative
+   * @note The sum of all components equals the total duration
+   * @see to_components() for static version
    */
   [[nodiscard]] constexpr auto components() const noexcept {
     return to_components(m_duration.count());
   }
 
   /**
-   * @brief Convert the TimeSpan to its components
-   * @param duration_ms Duration in milliseconds
-   * @return Components structure containing the days, hours, minutes, seconds,
-   * and milliseconds
+   * @brief Static method to convert a duration in milliseconds to components
+   *
+   * Decomposes a duration given in milliseconds into days, hours, minutes,
+   * seconds, and milliseconds components. This method handles negative
+   * durations correctly by applying the negative sign to all components.
+   *
+   * @param duration_ms Duration in milliseconds (can be negative)
+   * @return s_TimespanComponents structure containing the decomposed time
+   * components
+   *
+   * @note For negative durations, all returned components will be negative
+   * @note The method uses std::chrono::duration_cast for accurate conversions
+   * @see components() for instance method version
    */
   static constexpr auto to_components(const int64_t duration_ms) noexcept
       -> s_TimespanComponents {
@@ -203,83 +293,139 @@ class TimeSpan {
     return this_components;
   }
 
-  // Accessors
+  // Component Accessors
 
   /**
-   * @brief Get the number of days in the TimeSpan
-   * @return Number of days
+   * @brief Gets the days component of the TimeSpan
+   *
+   * @return int64_t The number of days (can be negative)
+   *
+   * @note This returns only the days component, not the total number of days
+   * @see totalDays() for the total duration expressed in days
    */
   [[nodiscard]] constexpr auto days() const noexcept -> int64_t {
     return components().days;
   }
 
   /**
-   * @brief Get the number of hours in the TimeSpan
-   * @return Number of hours
+   * @brief Gets the hours component of the TimeSpan
+   *
+   * @return int64_t The number of hours component (0-23, or negative for
+   * negative TimeSpans)
+   *
+   * @note This returns only the hours component, not the total number of hours
+   * @see totalHours() for the total duration expressed in hours
    */
   [[nodiscard]] constexpr auto hours() const noexcept -> int64_t {
     return components().hours;
   }
 
   /**
-   * @brief Get the number of minutes in the TimeSpan
-   * @return Number of minutes
+   * @brief Gets the minutes component of the TimeSpan
+   *
+   * @return int64_t The number of minutes component (0-59, or negative for
+   * negative TimeSpans)
+   *
+   * @note This returns only the minutes component, not the total number of
+   * minutes
+   * @see totalMinutes() for the total duration expressed in minutes
    */
   [[nodiscard]] constexpr auto minutes() const noexcept -> int64_t {
     return components().minutes;
   }
 
   /**
-   * @brief Get the number of seconds in the TimeSpan
-   * @return Number of seconds
+   * @brief Gets the seconds component of the TimeSpan
+   *
+   * @return int64_t The number of seconds component (0-59, or negative for
+   * negative TimeSpans)
+   *
+   * @note This returns only the seconds component, not the total number of
+   * seconds
+   * @see totalSeconds() for the total duration expressed in seconds
    */
   [[nodiscard]] constexpr auto seconds() const noexcept -> int64_t {
     return components().seconds;
   }
 
   /**
-   * @brief Get the number of milliseconds in the TimeSpan
-   * @return Number of milliseconds
+   * @brief Gets the milliseconds component of the TimeSpan
+   *
+   * @return int64_t The number of milliseconds component (0-999, or negative
+   * for negative TimeSpans)
+   *
+   * @note This returns only the milliseconds component, not the total number of
+   * milliseconds
+   * @see totalMilliseconds() for the total duration expressed in milliseconds
    */
   [[nodiscard]] constexpr auto milliseconds() const noexcept -> int64_t {
     return components().milliseconds;
   }
 
+  // Total Duration Accessors
+
   /**
-   * @brief Get the total number of days in the TimeSpan
-   * @return Total number of days
+   * @brief Gets the total duration expressed as days
+   *
+   * @return int64_t The total number of days in the TimeSpan (can be negative)
+   *
+   * @note This converts the entire duration to days, truncating fractional
+   * parts
+   * @see days() for only the days component
    */
   [[nodiscard]] constexpr auto totalDays() const noexcept -> int64_t {
     return std::chrono::duration_cast<date::days>(m_duration).count();
   }
 
   /**
-   * @brief Get the total number of hours in the TimeSpan
-   * @return Total number of hours
+   * @brief Gets the total duration expressed as hours
+   *
+   * @return int64_t The total number of hours in the TimeSpan (can be negative)
+   *
+   * @note This converts the entire duration to hours, truncating fractional
+   * parts
+   * @see hours() for only the hours component
    */
   [[nodiscard]] constexpr auto totalHours() const noexcept -> int64_t {
     return std::chrono::duration_cast<std::chrono::hours>(m_duration).count();
   }
 
   /**
-   * @brief Get the total number of minutes in the TimeSpan
-   * @return Total number of minutes
+   * @brief Gets the total duration expressed as minutes
+   *
+   * @return int64_t The total number of minutes in the TimeSpan (can be
+   * negative)
+   *
+   * @note This converts the entire duration to minutes, truncating fractional
+   * parts
+   * @see minutes() for only the minutes component
    */
   [[nodiscard]] constexpr auto totalMinutes() const noexcept -> int64_t {
     return std::chrono::duration_cast<std::chrono::minutes>(m_duration).count();
   }
 
   /**
-   * @brief Get the total number of seconds in the TimeSpan
-   * @return Total number of seconds
+   * @brief Gets the total duration expressed as seconds
+   *
+   * @return int64_t The total number of seconds in the TimeSpan (can be
+   * negative)
+   *
+   * @note This converts the entire duration to seconds, truncating fractional
+   * parts
+   * @see seconds() for only the seconds component
    */
   [[nodiscard]] constexpr auto totalSeconds() const noexcept -> int64_t {
     return std::chrono::duration_cast<std::chrono::seconds>(m_duration).count();
   }
 
   /**
-   * @brief Get the total number of milliseconds in the TimeSpan
-   * @return Total number of milliseconds
+   * @brief Gets the total duration expressed as milliseconds
+   *
+   * @return int64_t The total number of milliseconds in the TimeSpan (can be
+   * negative)
+   *
+   * @note This is the most precise representation of the TimeSpan's duration
+   * @see milliseconds() for only the milliseconds component
    */
   [[nodiscard]] constexpr auto totalMilliseconds() const noexcept -> int64_t {
     return m_duration.count();
@@ -288,21 +434,27 @@ class TimeSpan {
   // Internal access
 
   /**
-   * @brief Get the internal representation of the duration in
-   * std::chrono::milliseconds
-   * @return Duration in milliseconds
+   * @brief Gets the internal std::chrono::milliseconds representation
+   *
+   * @return std::chrono::milliseconds The internal duration object
+   *
+   * @note This method provides direct access to the internal representation
+   * @note Primarily used for integration with other chrono-based operations
    */
   [[nodiscard]] constexpr auto duration() const noexcept
       -> std::chrono::milliseconds {
     return m_duration;
   }
 
-  // Operators
+  // Arithmetic Operators
 
   /**
-   * @brief Add two timespan objects and return a new TimeSpan
-   * @param other The other TimeSpan to add
-   * @return A new TimeSpan representing the sum
+   * @brief Adds two TimeSpan objects
+   *
+   * @param other The TimeSpan to add to this one
+   * @return TimeSpan A new TimeSpan representing the sum of both durations
+   *
+   * @see operator-() for subtraction
    */
   [[nodiscard]] constexpr auto operator+(const TimeSpan& other) const noexcept
       -> TimeSpan {
@@ -310,9 +462,13 @@ class TimeSpan {
         to_components(m_duration.count() + other.m_duration.count()));
   }
 
-  /** @brief Subtract two timespan objects and return a new TimeSpan
-   * @param other The other TimeSpan to subtract
-   * @return A new TimeSpan representing the difference
+  /**
+   * @brief Subtracts two TimeSpan objects
+   *
+   * @param other The TimeSpan to subtract from this one
+   * @return TimeSpan A new TimeSpan representing the difference (this - other)
+   *
+   * @see operator+() for addition
    */
   [[nodiscard]] constexpr auto operator-(const TimeSpan& other) const noexcept
       -> TimeSpan {
@@ -321,9 +477,13 @@ class TimeSpan {
   }
 
   /**
-   * @brief Multiply the TimeSpan by a factor and return a new TimeSpan
-   * @param factor The factor to multiply by
-   * @return A new TimeSpan representing the product
+   * @brief Multiplies the TimeSpan by a scalar factor
+   *
+   * @param factor The factor to multiply by (can be negative)
+   * @return TimeSpan A new TimeSpan representing the product
+   *
+   * @note Multiplying by a negative factor reverses the TimeSpan's direction
+   * @see operator/() for division
    */
   [[nodiscard]] constexpr auto operator*(const int64_t factor) const noexcept
       -> TimeSpan {
@@ -331,19 +491,27 @@ class TimeSpan {
   }
 
   /**
-   * @brief Divide the TimeSpan by a divisor and return a new TimeSpan
-   * @param divisor The divisor to divide by
-   * @return A new TimeSpan representing the quotient
+   * @brief Divides the TimeSpan by a scalar divisor
+   *
+   * @param divisor The divisor to divide by (cannot be zero)
+   * @return TimeSpan A new TimeSpan representing the quotient
+   *
+   * @note Division by zero results in undefined behavior
+   * @note Integer division truncates fractional parts
+   * @see operator*() for multiplication
    */
   [[nodiscard]] constexpr auto operator/(const int64_t divisor) const noexcept
       -> TimeSpan {
     return TimeSpan(to_components(m_duration.count() / divisor));
   }
 
+  // Comparison Operators
+
   /**
-   * @brief Equality operator for TimeSpan
-   * @param other The other TimeSpan to compare with
-   * @return true if both TimeSpans are equal, false otherwise
+   * @brief Equality comparison operator
+   *
+   * @param other The TimeSpan to compare with
+   * @return bool True if both TimeSpans represent the same duration
    */
   [[nodiscard]] constexpr auto operator==(const TimeSpan& other) const noexcept
       -> bool {
@@ -351,9 +519,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Inequality operator for TimeSpan
-   * @param other The other TimeSpan to compare with
-   * @return true if both TimeSpans are not equal, false otherwise
+   * @brief Inequality comparison operator
+   *
+   * @param other The TimeSpan to compare with
+   * @return bool True if the TimeSpans represent different durations
    */
   [[nodiscard]] constexpr auto operator!=(const TimeSpan& other) const noexcept
       -> bool {
@@ -361,9 +530,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Less than operator for TimeSpan
-   * @param other The other TimeSpan to compare with
-   * @return true if this TimeSpan is less than the other, false otherwise
+   * @brief Less than comparison operator
+   *
+   * @param other The TimeSpan to compare with
+   * @return bool True if this TimeSpan is shorter than the other
    */
   [[nodiscard]] constexpr auto operator<(const TimeSpan& other) const noexcept
       -> bool {
@@ -371,9 +541,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Greater than operator for TimeSpan
-   * @param other The other TimeSpan to compare with
-   * @return true if this TimeSpan is greater than the other, false otherwise
+   * @brief Greater than comparison operator
+   *
+   * @param other The TimeSpan to compare with
+   * @return bool True if this TimeSpan is longer than the other
    */
   [[nodiscard]] constexpr auto operator>(const TimeSpan& other) const noexcept
       -> bool {
@@ -381,10 +552,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Less than or equal to operator for TimeSpan
-   * @param other The other TimeSpan to compare with
-   * @return true if this TimeSpan is less than or equal to the other, false
-   * otherwise
+   * @brief Less than or equal comparison operator
+   *
+   * @param other The TimeSpan to compare with
+   * @return bool True if this TimeSpan is shorter than or equal to the other
    */
   [[nodiscard]] constexpr auto operator<=(const TimeSpan& other) const noexcept
       -> bool {
@@ -392,10 +563,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Greater than or equal to operator for TimeSpan
-   * @param other The other TimeSpan to compare with
-   * @return true if this TimeSpan is greater than or equal to the other, false
-   * otherwise
+   * @brief Greater than or equal comparison operator
+   *
+   * @param other The TimeSpan to compare with
+   * @return bool True if this TimeSpan is longer than or equal to the other
    */
   [[nodiscard]] constexpr auto operator>=(const TimeSpan& other) const noexcept
       -> bool {
@@ -405,8 +576,24 @@ class TimeSpan {
   // String representation
 
   /**
-   * @brief Convert the TimeSpan to a string representation
-   * @return String representation of the TimeSpan
+   * @brief Converts the TimeSpan to a human-readable string representation
+   *
+   * The format depends on the duration:
+   * - If days are present: "Nd HH:MM:SS" or "Nd HH:MM:SS.mmm"
+   * - If no days: "HH:MM:SS" or "HH:MM:SS.mmm"
+   * - Milliseconds are only included if non-zero
+   * - Negative TimeSpans are indicated by negative component values
+   *
+   * Examples:
+   * - "02:30:45" (2 hours, 30 minutes, 45 seconds)
+   * - "1d 14:30:25.123" (1 day, 14 hours, 30 minutes, 25 seconds, 123
+   * milliseconds)
+   * - "00:00:00.500" (500 milliseconds)
+   *
+   * @return std::string A formatted string representation of the TimeSpan
+   *
+   * @note All components are zero-padded for consistent formatting
+   * @note Days are shown without padding when present
    */
   [[nodiscard]] auto toString() const -> std::string {
     std::ostringstream oss;
