@@ -43,32 +43,59 @@ find_package(Python3 COMPONENTS Interpreter)
 if(Python3_FOUND)
   add_executable(datetime_interface
                  ${CMAKE_CURRENT_SOURCE_DIR}/cxx/cxx_test_interface.cpp)
+
+  add_executable(datetime_ftn_interface
+                 ${CMAKE_CURRENT_SOURCE_DIR}/fortran/ftn_test_interface.F90)
+
   target_include_directories(datetime_interface
                              PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
   target_include_directories(
     datetime_interface SYSTEM
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/date_hh)
 
-  target_link_libraries(${test_name} PRIVATE fdate fdate::fdate_warnings
-                                             fdate::fdate_options)
+  target_include_directories(datetime_ftn_interface
+                             PRIVATE ${CMAKE_BINARY_DIR}/mod)
+
+  target_link_libraries(datetime_interface PRIVATE fdate fdate::fdate_warnings
+                                                   fdate::fdate_options)
+
+  target_link_libraries(
+    datetime_ftn_interface PRIVATE fdate fdate::fdate_warnings
+                                   fdate::fdate_options)
 
   # Add a test which calls the Python script that runs random tests against
   # python's datetime library
   add_test(
-    NAME TEST_python_fuzz_parse
+    NAME TEST_cxx_python_fuzz_parse
     COMMAND
       ${Python3_EXECUTABLE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/cxx/cxx_python_fuzz_wrapper.py --test-count
-      1000 --test parse --exe ${CMAKE_BINARY_DIR}/tests/datetime_interface
+      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --test-count
+      2000 --test parse --exe ${CMAKE_BINARY_DIR}/tests/datetime_interface
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
   add_test(
-    NAME TEST_python_fuzz_arithmetic
+    NAME TEST_cxx_python_fuzz_arithmetic
     COMMAND
       ${Python3_EXECUTABLE}
-      ${CMAKE_CURRENT_SOURCE_DIR}/cxx/cxx_python_fuzz_wrapper.py --test-count
-      1000 --test arithmetic --exe ${CMAKE_BINARY_DIR}/tests/datetime_interface
+      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --test-count
+      2000 --test arithmetic --exe ${CMAKE_BINARY_DIR}/tests/datetime_interface
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+  add_test(
+    NAME TEST_ftn_python_fuzz_parse
+    COMMAND
+      ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --test-count
+      2000 --test parse --exe ${CMAKE_BINARY_DIR}/tests/datetime_ftn_interface)
+
+  add_test(
+    NAME TEST_ftn_python_fuzz_arithmetic
+    COMMAND
+      ${Python3_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/python/python_fuzz_wrapper.py --test-count
+      2000 --test arithmetic --exe
+      ${CMAKE_BINARY_DIR}/tests/datetime_ftn_interface)
+
 endif()
 
 # ##############################################################################

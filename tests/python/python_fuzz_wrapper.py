@@ -62,16 +62,17 @@ def run_arithmetic_tests(args):
         )
 
         try:
+            call_args = [
+                args.exe,
+                "arithmetic",
+                date_str,
+                str(delta_str_days),
+                str(delta_str_hours),
+                str(delta_str_minutes),
+                str(delta_str_seconds),
+            ]
             result = subprocess.run(
-                [
-                    args.exe,
-                    "arithmetic",
-                    date_str,
-                    str(delta_str_days),
-                    str(delta_str_hours),
-                    str(delta_str_minutes),
-                    str(delta_str_seconds),
-                ],
+                call_args,
                 capture_output=True,
                 text=True,
                 check=True,
@@ -90,8 +91,9 @@ def run_arithmetic_tests(args):
                 )
 
         except subprocess.CalledProcessError as e:
+            diag_str = " ".join(call_args)
             raise RuntimeError(
-                f"Error running the executable: {args.exe} with '{random_start_time.isoformat()}' and '{random_delta}'"
+                f"Error running the executable: {args.exe} with {diag_str}"
             )
 
 
