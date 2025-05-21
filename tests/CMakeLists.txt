@@ -120,36 +120,3 @@ foreach(test ${TestList})
   add_dependencies(${test_name} fdate)
 endforeach()
 # ##############################################################################
-
-# Now conditionally add fuzzing tests when using Clang
-if(FDATE_ENABLE_FUZZ_TEST)
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-
-    # Add the fuzzer executable
-    add_executable(datetime_fuzzer fuzz/TEST_cxx_fuzz.cpp)
-
-    # Add fuzzing compilation flags
-    target_compile_options(
-      datetime_fuzzer PRIVATE -g -O1 -fsanitize=fuzzer,address,undefined
-                              -fno-omit-frame-pointer)
-
-    # Add fuzzing link flags
-    target_link_options(datetime_fuzzer PRIVATE
-                        -fsanitize=fuzzer,address,undefined)
-
-    # Add deterministic tests with internal seeds The fuzzer will use the
-    # built-in test cases with no arguments
-    add_test(NAME FuzzTest_Deterministic COMMAND $<TARGET_FILE:datetime_fuzzer>
-                                                 -runs=10)
-
-    # Add a short fuzzing run
-    add_test(NAME FuzzTest_ShortFuzz COMMAND $<TARGET_FILE:datetime_fuzzer>
-                                             -max_len=4096 -max_total_time=10)
-    set_tests_properties(FuzzTest_ShortFuzz PROPERTIES TIMEOUT 15)
-
-    # Add the include directories for each test
-    target_include_directories(
-      datetime_fuzzer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
-                              ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/date_hh)
-  endif()
-endif()

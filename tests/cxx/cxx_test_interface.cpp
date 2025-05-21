@@ -12,6 +12,12 @@
 #include "TimeSpan.hpp"
 
 int parse_test(int argc, char *argv[]) {
+  // Check for sanity
+  if(argc < 3) {
+    std::cerr << "ERROR: Invalid command line arguments" << std::endl;
+    exit(1);
+  }
+
   // Convert the argv to a string
   const auto input_string = std::string(argv[2]);
 
@@ -31,6 +37,12 @@ int parse_test(int argc, char *argv[]) {
 }
 
 int arithmetic_test(int argc, char *argv[]) {
+  // Check for sanity
+  if(argc < 7) {
+    std::cerr << "ERROR: Invalid command line arguments" << std::endl;
+    exit(1);
+  }
+
   // Convert the argv to a string
   const auto input_string = std::string(argv[2]);
 
