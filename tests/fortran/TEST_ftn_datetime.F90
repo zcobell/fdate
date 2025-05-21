@@ -689,6 +689,33 @@ contains
       call assert_equal(9999, far_future%year(), "Far future year")
    end subroutine test_datetime_extreme_values
 
+   subroutine test_datetime_invalid()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: dt_invalid, dt_valid
+
+      ! Parse a date that should be invalid and check for error
+      dt_invalid = t_datetime("applesauce")
+
+      ! Check that the date is not valid
+      call assert_false(dt_invalid%valid(), "Invalid date should not be valid")
+
+      ! Create a valid date
+      dt_valid = t_datetime(2022, 1, 31)
+      call assert_true(dt_valid%valid(), "Valid date should be valid")
+
+      dt_valid = t_datetime("2022-01-31 12:34:56", "%Y-%m-%d %H:%M:%S")
+      call assert_true(dt_valid%valid(), "Valid date from string should be valid")
+
+      dt_invalid = t_datetime("74/12/2022 12:34:56", "%y/%m/%d %H:%M:%S")
+      call assert_false(dt_invalid%valid(), "Invalid date from string should not be valid")
+
+      dt_valid = t_datetime("2025-01-01")
+      call assert_true(dt_valid%valid(), "Valid date from string should be valid")
+
+   end subroutine test_datetime_invalid
+
 end module datetime_tests
 
 program test_datetime
@@ -707,7 +734,8 @@ program test_datetime
                              test_datetime_addition_with_timespan, test_datetime_subtraction_with_timespan, &
                              test_datetime_difference, test_datetime_comparisons, &
                              test_datetime_date_wrapping, test_datetime_leap_year_handling, &
-                             test_datetime_serialization_roundtrip, test_datetime_extreme_values
+                             test_datetime_serialization_roundtrip, test_datetime_extreme_values, &
+                             test_datetime_invalid
    implicit none
 
    integer :: exit_code
@@ -749,6 +777,7 @@ program test_datetime
    call run_test(test_datetime_leap_year_handling, "DateTime Leap Year Handling")
    call run_test(test_datetime_serialization_roundtrip, "DateTime Serialization Roundtrip")
    call run_test(test_datetime_extreme_values, "DateTime Extreme Values")
+   call run_test(test_datetime_invalid, "DateTime Invalid")
 
    ! Print summary
    call print_test_summary()
