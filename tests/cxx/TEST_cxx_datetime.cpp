@@ -549,8 +549,7 @@ TEST_CASE("DateTime now method", "[datetime]") {
     DateTime now = DateTime::now();
     
     // Get current time using standard library
-    auto stdNow = std::chrono::system_clock::now();
-    auto stdTimeT = std::chrono::system_clock::to_time_t(stdNow);
+    const auto stdNow = std::chrono::system_clock::now();
     
     // We can't use std::gmtime in thread-safe way across all platforms, so 
     // we just check that now() returns a recent timestamp

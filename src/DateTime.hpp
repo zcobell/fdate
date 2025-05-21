@@ -62,7 +62,8 @@ class DateTime {
           "%Y%m%d%H%M%S",      "%Y%m%d"};
 
       for (const auto& fmt : format_options) {
-        if (auto result = DateTime::parse_string(str, fmt)) {
+        const auto result = DateTime::parse_string(str,fmt);
+        if (result) {
           return result;
         }
       }

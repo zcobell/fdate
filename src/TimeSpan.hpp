@@ -19,7 +19,6 @@
  */
 class TimeSpan {
  private:
-
   std::chrono::milliseconds m_duration;
 
   /**
@@ -158,52 +157,50 @@ class TimeSpan {
    */
   static constexpr auto to_components(const int64_t duration_ms) noexcept
       -> s_TimespanComponents {
-    s_TimespanComponents components{0, 0, 0, 0, 0};
-
     bool const negative = duration_ms < 0;
-    int64_t duration = negative ? -duration_ms : duration_ms;
+    int64_t this_duration = negative ? -duration_ms : duration_ms;
 
     const auto n_days = std::chrono::duration_cast<date::days>(
-        std::chrono::milliseconds(duration));
-    duration -=
+        std::chrono::milliseconds(this_duration));
+    this_duration -=
         std::chrono::duration_cast<std::chrono::milliseconds>(n_days).count();
     const auto n_hours = std::chrono::duration_cast<std::chrono::hours>(
-        std::chrono::milliseconds(duration));
-    duration -=
+        std::chrono::milliseconds(this_duration));
+    this_duration -=
         std::chrono::duration_cast<std::chrono::milliseconds>(n_hours).count();
     const auto n_minutes = std::chrono::duration_cast<std::chrono::minutes>(
-        std::chrono::milliseconds(duration));
-    duration -= std::chrono::duration_cast<std::chrono::milliseconds>(n_minutes)
-                    .count();
+        std::chrono::milliseconds(this_duration));
+    this_duration -=
+        std::chrono::duration_cast<std::chrono::milliseconds>(n_minutes)
+            .count();
     const auto n_seconds = std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::milliseconds(duration));
-    duration -= std::chrono::duration_cast<std::chrono::milliseconds>(n_seconds)
-                    .count();
+        std::chrono::milliseconds(this_duration));
+    this_duration -=
+        std::chrono::duration_cast<std::chrono::milliseconds>(n_seconds)
+            .count();
     const auto n_milliseconds =
         std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::milliseconds(duration));
-    duration -=
+            std::chrono::milliseconds(this_duration));
+    this_duration -=
         std::chrono::duration_cast<std::chrono::milliseconds>(n_milliseconds)
             .count();
 
-    assert(duration == 0);
+    assert(this_duration == 0);
 
-    components.days = n_days.count();
-    components.hours = n_hours.count();
-    components.minutes = n_minutes.count();
-    components.seconds = n_seconds.count();
-    components.milliseconds = n_milliseconds.count();
+    s_TimespanComponents this_components{n_days.count(), n_hours.count(),
+                                         n_minutes.count(), n_seconds.count(),
+                                         n_milliseconds.count()};
 
     // Apply negative sign if needed
     if (negative) {
-      components.days = -components.days;
-      components.hours = -components.hours;
-      components.minutes = -components.minutes;
-      components.seconds = -components.seconds;
-      components.milliseconds = -components.milliseconds;
+      this_components.days = -this_components.days;
+      this_components.hours = -this_components.hours;
+      this_components.minutes = -this_components.minutes;
+      this_components.seconds = -this_components.seconds;
+      this_components.milliseconds = -this_components.milliseconds;
     }
 
-    return components;
+    return this_components;
   }
 
   // Accessors

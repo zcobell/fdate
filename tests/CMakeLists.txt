@@ -15,7 +15,10 @@ foreach(test ${TestList})
     ${test_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src
                          ${catch2_SOURCE_DIR})
 
-  if(CDATE_ENABLE_COVERAGE)
+  target_link_libraries(${test_name} PRIVATE fdate::fdate_warnings
+                                             fdate::fdate_options)
+
+  if(FDATE_ENABLE_COVERAGE)
     set_target_properties(
       ${test_name} PROPERTIES COMPILE_FLAGS ${FDATE_COVERAGE_COMPILE_FLAGS}
                               LINK_FLAGS ${FDATE_COVERAGE_LINK_FLAGS})
@@ -45,6 +48,9 @@ if(Python3_FOUND)
   target_include_directories(
     datetime_interface SYSTEM
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../thirdparty/date_hh)
+
+  target_link_libraries(${test_name} PRIVATE fdate fdate::fdate_warnings
+                                             fdate::fdate_options)
 
   # Add a test which calls the Python script that runs random tests against
   # python's datetime library
@@ -78,7 +84,9 @@ foreach(test ${TestList})
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
   target_include_directories(${test_name} PRIVATE ${CMAKE_BINARY_DIR}/mod)
 
-  target_link_libraries(${test_name} PRIVATE fdate)
+  target_link_libraries(${test_name} PRIVATE fdate fdate::fdate_warnings
+                                             fdate::fdate_options)
+
   set_target_properties(
     ${test_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY
                             ${CMAKE_CURRENT_BINARY_DIR}/tests)
