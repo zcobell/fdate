@@ -66,6 +66,7 @@ function(
 
   if(LIST_OF_SANITIZERS)
     if(NOT "${LIST_OF_SANITIZERS}" STREQUAL "")
+      message(STATUS "Enabling sanitizers: ${LIST_OF_SANITIZERS}")
       if(NOT MSVC)
         target_compile_options(${project_name}
                                INTERFACE -fsanitize=${LIST_OF_SANITIZERS})
@@ -87,6 +88,8 @@ function(
                                     _DISABLE_STRING_ANNOTATION)
         target_link_options(${project_name} INTERFACE /INCREMENTAL:NO)
       endif()
+    else()
+      message(WARNING "No sanitizers enabled.")
     endif()
   endif()
 
