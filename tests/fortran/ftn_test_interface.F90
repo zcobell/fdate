@@ -13,7 +13,7 @@ contains
       type(t_datetime) :: dt
       integer(kind=8) :: timestamp
 
-      dt = t_datetime(date_string, "auto")
+      dt = t_datetime(date_string)
       timestamp = dt%timestamp()
       write (*, *) timestamp
 
@@ -26,7 +26,7 @@ contains
       type(t_datetime) :: dt
       type(t_timespan) :: ts
 
-      dt = t_datetime(date_string, "auto")
+      dt = t_datetime(date_string)
       ts = t_timespan(days, hours, minutes, seconds)
       dt = dt + ts
       write (*, *) dt%format("%Y-%m-%dT%H:%M:%S")

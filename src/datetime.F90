@@ -110,6 +110,7 @@ module mod_datetime
       module procedure :: datetime_complete
       module procedure :: datetime_from_timestamp
       module procedure :: datetime_parse
+      module procedure :: datetime_parse_auto
    end interface t_datetime
 
    ! Operator interfaces
@@ -903,6 +904,16 @@ contains
 
       dt%timestamp_ms = f_datetime_parse(c_str, c_format, len_trim(str), len_trim(format))
    end function datetime_parse
+
+   !> @brief Parse a DateTime from a string with automatic format detection
+   !> @param str String representation of a DateTime
+   !> @return DateTime parsed from the string
+   function datetime_parse_auto(str) result(dt)
+      implicit none
+      character(len=*), intent(in) :: str
+      type(t_datetime) :: dt
+      dt = datetime_parse(str, "auto")
+   end function datetime_parse_auto
 
    !> @brief Get the current DateTime
    !> @return DateTime representing the current time
