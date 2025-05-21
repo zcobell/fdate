@@ -11,13 +11,13 @@ A modern datetime library for Fortran that provides comprehensive date and time 
 The FDate library bridges the gap between modern C++ datetime functionality and Fortran applications. While Fortran excels in scientific computing, it has traditionally lacked robust datetime manipulation capabilities. This library provides:
 
 - Millisecond precision datetime objects
-- TimeSpan objects for duration calculations
+- TimeDelta objects for duration calculations
 - Comprehensive formatting and parsing with customizable format strings
 - Full operator overloading for natural datetime arithmetic
 - Memory-safe design using value types instead of pointers
 - Cross-platform compatibility
 
-The library uses a design where both `t_DateTime` and `t_TimeSpan` objects are represented internally as 64-bit integers (milliseconds since epoch for `t_DateTime`, total milliseconds for `t_TimeSpan`), avoiding complex memory management while maintaining full functionality.
+The library uses a design where both `t_DateTime` and `t_TimeDelta` objects are represented internally as 64-bit integers (milliseconds since epoch for `t_DateTime`, total milliseconds for `t_TimeDelta`), avoiding complex memory management while maintaining full functionality.
 
 ## Features
 
@@ -28,10 +28,10 @@ The library uses a design where both `t_DateTime` and `t_TimeSpan` objects are r
 - Get current system time
 - Extract individual components (year, month, day, etc.)
 - Full comparison operators (`==`, `<`, `>`, `<=`, `>=`, `/=`)
-- Add/subtract TimeSpans to/from DateTime objects
+- Add/subtract TimeDeltas to/from DateTime objects
 
-### TimeSpan Operations
-- Create time spans from various units (days, hours, minutes, seconds, milliseconds)
+### TimeDelta Operations
+- Create time deltas from various units (days, hours, minutes, seconds, milliseconds)
 - Extract components and total values
 - Arithmetic operations (addition, subtraction, multiplication, division)
 - Full comparison operators (`==`, `<`, `>`, `<=`, `>=`, `/=`)
@@ -64,11 +64,11 @@ module file in the installed include directory.
 
 ```fortran
 program datetime_examples
-   use mod_datetime, only: t_datetime, t_timespan, now
+   use mod_datetime, only: t_datetime, t_timedelta, now
    implicit none
    
    type(t_datetime) :: dt1, dt2, current_time
-   type(t_timespan) :: ts1, ts2, difference
+   type(t_timedelta) :: ts1, ts2, difference
    character(len=64) :: date_string
    
    ! Create a specific datetime: January 15, 2024, 14:30:45.123
@@ -92,19 +92,19 @@ program datetime_examples
 end program datetime_examples
 ```
 
-### TimeSpan Operations
+### TimeDelta Operations
 
 ```fortran
-program timespan_examples
-   use mod_datetime, only: t_timespan, t_datetime, operator(+), operator(-), operator(*), operator(/)
+program timedelta_examples
+   use mod_datetime, only: t_timedelta, t_datetime, operator(+), operator(-), operator(*), operator(/)
    implicit none
    
-   type(t_timespan) :: ts1, ts2, ts_result
+   type(t_timedelta) :: ts1, ts2, ts_result
    type(t_datetime) :: dt_start, dt_end
    
-   ! Create timespans from different units
-   ts1 = t_timespan(days=2, hours=3, minutes=45, seconds=30, milliseconds=500)
-   ts2 = t_timespan(hours=5)  ! 5 hours
+   ! Create timedeltas from different units
+   ts1 = t_timedelta(days=2, hours=3, minutes=45, seconds=30, milliseconds=500)
+   ts2 = t_timedelta(hours=5)  ! 5 hours
    
    ! Arithmetic operations
    ts_result = ts1 + ts2      ! Addition
@@ -125,25 +125,25 @@ program timespan_examples
    
    write(*,*) 'Time difference:', ts_result%to_string()
    
-end program timespan_examples
+end program timedelta_examples
 ```
 
 ### Date Arithmetic and Comparisons
 
 ```fortran
 program date_arithmetic
-   use mod_datetime, only: t_datetime, t_timespan, operator(+), operator(-), operator(<), operator(>), operator(==)
+   use mod_datetime, only: t_datetime, t_timedelta, operator(+), operator(-), operator(<), operator(>), operator(==)
    implicit none
    
    type(t_datetime) :: meeting_time, deadline, reminder
-   type(t_timespan) :: one_week, two_hours
+   type(t_timedelta) :: one_week, two_hours
    
    ! Set meeting time
    meeting_time = t_datetime(2024, 6, 15, 14, 0, 0)  ! June 15, 2PM
    
-   ! Create timespan objects
-   one_week = t_timespan(days=7)
-   two_hours = t_timespan(hours=2)
+   ! Create timedelta objects
+   one_week = t_timedelta(days=7)
+   two_hours = t_timedelta(hours=2)
    
    ! Calculate deadline (one week after meeting)
    deadline = meeting_time + one_week
@@ -232,7 +232,7 @@ The library supports standard strftime format specifiers for date formatting:
 The library handles errors gracefully:
 - Invalid date parameters return special error timestamps
 - Parsing failures are indicated by returned error values
-- Division by zero in TimeSpan operations should be avoided
+- Division by zero in TimeDelta operations should be avoided
 
 ## Thread Safety
 

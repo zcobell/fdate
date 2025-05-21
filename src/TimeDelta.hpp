@@ -27,13 +27,14 @@
 /**
  * @brief A high-precision time duration class with millisecond accuracy
  *
- * The TimeSpan class represents time intervals or durations with millisecond
+ * The TimeDelta class represents time intervals or durations with millisecond
  * precision. It can be used for time arithmetic operations and provides
  * convenient methods for creating time spans from various time units (days,
  * hours, minutes, seconds, milliseconds).
  *
- * TimeSpan objects can be added to or subtracted from DateTime objects, and can
- * be combined with other TimeSpan objects using standard arithmetic operations.
+ * TimeDelta objects can be added to or subtracted from DateTime objects, and
+ * can be combined with other TimeDelta objects using standard arithmetic
+ * operations.
  *
  * The class provides both individual component access (e.g., days(), hours())
  * and total duration access (e.g., totalDays(), totalHours()) for flexible time
@@ -43,30 +44,30 @@
  * @note Negative time spans are supported and handled correctly
  * @see DateTime for date and time point operations
  */
-class TimeSpan {
+class TimeDelta {
  private:
   /** @brief Internal duration storage with millisecond precision */
   std::chrono::milliseconds m_duration;
 
   /**
-   * @brief Private constructor from milliseconds to initialize the TimeSpan
+   * @brief Private constructor from milliseconds to initialize the TimeDelta
    *
    * @param milliseconds The duration in milliseconds
    *
    * @note This constructor is private to enforce the use of factory methods and
    * public constructors
    */
-  explicit constexpr TimeSpan(std::chrono::milliseconds milliseconds) noexcept
+  explicit constexpr TimeDelta(std::chrono::milliseconds milliseconds) noexcept
       : m_duration(milliseconds) {}
 
  public:
   /**
-   * @brief Structure to hold the decomposed components of a TimeSpan
+   * @brief Structure to hold the decomposed components of a TimeDelta
    *
-   * This structure represents a TimeSpan broken down into its constituent
-   * parts. All components can be negative if the overall TimeSpan is negative.
+   * This structure represents a TimeDelta broken down into its constituent
+   * parts. All components can be negative if the overall TimeDelta is negative.
    */
-  struct s_TimespanComponents {
+  struct s_TimedeltaComponents {
     int64_t days;          ///< Number of days component
     int64_t hours;         ///< Number of hours component (0-23)
     int64_t minutes;       ///< Number of minutes component (0-59)
@@ -77,29 +78,29 @@ class TimeSpan {
   // Constructors
 
   /**
-   * @brief Default constructor initializes the TimeSpan to zero duration
+   * @brief Default constructor initializes the TimeDelta to zero duration
    */
-  constexpr TimeSpan() noexcept : m_duration(std::chrono::milliseconds{0}) {}
+  constexpr TimeDelta() noexcept : m_duration(std::chrono::milliseconds{0}) {}
 
   /**
    * @brief Default destructor
    */
-  ~TimeSpan() = default;
+  ~TimeDelta() = default;
 
   /**
    * @brief Move constructor
    */
-  constexpr TimeSpan(TimeSpan&&) noexcept = default;
+  constexpr TimeDelta(TimeDelta&&) noexcept = default;
 
   /**
-   * @brief Constructs a TimeSpan from a components structure
+   * @brief Constructs a TimeDelta from a components structure
    *
    * @param components A structure containing the individual time components
    *
    * @note All components are summed to create the total duration
    * @note Negative components are handled correctly
    */
-  constexpr explicit TimeSpan(const s_TimespanComponents& components) noexcept
+  constexpr explicit TimeDelta(const s_TimedeltaComponents& components) noexcept
       : m_duration(std::chrono::milliseconds{
             date::days(components.days) + std::chrono::hours(components.hours) +
             std::chrono::minutes(components.minutes) +
@@ -107,7 +108,7 @@ class TimeSpan {
             std::chrono::milliseconds(components.milliseconds)}) {}
 
   /**
-   * @brief Constructs a TimeSpan from individual time components
+   * @brief Constructs a TimeDelta from individual time components
    *
    * @param days Number of days
    * @param hours Number of hours
@@ -120,109 +121,109 @@ class TimeSpan {
    * @note No validation is performed; values outside typical ranges (e.g.,
    * hours > 23) are accepted
    */
-  explicit constexpr TimeSpan(const int days, const int hours,
-                              const int minutes, const int seconds,
-                              const int milliseconds) noexcept
-      : TimeSpan(s_TimespanComponents{days, hours, minutes, seconds,
-                                      milliseconds}) {}
+  explicit constexpr TimeDelta(const int days, const int hours,
+                               const int minutes, const int seconds,
+                               const int milliseconds) noexcept
+      : TimeDelta(s_TimedeltaComponents{days, hours, minutes, seconds,
+                                        milliseconds}) {}
 
   /**
    * @brief Copy constructor
    */
-  constexpr TimeSpan(const TimeSpan&) noexcept = default;
+  constexpr TimeDelta(const TimeDelta&) noexcept = default;
 
   /**
    * @brief Copy assignment operator
    *
-   * @param other The TimeSpan to copy from
-   * @return Reference to this TimeSpan object
+   * @param other The TimeDelta to copy from
+   * @return Reference to this TimeDelta object
    */
-  [[nodiscard]] constexpr auto operator=(const TimeSpan&) noexcept
-      -> TimeSpan& = default;
+  [[nodiscard]] constexpr auto operator=(const TimeDelta&) noexcept
+      -> TimeDelta& = default;
 
   /**
    * @brief Move assignment operator
    *
-   * @param other The TimeSpan to move from
-   * @return Reference to this TimeSpan object
+   * @param other The TimeDelta to move from
+   * @return Reference to this TimeDelta object
    */
-  [[nodiscard]] constexpr auto operator=(TimeSpan&&) noexcept
-      -> TimeSpan& = default;
+  [[nodiscard]] constexpr auto operator=(TimeDelta&&) noexcept
+      -> TimeDelta& = default;
 
   // Static factory methods
 
   /**
-   * @brief Creates a TimeSpan from a number of days
+   * @brief Creates a TimeDelta from a number of days
    *
    * @param days Number of days (can be negative)
-   * @return TimeSpan object representing the specified duration
+   * @return TimeDelta object representing the specified duration
    *
    * @see fromHours(), fromMinutes(), fromSeconds(), fromMilliseconds()
    */
   [[nodiscard]] static constexpr auto fromDays(const int64_t days) noexcept
-      -> TimeSpan {
-    return TimeSpan(s_TimespanComponents{days, 0, 0, 0, 0});
+      -> TimeDelta {
+    return TimeDelta(s_TimedeltaComponents{days, 0, 0, 0, 0});
   }
 
   /**
-   * @brief Creates a TimeSpan from a number of hours
+   * @brief Creates a TimeDelta from a number of hours
    *
    * @param hours Number of hours (can be negative)
-   * @return TimeSpan object representing the specified duration
+   * @return TimeDelta object representing the specified duration
    *
    * @see fromDays(), fromMinutes(), fromSeconds(), fromMilliseconds()
    */
   [[nodiscard]] static constexpr auto fromHours(const int64_t hours) noexcept
-      -> TimeSpan {
-    return TimeSpan(s_TimespanComponents{0, hours, 0, 0, 0});
+      -> TimeDelta {
+    return TimeDelta(s_TimedeltaComponents{0, hours, 0, 0, 0});
   }
 
   /**
-   * @brief Creates a TimeSpan from a number of minutes
+   * @brief Creates a TimeDelta from a number of minutes
    *
    * @param minutes Number of minutes (can be negative)
-   * @return TimeSpan object representing the specified duration
+   * @return TimeDelta object representing the specified duration
    *
    * @see fromDays(), fromHours(), fromSeconds(), fromMilliseconds()
    */
   [[nodiscard]] static constexpr auto fromMinutes(
-      const int64_t minutes) noexcept -> TimeSpan {
-    return TimeSpan(s_TimespanComponents{0, 0, minutes, 0, 0});
+      const int64_t minutes) noexcept -> TimeDelta {
+    return TimeDelta(s_TimedeltaComponents{0, 0, minutes, 0, 0});
   }
 
   /**
-   * @brief Creates a TimeSpan from a number of seconds
+   * @brief Creates a TimeDelta from a number of seconds
    *
    * @param seconds Number of seconds (can be negative)
-   * @return TimeSpan object representing the specified duration
+   * @return TimeDelta object representing the specified duration
    *
    * @see fromDays(), fromHours(), fromMinutes(), fromMilliseconds()
    */
   [[nodiscard]] static constexpr auto fromSeconds(
-      const int64_t seconds) noexcept -> TimeSpan {
-    return TimeSpan(s_TimespanComponents{0, 0, 0, seconds, 0});
+      const int64_t seconds) noexcept -> TimeDelta {
+    return TimeDelta(s_TimedeltaComponents{0, 0, 0, seconds, 0});
   }
 
   /**
-   * @brief Creates a TimeSpan from a number of milliseconds
+   * @brief Creates a TimeDelta from a number of milliseconds
    *
    * @param milliseconds Number of milliseconds (can be negative)
-   * @return TimeSpan object representing the specified duration
+   * @return TimeDelta object representing the specified duration
    *
    * @see fromDays(), fromHours(), fromMinutes(), fromSeconds()
    */
   [[nodiscard]] static constexpr auto fromMilliseconds(
-      const int64_t milliseconds) noexcept -> TimeSpan {
-    return TimeSpan(s_TimespanComponents{0, 0, 0, 0, milliseconds});
+      const int64_t milliseconds) noexcept -> TimeDelta {
+    return TimeDelta(s_TimedeltaComponents{0, 0, 0, 0, milliseconds});
   }
 
   /**
-   * @brief Gets the TimeSpan decomposed into its constituent components
+   * @brief Gets the TimeDelta decomposed into its constituent components
    *
-   * @return s_TimespanComponents structure containing days, hours, minutes,
+   * @return s_TimedeltaComponents structure containing days, hours, minutes,
    * seconds, and milliseconds
    *
-   * @note For negative TimeSpans, all components will be negative
+   * @note For negative TimeDeltas, all components will be negative
    * @note The sum of all components equals the total duration
    * @see to_components() for static version
    */
@@ -238,7 +239,7 @@ class TimeSpan {
    * durations correctly by applying the negative sign to all components.
    *
    * @param duration_ms Duration in milliseconds (can be negative)
-   * @return s_TimespanComponents structure containing the decomposed time
+   * @return s_TimedeltaComponents structure containing the decomposed time
    * components
    *
    * @note For negative durations, all returned components will be negative
@@ -246,7 +247,7 @@ class TimeSpan {
    * @see components() for instance method version
    */
   static constexpr auto to_components(const int64_t duration_ms) noexcept
-      -> s_TimespanComponents {
+      -> s_TimedeltaComponents {
     bool const negative = duration_ms < 0;
     int64_t this_duration = negative ? -duration_ms : duration_ms;
 
@@ -277,9 +278,9 @@ class TimeSpan {
 
     assert(this_duration == 0);
 
-    s_TimespanComponents this_components{n_days.count(), n_hours.count(),
-                                         n_minutes.count(), n_seconds.count(),
-                                         n_milliseconds.count()};
+    s_TimedeltaComponents this_components{n_days.count(), n_hours.count(),
+                                          n_minutes.count(), n_seconds.count(),
+                                          n_milliseconds.count()};
 
     // Apply negative sign if needed
     if (negative) {
@@ -296,7 +297,7 @@ class TimeSpan {
   // Component Accessors
 
   /**
-   * @brief Gets the days component of the TimeSpan
+   * @brief Gets the days component of the TimeDelta
    *
    * @return int64_t The number of days (can be negative)
    *
@@ -308,10 +309,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Gets the hours component of the TimeSpan
+   * @brief Gets the hours component of the TimeDelta
    *
    * @return int64_t The number of hours component (0-23, or negative for
-   * negative TimeSpans)
+   * negative TimeDeltas)
    *
    * @note This returns only the hours component, not the total number of hours
    * @see totalHours() for the total duration expressed in hours
@@ -321,10 +322,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Gets the minutes component of the TimeSpan
+   * @brief Gets the minutes component of the TimeDelta
    *
    * @return int64_t The number of minutes component (0-59, or negative for
-   * negative TimeSpans)
+   * negative TimeDeltas)
    *
    * @note This returns only the minutes component, not the total number of
    * minutes
@@ -335,10 +336,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Gets the seconds component of the TimeSpan
+   * @brief Gets the seconds component of the TimeDelta
    *
    * @return int64_t The number of seconds component (0-59, or negative for
-   * negative TimeSpans)
+   * negative TimeDeltas)
    *
    * @note This returns only the seconds component, not the total number of
    * seconds
@@ -349,10 +350,10 @@ class TimeSpan {
   }
 
   /**
-   * @brief Gets the milliseconds component of the TimeSpan
+   * @brief Gets the milliseconds component of the TimeDelta
    *
    * @return int64_t The number of milliseconds component (0-999, or negative
-   * for negative TimeSpans)
+   * for negative TimeDeltas)
    *
    * @note This returns only the milliseconds component, not the total number of
    * milliseconds
@@ -367,7 +368,7 @@ class TimeSpan {
   /**
    * @brief Gets the total duration expressed as days
    *
-   * @return int64_t The total number of days in the TimeSpan (can be negative)
+   * @return int64_t The total number of days in the TimeDelta (can be negative)
    *
    * @note This converts the entire duration to days, truncating fractional
    * parts
@@ -380,7 +381,8 @@ class TimeSpan {
   /**
    * @brief Gets the total duration expressed as hours
    *
-   * @return int64_t The total number of hours in the TimeSpan (can be negative)
+   * @return int64_t The total number of hours in the TimeDelta (can be
+   * negative)
    *
    * @note This converts the entire duration to hours, truncating fractional
    * parts
@@ -393,7 +395,7 @@ class TimeSpan {
   /**
    * @brief Gets the total duration expressed as minutes
    *
-   * @return int64_t The total number of minutes in the TimeSpan (can be
+   * @return int64_t The total number of minutes in the TimeDelta (can be
    * negative)
    *
    * @note This converts the entire duration to minutes, truncating fractional
@@ -407,7 +409,7 @@ class TimeSpan {
   /**
    * @brief Gets the total duration expressed as seconds
    *
-   * @return int64_t The total number of seconds in the TimeSpan (can be
+   * @return int64_t The total number of seconds in the TimeDelta (can be
    * negative)
    *
    * @note This converts the entire duration to seconds, truncating fractional
@@ -421,10 +423,10 @@ class TimeSpan {
   /**
    * @brief Gets the total duration expressed as milliseconds
    *
-   * @return int64_t The total number of milliseconds in the TimeSpan (can be
+   * @return int64_t The total number of milliseconds in the TimeDelta (can be
    * negative)
    *
-   * @note This is the most precise representation of the TimeSpan's duration
+   * @note This is the most precise representation of the TimeDelta's duration
    * @see milliseconds() for only the milliseconds component
    */
   [[nodiscard]] constexpr auto totalMilliseconds() const noexcept -> int64_t {
@@ -449,60 +451,61 @@ class TimeSpan {
   // Arithmetic Operators
 
   /**
-   * @brief Adds two TimeSpan objects
+   * @brief Adds two TimeDelta objects
    *
-   * @param other The TimeSpan to add to this one
-   * @return TimeSpan A new TimeSpan representing the sum of both durations
+   * @param other The TimeDelta to add to this one
+   * @return TimeDelta A new TimeDelta representing the sum of both durations
    *
    * @see operator-() for subtraction
    */
-  [[nodiscard]] constexpr auto operator+(const TimeSpan& other) const noexcept
-      -> TimeSpan {
-    return TimeSpan(
+  [[nodiscard]] constexpr auto operator+(const TimeDelta& other) const noexcept
+      -> TimeDelta {
+    return TimeDelta(
         to_components(m_duration.count() + other.m_duration.count()));
   }
 
   /**
-   * @brief Subtracts two TimeSpan objects
+   * @brief Subtracts two TimeDelta objects
    *
-   * @param other The TimeSpan to subtract from this one
-   * @return TimeSpan A new TimeSpan representing the difference (this - other)
+   * @param other The TimeDelta to subtract from this one
+   * @return TimeDelta A new TimeDelta representing the difference (this -
+   * other)
    *
    * @see operator+() for addition
    */
-  [[nodiscard]] constexpr auto operator-(const TimeSpan& other) const noexcept
-      -> TimeSpan {
-    return TimeSpan(
+  [[nodiscard]] constexpr auto operator-(const TimeDelta& other) const noexcept
+      -> TimeDelta {
+    return TimeDelta(
         to_components(m_duration.count() - other.m_duration.count()));
   }
 
   /**
-   * @brief Multiplies the TimeSpan by a scalar factor
+   * @brief Multiplies the TimeDelta by a scalar factor
    *
    * @param factor The factor to multiply by (can be negative)
-   * @return TimeSpan A new TimeSpan representing the product
+   * @return TimeDelta A new TimeDelta representing the product
    *
-   * @note Multiplying by a negative factor reverses the TimeSpan's direction
+   * @note Multiplying by a negative factor reverses the TimeDelta's direction
    * @see operator/() for division
    */
   [[nodiscard]] constexpr auto operator*(const int64_t factor) const noexcept
-      -> TimeSpan {
-    return TimeSpan(to_components(m_duration.count() * factor));
+      -> TimeDelta {
+    return TimeDelta(to_components(m_duration.count() * factor));
   }
 
   /**
-   * @brief Divides the TimeSpan by a scalar divisor
+   * @brief Divides the TimeDelta by a scalar divisor
    *
    * @param divisor The divisor to divide by (cannot be zero)
-   * @return TimeSpan A new TimeSpan representing the quotient
+   * @return TimeDelta A new TimeDelta representing the quotient
    *
    * @note Division by zero results in undefined behavior
    * @note Integer division truncates fractional parts
    * @see operator*() for multiplication
    */
   [[nodiscard]] constexpr auto operator/(const int64_t divisor) const noexcept
-      -> TimeSpan {
-    return TimeSpan(to_components(m_duration.count() / divisor));
+      -> TimeDelta {
+    return TimeDelta(to_components(m_duration.count() / divisor));
   }
 
   // Comparison Operators
@@ -510,10 +513,10 @@ class TimeSpan {
   /**
    * @brief Equality comparison operator
    *
-   * @param other The TimeSpan to compare with
-   * @return bool True if both TimeSpans represent the same duration
+   * @param other The TimeDelta to compare with
+   * @return bool True if both TimeDeltas represent the same duration
    */
-  [[nodiscard]] constexpr auto operator==(const TimeSpan& other) const noexcept
+  [[nodiscard]] constexpr auto operator==(const TimeDelta& other) const noexcept
       -> bool {
     return m_duration == other.m_duration;
   }
@@ -521,10 +524,10 @@ class TimeSpan {
   /**
    * @brief Inequality comparison operator
    *
-   * @param other The TimeSpan to compare with
-   * @return bool True if the TimeSpans represent different durations
+   * @param other The TimeDelta to compare with
+   * @return bool True if the TimeDeltas represent different durations
    */
-  [[nodiscard]] constexpr auto operator!=(const TimeSpan& other) const noexcept
+  [[nodiscard]] constexpr auto operator!=(const TimeDelta& other) const noexcept
       -> bool {
     return m_duration != other.m_duration;
   }
@@ -532,10 +535,10 @@ class TimeSpan {
   /**
    * @brief Less than comparison operator
    *
-   * @param other The TimeSpan to compare with
-   * @return bool True if this TimeSpan is shorter than the other
+   * @param other The TimeDelta to compare with
+   * @return bool True if this TimeDelta is shorter than the other
    */
-  [[nodiscard]] constexpr auto operator<(const TimeSpan& other) const noexcept
+  [[nodiscard]] constexpr auto operator<(const TimeDelta& other) const noexcept
       -> bool {
     return m_duration < other.m_duration;
   }
@@ -543,10 +546,10 @@ class TimeSpan {
   /**
    * @brief Greater than comparison operator
    *
-   * @param other The TimeSpan to compare with
-   * @return bool True if this TimeSpan is longer than the other
+   * @param other The TimeDelta to compare with
+   * @return bool True if this TimeDelta is longer than the other
    */
-  [[nodiscard]] constexpr auto operator>(const TimeSpan& other) const noexcept
+  [[nodiscard]] constexpr auto operator>(const TimeDelta& other) const noexcept
       -> bool {
     return m_duration > other.m_duration;
   }
@@ -554,10 +557,10 @@ class TimeSpan {
   /**
    * @brief Less than or equal comparison operator
    *
-   * @param other The TimeSpan to compare with
-   * @return bool True if this TimeSpan is shorter than or equal to the other
+   * @param other The TimeDelta to compare with
+   * @return bool True if this TimeDelta is shorter than or equal to the other
    */
-  [[nodiscard]] constexpr auto operator<=(const TimeSpan& other) const noexcept
+  [[nodiscard]] constexpr auto operator<=(const TimeDelta& other) const noexcept
       -> bool {
     return m_duration <= other.m_duration;
   }
@@ -565,10 +568,10 @@ class TimeSpan {
   /**
    * @brief Greater than or equal comparison operator
    *
-   * @param other The TimeSpan to compare with
-   * @return bool True if this TimeSpan is longer than or equal to the other
+   * @param other The TimeDelta to compare with
+   * @return bool True if this TimeDelta is longer than or equal to the other
    */
-  [[nodiscard]] constexpr auto operator>=(const TimeSpan& other) const noexcept
+  [[nodiscard]] constexpr auto operator>=(const TimeDelta& other) const noexcept
       -> bool {
     return m_duration >= other.m_duration;
   }
@@ -576,13 +579,13 @@ class TimeSpan {
   // String representation
 
   /**
-   * @brief Converts the TimeSpan to a human-readable string representation
+   * @brief Converts the TimeDelta to a human-readable string representation
    *
    * The format depends on the duration:
    * - If days are present: "Nd HH:MM:SS" or "Nd HH:MM:SS.mmm"
    * - If no days: "HH:MM:SS" or "HH:MM:SS.mmm"
    * - Milliseconds are only included if non-zero
-   * - Negative TimeSpans are indicated by negative component values
+   * - Negative TimeDeltas are indicated by negative component values
    *
    * Examples:
    * - "02:30:45" (2 hours, 30 minutes, 45 seconds)
@@ -590,7 +593,7 @@ class TimeSpan {
    * milliseconds)
    * - "00:00:00.500" (500 milliseconds)
    *
-   * @return std::string A formatted string representation of the TimeSpan
+   * @return std::string A formatted string representation of the TimeDelta
    *
    * @note All components are zero-padded for consistent formatting
    * @note Days are shown without padding when present

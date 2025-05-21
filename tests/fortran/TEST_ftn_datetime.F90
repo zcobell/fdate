@@ -1,7 +1,7 @@
 !> @file test_datetime_mod.f90
 !> @brief Custom test suite for datetime_mod module without external dependencies
 !>
-!> Comprehensive test suite for both TimeSpan and DateTime functionality
+!> Comprehensive test suite for both TimeDelta and DateTime functionality
 
 module test_utils
    implicit none
@@ -122,11 +122,11 @@ contains
 
 end module test_utils
 
-module timespan_tests
+module timedelta_tests
    use test_utils, only: run_test, print_test_summary, &
                          assert_equal, assert_true, assert_false, &
                          tests_run, tests_failed
-   use mod_datetime, only: t_timespan, operator(+), operator(-), &
+   use mod_datetime, only: t_timedelta, operator(+), operator(-), &
                            operator(*), operator(/), operator(==), &
                            operator(/=), operator(<), operator(>), &
                            operator(<=), operator(>=)
@@ -136,38 +136,38 @@ module timespan_tests
 
 contains
 
-   subroutine test_timespan_default()
+   subroutine test_timedelta_default()
       use, intrinsic :: iso_fortran_env, only: int64
-      type(t_timespan) :: ts_zero
+      type(t_timedelta) :: ts_zero
 
-      ts_zero = t_timespan()
+      ts_zero = t_timedelta()
 
-      call assert_equal(0_int64, ts_zero%total_milliseconds(), "Default TimeSpan should have 0 ms")
-      call assert_equal(0, ts_zero%days(), "Default TimeSpan should have 0 days")
-      call assert_equal(0, ts_zero%hours(), "Default TimeSpan should have 0 hours")
-      call assert_equal(0, ts_zero%minutes(), "Default TimeSpan should have 0 minutes")
-      call assert_equal(0, ts_zero%seconds(), "Default TimeSpan should have 0 seconds")
-      call assert_equal(0, ts_zero%milliseconds(), "Default TimeSpan should have 0 milliseconds")
-   end subroutine test_timespan_default
+      call assert_equal(0_int64, ts_zero%total_milliseconds(), "Default TimeDelta should have 0 ms")
+      call assert_equal(0, ts_zero%days(), "Default TimeDelta should have 0 days")
+      call assert_equal(0, ts_zero%hours(), "Default TimeDelta should have 0 hours")
+      call assert_equal(0, ts_zero%minutes(), "Default TimeDelta should have 0 minutes")
+      call assert_equal(0, ts_zero%seconds(), "Default TimeDelta should have 0 seconds")
+      call assert_equal(0, ts_zero%milliseconds(), "Default TimeDelta should have 0 milliseconds")
+   end subroutine test_timedelta_default
 
-   subroutine test_timespan_components()
-      type(t_timespan) :: ts_components
+   subroutine test_timedelta_components()
+      type(t_timedelta) :: ts_components
 
-      ts_components = t_timespan(2, 3, 4, 5, 6)
+      ts_components = t_timedelta(2, 3, 4, 5, 6)
 
       call assert_equal(2, ts_components%days(), "Component days")
       call assert_equal(3, ts_components%hours(), "Component hours")
       call assert_equal(4, ts_components%minutes(), "Component minutes")
       call assert_equal(5, ts_components%seconds(), "Component seconds")
       call assert_equal(6, ts_components%milliseconds(), "Component milliseconds")
-   end subroutine test_timespan_components
+   end subroutine test_timedelta_components
 
-   subroutine test_timespan_total_accessors()
+   subroutine test_timedelta_total_accessors()
       use, intrinsic :: iso_fortran_env, only: int64
-      type(t_timespan) :: ts_components
+      type(t_timedelta) :: ts_components
       integer(kind=8) :: expected_ms
 
-      ts_components = t_timespan(2, 3, 4, 5, 6)
+      ts_components = t_timedelta(2, 3, 4, 5, 6)
 
       expected_ms = (2_int64*24*60*60*1000) + & ! 2 days
                     (3_int64*60*60*1000) + & ! 3 hours
@@ -180,13 +180,13 @@ contains
       call assert_equal(expected_ms/(60*1000), ts_components%total_minutes(), "Total minutes")
       call assert_equal(expected_ms/(60*60*1000), ts_components%total_hours(), "Total hours")
       call assert_equal(expected_ms/(24*60*60*1000), ts_components%total_days(), "Total days")
-   end subroutine test_timespan_total_accessors
+   end subroutine test_timedelta_total_accessors
 
-   subroutine test_timespan_addition()
-      type(t_timespan) :: ts1, ts2, result
+   subroutine test_timedelta_addition()
+      type(t_timedelta) :: ts1, ts2, result
 
-      ts1 = t_timespan(1, 2, 3, 4, 5)
-      ts2 = t_timespan(2, 3, 4, 5, 6)
+      ts1 = t_timedelta(1, 2, 3, 4, 5)
+      ts2 = t_timedelta(2, 3, 4, 5, 6)
 
       result = ts1 + ts2
 
@@ -195,13 +195,13 @@ contains
       call assert_equal(7, result%minutes(), "Addition - minutes")
       call assert_equal(9, result%seconds(), "Addition - seconds")
       call assert_equal(11, result%milliseconds(), "Addition - milliseconds")
-   end subroutine test_timespan_addition
+   end subroutine test_timedelta_addition
 
-   subroutine test_timespan_subtraction()
-      type(t_timespan) :: ts1, ts2, result
+   subroutine test_timedelta_subtraction()
+      type(t_timedelta) :: ts1, ts2, result
 
-      ts1 = t_timespan(3, 4, 5, 6, 7)
-      ts2 = t_timespan(1, 2, 3, 4, 5)
+      ts1 = t_timedelta(3, 4, 5, 6, 7)
+      ts2 = t_timedelta(1, 2, 3, 4, 5)
 
       result = ts1 - ts2
 
@@ -210,12 +210,12 @@ contains
       call assert_equal(2, result%minutes(), "Subtraction - minutes")
       call assert_equal(2, result%seconds(), "Subtraction - seconds")
       call assert_equal(2, result%milliseconds(), "Subtraction - milliseconds")
-   end subroutine test_timespan_subtraction
+   end subroutine test_timedelta_subtraction
 
-   subroutine test_timespan_multiplication()
-      type(t_timespan) :: ts, result
+   subroutine test_timedelta_multiplication()
+      type(t_timedelta) :: ts, result
 
-      ts = t_timespan(1, 2, 3, 4, 5)
+      ts = t_timedelta(1, 2, 3, 4, 5)
       result = ts*2
 
       call assert_equal(2, result%days(), "Multiplication - days")
@@ -223,12 +223,12 @@ contains
       call assert_equal(6, result%minutes(), "Multiplication - minutes")
       call assert_equal(8, result%seconds(), "Multiplication - seconds")
       call assert_equal(10, result%milliseconds(), "Multiplication - milliseconds")
-   end subroutine test_timespan_multiplication
+   end subroutine test_timedelta_multiplication
 
-   subroutine test_timespan_division()
-      type(t_timespan) :: ts, result
+   subroutine test_timedelta_division()
+      type(t_timedelta) :: ts, result
 
-      ts = t_timespan(2, 4, 6, 8, 10)
+      ts = t_timedelta(2, 4, 6, 8, 10)
       result = ts/2
 
       call assert_equal(1, result%days(), "Division - days")
@@ -236,22 +236,22 @@ contains
       call assert_equal(3, result%minutes(), "Division - minutes")
       call assert_equal(4, result%seconds(), "Division - seconds")
       call assert_equal(5, result%milliseconds(), "Division - milliseconds")
-   end subroutine test_timespan_division
+   end subroutine test_timedelta_division
 
-   subroutine test_timespan_comparisons()
-      type(t_timespan) :: ts1, ts2, ts3
+   subroutine test_timedelta_comparisons()
+      type(t_timedelta) :: ts1, ts2, ts3
 
-      ts1 = t_timespan(1, 0, 0, 0, 0)
-      ts2 = t_timespan(2, 0, 0, 0, 0)
-      ts3 = t_timespan(1, 0, 0, 0, 0)
+      ts1 = t_timedelta(1, 0, 0, 0, 0)
+      ts2 = t_timedelta(2, 0, 0, 0, 0)
+      ts3 = t_timedelta(1, 0, 0, 0, 0)
 
       ! Equality
-      call assert_true(ts1 == ts3, "Equality operator for equal timespans")
-      call assert_false(ts1 == ts2, "Equality operator for different timespans")
+      call assert_true(ts1 == ts3, "Equality operator for equal timedeltas")
+      call assert_false(ts1 == ts2, "Equality operator for different timedeltas")
 
       ! Inequality
-      call assert_true(ts1 /= ts2, "Inequality operator for different timespans")
-      call assert_false(ts1 /= ts3, "Inequality operator for equal timespans")
+      call assert_true(ts1 /= ts2, "Inequality operator for different timedeltas")
+      call assert_false(ts1 /= ts3, "Inequality operator for equal timedeltas")
 
       ! Less than
       call assert_true(ts1 < ts2, "Less than operator when less")
@@ -272,57 +272,57 @@ contains
       call assert_true(ts2 >= ts1, "Greater than or equal operator when greater")
       call assert_true(ts1 >= ts3, "Greater than or equal operator when equal")
       call assert_false(ts1 >= ts2, "Greater than or equal operator when less")
-   end subroutine test_timespan_comparisons
+   end subroutine test_timedelta_comparisons
 
-   subroutine test_timespan_to_string()
-      type(t_timespan) :: ts1, ts2, ts3, ts4
+   subroutine test_timedelta_to_string()
+      type(t_timedelta) :: ts1, ts2, ts3, ts4
 
-      ts1 = t_timespan(1, 2, 3, 4, 5)
-      ts2 = t_timespan(0, 2, 3, 4, 5)
-      ts3 = t_timespan(1, 2, 3, 4, 0)
-      ts4 = t_timespan(0, 2, 3, 4, 0)
+      ts1 = t_timedelta(1, 2, 3, 4, 5)
+      ts2 = t_timedelta(0, 2, 3, 4, 5)
+      ts3 = t_timedelta(1, 2, 3, 4, 0)
+      ts4 = t_timedelta(0, 2, 3, 4, 0)
 
       call assert_equal("1d 02:03:04.005", ts1%to_string(), "toString with days and ms")
       call assert_equal("02:03:04.005", ts2%to_string(), "toString without days")
       call assert_equal("1d 02:03:04", ts3%to_string(), "toString with days, no ms")
       call assert_equal("02:03:04", ts4%to_string(), "toString without days or ms")
-   end subroutine test_timespan_to_string
+   end subroutine test_timedelta_to_string
 
-   subroutine test_timespan_negative_duration()
+   subroutine test_timedelta_negative_duration()
       use, intrinsic :: iso_fortran_env, only: int64
-      type(t_timespan) :: ts_pos, ts_neg
+      type(t_timedelta) :: ts_pos, ts_neg
 
-      ts_pos = t_timespan(1, 2, 3, 4, 5)
+      ts_pos = t_timedelta(1, 2, 3, 4, 5)
       ts_neg = ts_pos*(-1)
 
-      call assert_equal(-1, ts_neg%days(), "Negative timespan - days")
-      call assert_equal(-2, ts_neg%hours(), "Negative timespan - hours")
-      call assert_equal(-3, ts_neg%minutes(), "Negative timespan - minutes")
-      call assert_equal(-4, ts_neg%seconds(), "Negative timespan - seconds")
-      call assert_equal(-5, ts_neg%milliseconds(), "Negative timespan - milliseconds")
+      call assert_equal(-1, ts_neg%days(), "Negative timedelta - days")
+      call assert_equal(-2, ts_neg%hours(), "Negative timedelta - hours")
+      call assert_equal(-3, ts_neg%minutes(), "Negative timedelta - minutes")
+      call assert_equal(-4, ts_neg%seconds(), "Negative timedelta - seconds")
+      call assert_equal(-5, ts_neg%milliseconds(), "Negative timedelta - milliseconds")
 
-      call assert_equal(-1_int64*ts_pos%total_days(), ts_neg%total_days(), "Negative timespan - total days")
-      call assert_equal(-1_int64*ts_pos%total_hours(), ts_neg%total_hours(), "Negative timespan - total hours")
-      call assert_equal(-1_int64*ts_pos%total_minutes(), ts_neg%total_minutes(), "Negative timespan - total minutes")
-      call assert_equal(-1_int64*ts_pos%total_seconds(), ts_neg%total_seconds(), "Negative timespan - total seconds")
-      call assert_equal(-1_int64*ts_pos%total_milliseconds(), ts_neg%total_milliseconds(), "Negative timespan - total ms")
-   end subroutine test_timespan_negative_duration
+      call assert_equal(-1_int64*ts_pos%total_days(), ts_neg%total_days(), "Negative timedelta - total days")
+      call assert_equal(-1_int64*ts_pos%total_hours(), ts_neg%total_hours(), "Negative timedelta - total hours")
+      call assert_equal(-1_int64*ts_pos%total_minutes(), ts_neg%total_minutes(), "Negative timedelta - total minutes")
+      call assert_equal(-1_int64*ts_pos%total_seconds(), ts_neg%total_seconds(), "Negative timedelta - total seconds")
+      call assert_equal(-1_int64*ts_pos%total_milliseconds(), ts_neg%total_milliseconds(), "Negative timedelta - total ms")
+   end subroutine test_timedelta_negative_duration
 
-   subroutine test_timespan_overflow_handling()
+   subroutine test_timedelta_overflow_handling()
       use, intrinsic :: iso_fortran_env, only: int64
-      use mod_datetime, only: t_timespan
+      use mod_datetime, only: t_timedelta
       implicit none
-      type(t_timespan) :: ts
+      type(t_timedelta) :: ts
 
       ! 25 hours should become 1 day 1 hour
-      ts = t_timespan(hours=25)
+      ts = t_timedelta(hours=25)
 
       call assert_equal(1, ts%days(), "Overflow 25 hours - days")
       call assert_equal(1, ts%hours(), "Overflow 25 hours - hours")
       call assert_equal(25_int64, ts%total_hours(), "Overflow 25 hours - total hours")
 
       ! 60 minutes should become 1 hour
-      ts = t_timespan(minutes=60)
+      ts = t_timedelta(minutes=60)
 
       call assert_equal(0, ts%days(), "Overflow 60 minutes - days")
       call assert_equal(1, ts%hours(), "Overflow 60 minutes - hours")
@@ -330,7 +330,7 @@ contains
       call assert_equal(60_int64, ts%total_minutes(), "Overflow 60 minutes - total minutes")
 
       ! 60 seconds should become 1 minute
-      ts = t_timespan(seconds=60)
+      ts = t_timedelta(seconds=60)
 
       call assert_equal(0, ts%days(), "Overflow 60 seconds - days")
       call assert_equal(0, ts%hours(), "Overflow 60 seconds - hours")
@@ -339,7 +339,7 @@ contains
       call assert_equal(60_int64, ts%total_seconds(), "Overflow 60 seconds - total seconds")
 
       ! 1000 milliseconds should become 1 second
-      ts = t_timespan(milliseconds=1000)
+      ts = t_timedelta(milliseconds=1000)
 
       call assert_equal(0, ts%days(), "Overflow 1000 ms - days")
       call assert_equal(0, ts%hours(), "Overflow 1000 ms - hours")
@@ -347,15 +347,15 @@ contains
       call assert_equal(1, ts%seconds(), "Overflow 1000 ms - seconds")
       call assert_equal(0, ts%milliseconds(), "Overflow 1000 ms - milliseconds")
       call assert_equal(1000_int64, ts%total_milliseconds(), "Overflow 1000 ms - total milliseconds")
-   end subroutine test_timespan_overflow_handling
+   end subroutine test_timedelta_overflow_handling
 
-end module timespan_tests
+end module timedelta_tests
 
 module datetime_tests
    use test_utils, only: run_test, print_test_summary, &
                          assert_equal, assert_true, assert_false, &
                          tests_run, tests_failed
-   use mod_datetime, only: t_datetime, t_timespan, now
+   use mod_datetime, only: t_datetime, t_timedelta, now
    implicit none
 
    public
@@ -506,16 +506,16 @@ contains
       call assert_true(dt_now%millisecond() >= 0 .and. dt_now%millisecond() <= 999, "Now() millisecond in valid range")
    end subroutine test_datetime_now
 
-   subroutine test_datetime_addition_with_timespan()
-      use mod_datetime, only: t_datetime, t_timespan, operator(+)
+   subroutine test_datetime_addition_with_timedelta()
+      use mod_datetime, only: t_datetime, t_timedelta, operator(+)
       implicit none
       type(t_datetime) :: dt, result
-      type(t_timespan) :: ts
+      type(t_timedelta) :: ts
 
       dt = t_datetime(2022, 1, 15, 12, 0, 0, 0)
 
       ! Add 10 days
-      ts = t_timespan(days=10)
+      ts = t_timedelta(days=10)
       result = dt + ts
 
       call assert_equal(2022, result%year(), "Add 10 days - year")
@@ -524,25 +524,25 @@ contains
       call assert_equal(12, result%hour(), "Add 10 days - hour")
 
       ! Add 12 hours
-      ts = t_timespan(hours=12)
+      ts = t_timedelta(hours=12)
       result = dt + ts
 
       call assert_equal(2022, result%year(), "Add 12 hours - year")
       call assert_equal(1, result%month(), "Add 12 hours - month")
       call assert_equal(16, result%day(), "Add 12 hours - day")
       call assert_equal(0, result%hour(), "Add 12 hours - hour")
-   end subroutine test_datetime_addition_with_timespan
+   end subroutine test_datetime_addition_with_timedelta
 
-   subroutine test_datetime_subtraction_with_timespan()
-      use mod_datetime, only: t_datetime, t_timespan, operator(-)
+   subroutine test_datetime_subtraction_with_timedelta()
+      use mod_datetime, only: t_datetime, t_timedelta, operator(-)
       implicit none
       type(t_datetime) :: dt, result
-      type(t_timespan) :: ts
+      type(t_timedelta) :: ts
 
       dt = t_datetime(2022, 1, 15, 12, 0, 0, 0)
 
       ! Subtract 10 days
-      ts = t_timespan(days=10)
+      ts = t_timedelta(days=10)
       result = dt - ts
 
       call assert_equal(2022, result%year(), "Subtract 10 days - year")
@@ -551,20 +551,20 @@ contains
       call assert_equal(12, result%hour(), "Subtract 10 days - hour")
 
       ! Subtract 13 hours
-      ts = t_timespan(hours=13)
+      ts = t_timedelta(hours=13)
       result = dt - ts
 
       call assert_equal(2022, result%year(), "Subtract 13 hours - year")
       call assert_equal(1, result%month(), "Subtract 13 hours - month")
       call assert_equal(14, result%day(), "Subtract 13 hours - day")
       call assert_equal(23, result%hour(), "Subtract 13 hours - hour")
-   end subroutine test_datetime_subtraction_with_timespan
+   end subroutine test_datetime_subtraction_with_timedelta
 
    subroutine test_datetime_difference()
       use, intrinsic :: iso_fortran_env, only: int64
-      use mod_datetime, only: t_datetime, t_timespan, operator(-)
+      use mod_datetime, only: t_datetime, t_timedelta, operator(-)
       type(t_datetime) :: dt1, dt2
-      type(t_timespan) :: diff
+      type(t_timedelta) :: diff
 
       dt1 = t_datetime(2022, 1, 15, 12, 0, 0, 0)
       dt2 = t_datetime(2022, 1, 20, 18, 30, 0, 0)
@@ -615,13 +615,13 @@ contains
    end subroutine test_datetime_comparisons
 
    subroutine test_datetime_date_wrapping()
-      use mod_datetime, only: t_datetime, t_timespan, operator(+)
+      use mod_datetime, only: t_datetime, t_timedelta, operator(+)
       type(t_datetime) :: dt, result
-      type(t_timespan) :: ts
+      type(t_timedelta) :: ts
 
       ! Create a date and add enough time to wrap to the next month
       dt = t_datetime(2022, 1, 31)
-      ts = t_timespan(days=1)
+      ts = t_timedelta(days=1)
       result = dt + ts
 
       call assert_equal(2022, result%year(), "Date wrapping month - year")
@@ -630,7 +630,7 @@ contains
 
       ! Create a date and add enough time to wrap to the next year
       dt = t_datetime(2022, 12, 31)
-      ts = t_timespan(days=1)
+      ts = t_timedelta(days=1)
       result = dt + ts
 
       call assert_equal(2023, result%year(), "Date wrapping year - year")
@@ -639,15 +639,15 @@ contains
    end subroutine test_datetime_date_wrapping
 
    subroutine test_datetime_leap_year_handling()
-      use mod_datetime, only: t_datetime, t_timespan, operator(+)
+      use mod_datetime, only: t_datetime, t_timedelta, operator(+)
       type(t_datetime) :: leap_day, next_year
-      type(t_timespan) :: ts
+      type(t_timedelta) :: ts
 
       ! Test February 29 in leap year
       leap_day = t_datetime(2020, 2, 29)
 
       ! Add one year
-      ts = t_timespan(days=366)
+      ts = t_timedelta(days=366)
       next_year = leap_day + ts
 
       ! Should be March 1, 2021 (2020 was a leap year)
@@ -722,16 +722,16 @@ program test_datetime
    use test_utils, only: run_test, print_test_summary, &
                          assert_equal, assert_true, assert_false, &
                          tests_run, tests_failed
-   use timespan_tests, only: test_timespan_default, test_timespan_components, &
-                             test_timespan_total_accessors, test_timespan_addition, &
-                             test_timespan_subtraction, test_timespan_multiplication, &
-                             test_timespan_division, test_timespan_comparisons, &
-                             test_timespan_to_string, test_timespan_negative_duration, &
-                             test_timespan_overflow_handling
+   use timedelta_tests, only: test_timedelta_default, test_timedelta_components, &
+                              test_timedelta_total_accessors, test_timedelta_addition, &
+                              test_timedelta_subtraction, test_timedelta_multiplication, &
+                              test_timedelta_division, test_timedelta_comparisons, &
+                              test_timedelta_to_string, test_timedelta_negative_duration, &
+                              test_timedelta_overflow_handling
    use datetime_tests, only: test_datetime_default, test_datetime_ymd, &
                              test_datetime_complete, test_datetime_from_timestamp, &
                              test_datetime_parse, test_datetime_format, test_datetime_now, &
-                             test_datetime_addition_with_timespan, test_datetime_subtraction_with_timespan, &
+                             test_datetime_addition_with_timedelta, test_datetime_subtraction_with_timedelta, &
                              test_datetime_difference, test_datetime_comparisons, &
                              test_datetime_date_wrapping, test_datetime_leap_year_handling, &
                              test_datetime_serialization_roundtrip, test_datetime_extreme_values, &
@@ -746,19 +746,19 @@ program test_datetime
    write (*, '(A)') "----------------------------------------"
    write (*, '(A)') ""
 
-   ! TimeSpan tests
-   write (*, '(A)') "=========== TimeSpan Tests ==========="
-   call run_test(test_timespan_default, "TimeSpan Default Constructor")
-   call run_test(test_timespan_components, "TimeSpan Components Constructor")
-   call run_test(test_timespan_total_accessors, "TimeSpan Total Accessors")
-   call run_test(test_timespan_addition, "TimeSpan Addition")
-   call run_test(test_timespan_subtraction, "TimeSpan Subtraction")
-   call run_test(test_timespan_multiplication, "TimeSpan Multiplication")
-   call run_test(test_timespan_division, "TimeSpan Division")
-   call run_test(test_timespan_comparisons, "TimeSpan Comparisons")
-   call run_test(test_timespan_to_string, "TimeSpan ToString")
-   call run_test(test_timespan_negative_duration, "TimeSpan Negative Duration")
-   call run_test(test_timespan_overflow_handling, "TimeSpan Overflow Handling")
+   ! TimeDelta tests
+   write (*, '(A)') "=========== TimeDelta Tests ==========="
+   call run_test(test_timedelta_default, "TimeDelta Default Constructor")
+   call run_test(test_timedelta_components, "TimeDelta Components Constructor")
+   call run_test(test_timedelta_total_accessors, "TimeDelta Total Accessors")
+   call run_test(test_timedelta_addition, "TimeDelta Addition")
+   call run_test(test_timedelta_subtraction, "TimeDelta Subtraction")
+   call run_test(test_timedelta_multiplication, "TimeDelta Multiplication")
+   call run_test(test_timedelta_division, "TimeDelta Division")
+   call run_test(test_timedelta_comparisons, "TimeDelta Comparisons")
+   call run_test(test_timedelta_to_string, "TimeDelta ToString")
+   call run_test(test_timedelta_negative_duration, "TimeDelta Negative Duration")
+   call run_test(test_timedelta_overflow_handling, "TimeDelta Overflow Handling")
 
    ! DateTime tests
    write (*, '(A)') "=========== DateTime Tests ==========="
@@ -769,8 +769,8 @@ program test_datetime
    call run_test(test_datetime_parse, "DateTime Parse")
    call run_test(test_datetime_format, "DateTime Format")
    call run_test(test_datetime_now, "DateTime Now")
-   call run_test(test_datetime_addition_with_timespan, "DateTime Addition with TimeSpan")
-   call run_test(test_datetime_subtraction_with_timespan, "DateTime Subtraction with TimeSpan")
+   call run_test(test_datetime_addition_with_timedelta, "DateTime Addition with TimeDelta")
+   call run_test(test_datetime_subtraction_with_timedelta, "DateTime Subtraction with TimeDelta")
    call run_test(test_datetime_difference, "DateTime Difference")
    call run_test(test_datetime_comparisons, "DateTime Comparisons")
    call run_test(test_datetime_date_wrapping, "DateTime Date Wrapping")

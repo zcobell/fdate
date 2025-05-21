@@ -9,11 +9,11 @@
 #include <string>
 
 #include "DateTime.hpp"
-#include "TimeSpan.hpp"
+#include "TimeDelta.hpp"
 
 int parse_test(int argc, char *argv[]) {
   // Check for sanity
-  if(argc < 3) {
+  if (argc < 3) {
     std::cerr << "ERROR: Invalid command line arguments" << std::endl;
     exit(1);
   }
@@ -38,7 +38,7 @@ int parse_test(int argc, char *argv[]) {
 
 int arithmetic_test(int argc, char *argv[]) {
   // Check for sanity
-  if(argc < 7) {
+  if (argc < 7) {
     std::cerr << "ERROR: Invalid command line arguments" << std::endl;
     exit(1);
   }
@@ -60,7 +60,7 @@ int arithmetic_test(int argc, char *argv[]) {
   const int hours = std::stoi(argv[4]);
   const int minutes = std::stoi(argv[5]);
   const int seconds = std::stoi(argv[6]);
-  const auto dt = TimeSpan(days, hours, minutes, seconds, 0);
+  const auto dt = TimeDelta(days, hours, minutes, seconds, 0);
 
   // Add
   const auto result = *start_time + dt;

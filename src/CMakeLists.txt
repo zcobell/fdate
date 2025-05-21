@@ -4,7 +4,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/SystemLink.cmake)
 set(FDATE_SOURCES datetime_wrapper.cpp datetime.F90)
 
 # Public headers that will be installed
-set(FDATE_PUBLIC_HEADERS DateTime.hpp TimeSpan.hpp)
+set(FDATE_PUBLIC_HEADERS DateTime.hpp TimeDelta.hpp)
 
 # Check for features
 include(CheckCXXSourceCompiles)
