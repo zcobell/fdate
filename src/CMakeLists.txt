@@ -18,14 +18,7 @@ add_library(fdate_interface INTERFACE)
 
 # Create object library
 add_library(fdate_objectlib OBJECT ${FDATE_SOURCES})
-
-# Main library target
-if(FDATE_BUILD_SHARED)
-  set(FDATE_LIBRARY_TYPE SHARED)
-else()
-  set(FDATE_LIBRARY_TYPE STATIC)
-endif()
-add_library(fdate ${FDATE_LIBRARY_TYPE} $<TARGET_OBJECTS:fdate_objectlib>)
+add_library(fdate $<TARGET_OBJECTS:fdate_objectlib>)
 
 # Add alias for consistent naming
 add_library(fdate::fdate ALIAS fdate)
