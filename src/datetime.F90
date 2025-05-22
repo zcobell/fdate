@@ -297,8 +297,8 @@ module mod_datetime
          import :: c_int64_t, c_int, c_char
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
-         character(kind=c_char), intent(inout) :: buffer(buffer_size)
          integer(c_int), intent(in), value :: buffer_size
+         character(kind=c_char), intent(inout) :: buffer(buffer_size)
       end subroutine f_timedelta_to_string
 
       !> @brief Check if two TimeDeltas are equal
@@ -363,9 +363,9 @@ module mod_datetime
          bind(C, name="f_datetime_parse")
          import :: c_int64_t, c_char, c_int
          implicit none
+         integer(c_int), intent(in), value :: str_len, format_len
          character(kind=c_char), intent(in) :: fmt(format_len)
          character(kind=c_char), intent(inout) :: str(str_len)
-         integer(c_int), intent(in), value :: str_len, format_len
          integer(c_int64_t) :: dt_ms
       end function f_datetime_parse
 
@@ -458,9 +458,9 @@ module mod_datetime
          import :: c_int64_t, c_char, c_int
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int), intent(in), value :: format_len, buffer_size
          character(kind=c_char), intent(in) :: format(format_len)
          character(kind=c_char), intent(inout) :: buffer(buffer_size)
-         integer(c_int), intent(in), value :: format_len, buffer_size
       end subroutine f_datetime_format
 
       !> @brief Get the timestamp (milliseconds since epoch) from a DateTime
@@ -469,9 +469,9 @@ module mod_datetime
          import :: c_int64_t, c_char, c_int
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int), intent(in), value :: format_len, buffer_size
          character(kind=c_char), intent(in) :: format(format_len)
          character(kind=c_char), intent(inout) :: buffer(buffer_size)
-         integer(c_int), intent(in), value :: format_len, buffer_size
       end subroutine f_datetime_format_ms
 
       !> @brief Convert a DateTime to an ISO 8601 string
@@ -480,8 +480,8 @@ module mod_datetime
          import :: c_int64_t, c_char, c_int
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
-         character(kind=c_char), intent(inout) :: buffer(buffer_size)
          integer(c_int), intent(in), value :: buffer_size
+         character(kind=c_char), intent(inout) :: buffer(buffer_size)
       end subroutine f_datetime_to_iso_string
 
       !> @brief Check if two DateTimes are equal
