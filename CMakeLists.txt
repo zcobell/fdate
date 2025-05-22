@@ -21,7 +21,11 @@ fdate_setup_dependencies()
 option(FDATE_ENABLE_FORTRAN "Build Fortran interface" ON)
 
 add_subdirectory(src)
-option(FDATE_BUILD_SHARED "Build shared FDATE library" ON)
+
+# If the shared build option was not set by a parent project, set it to ON by default
+if(NOT DEFINED FDATE_BUILD_SHARED)
+  option(FDATE_BUILD_SHARED "Build shared FDATE library" ON)
+endif()
 
 option(FDATE_ENABLE_TESTING "Enable FDATE testing" OFF)
 if(FDATE_ENABLE_TESTING)
