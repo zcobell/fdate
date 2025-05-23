@@ -18,8 +18,8 @@
 #pragma once
 
 #include <array>
+#include <cassert>
 #include <chrono>
-#include <iostream>
 #include <limits>
 #include <optional>
 #include <sstream>
@@ -42,6 +42,11 @@
  * @note All timestamps are stored as milliseconds since the Unix epoch
  * (1970-01-01 00:00:00 UTC)
  * @see TimeDelta for time duration operations
+ *
+ * @note Thread Safety: All DateTime operations are thread-safe for read-only
+ * operations. Parsing operations are thread-safe as they don't modify the
+ * global state. Error handling writes to stderr which may interleave in
+ * multithreaded environments.
  */
 class DateTime {
  private:
@@ -60,6 +65,20 @@ class DateTime {
   /** @brief Constant representing an invalid DateTime object */
   static constexpr auto INVALID_TIME_POINT =
       time_point(std::chrono::milliseconds(INVALID_TIMESTAMP));
+
+  static constexpr int DATETIME_MIN_YEAR = 0;
+  static constexpr int DATETIME_MIN_MONTH = 1;
+  static constexpr int DATETIME_MAX_MONTH = 12;
+  static constexpr int DATETIME_MAX_DAYS = 31;
+  static constexpr int DATETIME_MIN_DAYS = 1;
+  static constexpr int DATETIME_MAX_HOURS = 23;
+  static constexpr int DATETIME_MIN_HOURS = 0;
+  static constexpr int DATETIME_MAX_MINUTES = 59;
+  static constexpr int DATETIME_MIN_MINUTES = 0;
+  static constexpr int DATETIME_MAX_SECONDS = 59;
+  static constexpr int DATETIME_MIN_SECONDS = 0;
+  static constexpr int DATETIME_MAX_MILLISECONDS = 999;
+  static constexpr int DATETIME_MIN_MILLISECONDS = 0;
 
   // Constructors
 
@@ -96,7 +115,16 @@ class DateTime {
                            date::day{day}} +
             std::chrono::hours{hour} + std::chrono::minutes{minute} +
             std::chrono::seconds{second} +
-            std::chrono::milliseconds{millisecond})) {}
+            std::chrono::milliseconds{millisecond})) {
+#ifndef NDEBUG
+    assert(month >= DATETIME_MIN_MONTH && month <= DATETIME_MAX_MONTH);
+    assert(day >= DATETIME_MIN_DAYS && day <= DATETIME_MAX_DAYS);
+    assert(hour <= DATETIME_MAX_HOURS);
+    assert(minute <= DATETIME_MAX_MINUTES);
+    assert(second <= DATETIME_MAX_SECONDS);
+    assert(millisecond <= DATETIME_MAX_MILLISECONDS);
+#endif
+  }
 
   /**
    * @brief Constructs a DateTime from a timestamp

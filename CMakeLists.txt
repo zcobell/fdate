@@ -1,9 +1,16 @@
 cmake_minimum_required(VERSION 3.14)
 project(fdate VERSION 0.0.1)
 include(CPack)
+include(CheckCXXCompilerFlag)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
+if(COMPILER_SUPPORTS_CXX17)
+  set(CMAKE_CXX_STANDARD 17)
+  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+else()
+  message(
+    FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} does not support C++17.")
+endif()
 
 enable_language(CXX)
 enable_language(Fortran)

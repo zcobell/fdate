@@ -28,9 +28,9 @@ module mod_datetime
    implicit none
 
    private
-   public :: t_timedelta, t_datetime, now
-   public :: operator(+), operator(-), operator(*), operator(/), operator(==), &
-             operator(/=), operator(<), operator(>), operator(<=), operator(>=)
+
+   integer, parameter :: DATETIME_STRING_BUFFER_SIZE = 64
+   integer, parameter :: TIMEDELTA_STRING_BUFFER_SIZE = 64
 
    !> @brief A span of time with various components
    !>
@@ -533,6 +533,10 @@ module mod_datetime
       end function f_datetime_is_valid
    end interface
 
+   public :: t_timedelta, t_datetime, now
+   public :: operator(+), operator(-), operator(*), operator(/), operator(==)
+   public :: operator(/=), operator(<), operator(>), operator(<=), operator(>=)
+
 contains
 
    !===========================================================================
@@ -702,10 +706,10 @@ contains
    function timedelta_to_string(this) result(str)
       implicit none
       class(t_timedelta), intent(in) :: this
-      character(len=64) :: str
-      character(kind=c_char), dimension(65) :: c_str
+      character(len=TIMEDELTA_STRING_BUFFER_SIZE) :: str
+      character(kind=c_char), dimension(TIMEDELTA_STRING_BUFFER_SIZE + 1) :: c_str
 
-      call f_timedelta_to_string(this%ms_count, c_str, 65)
+      call f_timedelta_to_string(this%ms_count, c_str, TIMEDELTA_STRING_BUFFER_SIZE + 1)
       call c_f_string(c_str, str)
    end function timedelta_to_string
 
@@ -1058,7 +1062,7 @@ contains
       class(t_datetime), intent(in) :: this
       character(len=*), intent(in) :: date_format
       logical, intent(in), optional :: show_milliseconds
-      character(len=64) :: str
+      character(len=DATETIME_STRING_BUFFER_SIZE) :: str
 
       ! Convert Fortran string to C-compatible character array
       character(kind=c_char, len=1) :: c_format(len_trim(date_format) + 1), c_str(65)
@@ -1077,9 +1081,9 @@ contains
       end if
 
       if (show_milliseconds_l) then
-         call f_datetime_format_ms(this%timestamp_ms, c_format, c_str, len_trim(date_format), 65)
+         call f_datetime_format_ms(this%timestamp_ms, c_format, c_str, len_trim(date_format), DATETIME_STRING_BUFFER_SIZE + 1)
       else
-         call f_datetime_format(this%timestamp_ms, c_format, c_str, len_trim(date_format), 65)
+         call f_datetime_format(this%timestamp_ms, c_format, c_str, len_trim(date_format), DATETIME_STRING_BUFFER_SIZE + 1)
       end if
 
       call c_f_string(c_str, str)
@@ -1093,10 +1097,10 @@ contains
    function datetime_to_iso_string(this, msec) result(str)
       implicit none
       class(t_datetime), intent(in) :: this
-      character(len=64) :: str
+      character(len=DATETIME_STRING_BUFFER_SIZE) :: str
       logical, intent(in), optional :: msec
 
-      character(kind=c_char, len=1) :: c_str(65)
+      character(kind=c_char, len=1) :: c_str(DATETIME_STRING_BUFFER_SIZE + 1)
       logical :: msec_l
 
       if (present(msec)) then
@@ -1253,8 +1257,8 @@ contains
    !> @param f_string Fortran string
    subroutine c_f_string(c_string, f_string)
       implicit none
-      character(kind=c_char), dimension(65), intent(in) :: c_string
-      character(len=64), intent(out) :: f_string
+      character(kind=c_char), dimension(DATETIME_STRING_BUFFER_SIZE + 1), intent(in) :: c_string
+      character(len=DATETIME_STRING_BUFFER_SIZE), intent(out) :: f_string
       integer :: i
 
       f_string = ""

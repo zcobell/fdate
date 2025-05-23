@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <iostream>
 #include <optional>
 #include <string>
 
@@ -245,11 +246,19 @@ auto f_timedelta_divide(const int64_t ts_ms, const int divisor) -> int64_t {
  */
 void f_timedelta_to_string(const int64_t ts_ms, char* buffer,
                            const int buffer_size) {
+  if (buffer_size <= 0 || buffer == nullptr) {
+    std::cerr << "[ERROR]: Invalid buffer size or null buffer\n";
+    return;
+  }
+
   const TimeDelta time_delta(TimeDelta::to_components(ts_ms));
   const std::string str = time_delta.toString();
-  const auto buffer_size_t = static_cast<size_t>(buffer_size - 1);
-  strncpy(buffer, str.c_str(), buffer_size_t);
-  buffer[buffer_size - 1] = '\0';
+
+  const size_t copy_length =
+      std::min(static_cast<size_t>(buffer_size - 1), str.length());
+
+  strncpy(buffer, str.c_str(), copy_length);
+  buffer[copy_length] = '\0';
 }
 
 /**
@@ -291,10 +300,11 @@ auto f_timedelta_greater_than(const int64_t ts1_ms, const int64_t ts2_ms)
  *
  * @param ts1_ms First TimeDelta as milliseconds
  * @param ts2_ms Second TimeDelta as milliseconds
- * @return int 1 if ts1 <= ts2, 0 otherwise
+ * @return true if ts1 <= ts2, false otherwise
  */
-auto f_timedelta_less_equal(const int64_t ts1_ms, const int64_t ts2_ms) -> int {
-  return ts1_ms <= ts2_ms ? 1 : 0;
+auto f_timedelta_less_equal(const int64_t ts1_ms, const int64_t ts2_ms)
+    -> bool {
+  return ts1_ms <= ts2_ms;
 }
 
 /**
@@ -302,11 +312,11 @@ auto f_timedelta_less_equal(const int64_t ts1_ms, const int64_t ts2_ms) -> int {
  *
  * @param ts1_ms First TimeDelta as milliseconds
  * @param ts2_ms Second TimeDelta as milliseconds
- * @return int 1 if ts1 >= ts2, 0 otherwise
+ * @return true if ts1 >= ts2, false otherwise
  */
 auto f_timedelta_greater_equal(const int64_t ts1_ms, const int64_t ts2_ms)
-    -> int {
-  return ts1_ms >= ts2_ms ? 1 : 0;
+    -> bool {
+  return ts1_ms >= ts2_ms;
 }
 
 //=============================================================================
@@ -328,10 +338,18 @@ auto f_timedelta_greater_equal(const int64_t ts1_ms, const int64_t ts2_ms)
 auto f_datetime_create(const int year, const int month, const int day,
                        const int hour, const int minute, const int second,
                        const int millisecond) -> int64_t {
-  // Check that all the ints coming from fortran are valid (>0), then cast
-  // them to unsigned
-  if (year < 0 || month < 0 || day < 0 || hour < 0 || minute < 0 ||
-      second < 0 || millisecond < 0) {
+  if (year < DateTime::DATETIME_MIN_YEAR ||
+      month < DateTime::DATETIME_MIN_MONTH ||
+      month > DateTime::DATETIME_MAX_MONTH ||
+      day < DateTime::DATETIME_MIN_DAYS || day > DateTime::DATETIME_MAX_DAYS ||
+      hour < DateTime::DATETIME_MIN_HOURS ||
+      hour > DateTime::DATETIME_MAX_HOURS ||
+      minute < DateTime::DATETIME_MIN_MINUTES ||
+      minute > DateTime::DATETIME_MAX_MINUTES ||
+      second < DateTime::DATETIME_MIN_SECONDS ||
+      second > DateTime::DATETIME_MAX_SECONDS ||
+      millisecond < DateTime::DATETIME_MIN_MILLISECONDS ||
+      millisecond > DateTime::DATETIME_MAX_MILLISECONDS) {
     return DateTime::INVALID_TIMESTAMP;
   } else {
     const auto u_month = static_cast<unsigned>(month);
@@ -365,26 +383,29 @@ auto f_datetime_now() -> int64_t { return DateTime::now().timestamp(); }
 auto f_datetime_parse(const char* str, const char* format, const int str_len,
                       const int format_len) -> int64_t {
   // Cast the lengths coming from fortran over to size_t
-  if (str_len <= 0) {
+  if (str_len <= 0 || format == nullptr) {
     return DateTime::INVALID_TIMESTAMP;
   }
 
-  if (format_len <= 0) {
+  if (format_len <= 0 || str == nullptr) {
     return DateTime::INVALID_TIMESTAMP;
   }
 
-  const auto str_len_t = static_cast<size_t>(str_len);
-  const auto format_len_t = static_cast<size_t>(format_len);
+  try {
+    const auto str_len_t = static_cast<size_t>(str_len);
+    const auto format_len_t = static_cast<size_t>(format_len);
 
-  // Create null-terminated strings from Fortran character arrays
-  const std::string str_cpp(str, str_len_t);
-  const std::string format_cpp(format, format_len_t);
+    // Create strings from Fortran character arrays
+    const std::string str_cpp(str, str_len_t);
+    const std::string format_cpp(format, format_len_t);
 
-  const auto date_time = DateTime::parse(str_cpp, format_cpp);
-  if (date_time.has_value()) {
-    return date_time->timestamp();
-  } else {
-    // Handle parsing error (return 0 or some error code)
+    const auto date_time = DateTime::parse(str_cpp, format_cpp);
+    if (date_time.has_value()) {
+      return date_time->timestamp();
+    } else {
+      return DateTime::INVALID_TIMESTAMP;
+    }
+  } catch (...) {
     return DateTime::INVALID_TIMESTAMP;
   }
 }
@@ -519,8 +540,9 @@ auto f_datetime_difference(const int64_t dt1_ms, const int64_t dt2_ms)
  */
 void f_datetime_format(const int64_t dt_ms, const char* format, char* buffer,
                        const int format_len, const int buffer_size) {
-  if (format_len <= 0 || buffer_size <= 0) {
-    std::cerr << "Invalid format or buffer size\n";
+  if (format_len <= 0 || buffer_size <= 0 || format == nullptr ||
+      buffer == nullptr) {
+    std::cerr << "[ERROR]: Invalid format/buffer size or null buffer/format\n";
     return;
   }
 
@@ -546,8 +568,9 @@ void f_datetime_format(const int64_t dt_ms, const char* format, char* buffer,
 void f_datetime_format_milliseconds(const int64_t dt_ms, const char* format,
                                     char* buffer, const int format_len,
                                     const int buffer_size) {
-  if (format_len <= 0 || buffer_size <= 0) {
-    std::cerr << "Invalid format or buffer size\n";
+  if (format_len <= 0 || buffer_size <= 0 || format == nullptr ||
+      buffer == nullptr) {
+    std::cerr << "[ERROR]: Invalid format/buffer size or null format/buffer\n";
     return;
   }
 
@@ -570,8 +593,8 @@ void f_datetime_format_milliseconds(const int64_t dt_ms, const char* format,
  */
 void f_datetime_to_iso_string(const int64_t dt_ms, char* buffer,
                               const int buffer_size) {
-  if (buffer_size <= 0) {
-    std::cerr << "Invalid buffer size\n";
+  if (buffer_size <= 0 || buffer == nullptr) {
+    std::cerr << "[ERROR]: Invalid buffer size or null buffer\n";
     return;
   }
 
