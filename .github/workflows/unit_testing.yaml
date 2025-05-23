@@ -40,7 +40,7 @@ jobs:
           cmake -B build \
             -DFDATE_ENABLE_TESTING=ON \
             -DFDATE_BUILD_SHARED=OFF \
-            -DFDATE_MAINTAINER_MODE=ON \
+            -DFDATE_DEVELOPER_MODE=ON \
             -G Ninja 
 
       - name: Configure (Windows)

@@ -35,8 +35,8 @@ macro(fdate_setup_options)
 
   option(FDATE_ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
-  if(NOT PROJECT_IS_TOP_LEVEL OR NOT FDATE_MAINTAINER_MODE)
-    option(fdate_MAINTAINER_MODE "Enable maintainer mode" OFF)
+  if(NOT PROJECT_IS_TOP_LEVEL OR NOT FDATE_DEVELOPER_MODE)
+    option(fdate_DEVELOPER_MODE "Enable developer mode" OFF)
     option(FDATE_ENABLE_HARDENING "Enable hardening" OFF)
     cmake_dependent_option(
       FDATE_ENABLE_GLOBAL_HARDENING
@@ -56,7 +56,7 @@ macro(fdate_setup_options)
     option(FDATE_ENABLE_PCH "Enable precompiled headers" OFF)
     option(FDATE_ENABLE_CACHE "Enable ccache" OFF)
   else()
-    option(FDATE_MAINTAINER_MODE "Enable maintainer mode" ON)
+    option(FDATE_DEVELOPER_MODE "Enable developer mode" ON)
     option(FDATE_ENABLE_HARDENING "Enable hardening" ON)
     cmake_dependent_option(
       FDATE_ENABLE_GLOBAL_HARDENING
@@ -79,9 +79,9 @@ macro(fdate_setup_options)
     option(FDATE_ENABLE_CACHE "Enable ccache" ON)
   endif()
 
-  if(NOT PROJECT_IS_TOP_LEVEL OR NOT fdate_MAINTAINER_MODE)
+  if(NOT PROJECT_IS_TOP_LEVEL OR NOT fdate_DEVELOPER_MODE)
     mark_as_advanced(
-      FDATE_MAINTAINER_MODE
+      FDATE_DEVELOPER_MODE
       FDATE_ENABLE_HARDENING
       FDATE_ENABLE_GLOBAL_HARDENING
       FDATE_ENABLE_IPO
@@ -100,7 +100,7 @@ macro(fdate_setup_options)
       FDATE_ENABLE_CACHE)
   endif()
 
-  if(FDATE_MAINTAINER_MODE)
+  if(FDATE_DEVELOPER_MODE)
     fdate_check_libfuzzer_support(LIBFUZZER_SUPPORTED)
     if(LIBFUZZER_SUPPORTED
        AND (FDATE_ENABLE_SANITIZER_ADDRESS
