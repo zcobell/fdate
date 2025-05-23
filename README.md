@@ -4,7 +4,7 @@
 [![CMake](https://img.shields.io/badge/CMake-3.14%2B-blue.svg)](https://cmake.org/)
 [![Fortran](https://img.shields.io/badge/Fortran-2008%2B-blue.svg)](https://fortran-lang.org/)
 
-A modern datetime library for Fortran that provides comprehensive date and time manipulation capabilities through a clean Fortran interface built on top of Howard Hinnant's acclaimed date library.
+A modern datetime library for Fortran that provides comprehensive date and time manipulation capabilities through a clean Fortran interface built on top of Howard Hinnant's date library, which was used as the basis for `std::chrono` date operations in C++20.
 
 ## Background
 
@@ -42,7 +42,7 @@ The library uses a design where both `t_DateTime` and `t_TimeDelta` objects are 
 ### Prerequisites
 - CMake 3.14 or higher
 - Modern C++ compiler supporting at least C++17
-- Fortran compiler (gfortran, ifort, etc.)
+- Fortran 2008 compiler (gfortran, ifort, etc.)
 
 ### Building
 ```bash
@@ -55,7 +55,6 @@ can use it in your Fortran projects by linking against the installed library and
 module file in the installed include directory.
 
 ### CMake Options
-- `FDATE_BUILD_SHARED`: Build shared library (default: OFF)
 - `FDATE_ENABLE_TESTING`: Enable testing suite (default: OFF)
 
 ## Fortran Usage Examples
