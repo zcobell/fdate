@@ -231,7 +231,6 @@ The library supports standard strftime format specifiers for date formatting:
 The library handles errors gracefully:
 - Invalid date parameters return special error timestamps
 - Parsing failures are indicated by returned error values
-- Division by zero in TimeDelta operations should be avoided
 
 ## Thread Safety
 

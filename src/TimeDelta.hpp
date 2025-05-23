@@ -20,6 +20,7 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 #include "date_hh.h"
@@ -496,16 +497,18 @@ class TimeDelta {
   /**
    * @brief Divides the TimeDelta by a scalar divisor
    *
-   * @param divisor The divisor to divide by (cannot be zero)
+   * @param divisor The divisor to divide by
    * @return TimeDelta A new TimeDelta representing the quotient
    *
-   * @note Division by zero results in undefined behavior
+   * @note Division by zero results in a zero TimeDelta being returned
    * @note Integer division truncates fractional parts
    * @see operator*() for multiplication
    */
   [[nodiscard]] constexpr auto operator/(const int64_t divisor) const noexcept
       -> TimeDelta {
-    return TimeDelta(to_components(m_duration.count() / divisor));
+    return divisor == 0
+               ? fromMilliseconds(0)
+               : TimeDelta(to_components(m_duration.count() / divisor));
   }
 
   // Comparison Operators
