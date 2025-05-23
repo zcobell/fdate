@@ -17,7 +17,7 @@ The FDate library bridges the gap between modern C++ datetime functionality and 
 - Memory-safe design using value types instead of pointers
 - Cross-platform compatibility
 
-The library uses a design where both `t_DateTime` and `t_TimeDelta` objects are represented internally as 64-bit integers (milliseconds since epoch for `t_DateTime`, total milliseconds for `t_TimeDelta`), avoiding complex memory management while maintaining full functionality.
+The library uses a design where both `t_DateTime` and `t_TimeDelta` objects are represented internally as 64-bit integers (milliseconds since epoch for `t_DateTime`, total milliseconds for `t_TimeDelta`), and avoids using any other in-memory structures in the interface between C++ and Fortran.
 
 ## Features
 
