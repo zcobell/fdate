@@ -601,7 +601,7 @@ void f_datetime_to_iso_string(const int64_t dt_ms, char* buffer,
   const auto buffer_size_t = static_cast<size_t>(buffer_size);
 
   const DateTime date(dt_ms);
-  const std::string str = date.toISOString();
+  const std::string str = date.to_iso_string();
   strncpy(buffer, str.c_str(), buffer_size_t - 1);
   buffer[buffer_size_t - 1] = '\0';
 }

@@ -249,7 +249,7 @@ class TimeDelta {
    */
   static constexpr auto to_components(const int64_t duration_ms) noexcept
       -> s_TimedeltaComponents {
-    bool const negative = duration_ms < 0;
+    const bool negative = duration_ms < 0;
     int64_t this_duration = negative ? -duration_ms : duration_ms;
 
     const auto n_days = std::chrono::duration_cast<date::days>(

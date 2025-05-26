@@ -51,11 +51,11 @@
 class DateTime {
  private:
   /** @brief Internal time point type with millisecond precision */
-  using time_point = std::chrono::time_point<std::chrono::system_clock,
-                                             std::chrono::milliseconds>;
+  using t_time_point = std::chrono::time_point<std::chrono::system_clock,
+                                               std::chrono::milliseconds>;
 
   /** @brief Internal time point storage */
-  time_point m_tp;
+  t_time_point m_tp;
 
  public:
   /** @brief Constant representing an invalid timestamp value */
@@ -64,7 +64,7 @@ class DateTime {
 
   /** @brief Constant representing an invalid DateTime object */
   static constexpr auto INVALID_TIME_POINT =
-      time_point(std::chrono::milliseconds(INVALID_TIMESTAMP));
+      t_time_point(std::chrono::milliseconds(INVALID_TIMESTAMP));
 
   static constexpr int DATETIME_MIN_YEAR = 0;
   static constexpr int DATETIME_MIN_MONTH = 1;
@@ -133,14 +133,14 @@ class DateTime {
    * UTC)
    */
   explicit constexpr DateTime(int64_t timestamp) noexcept
-      : m_tp(time_point(std::chrono::milliseconds(timestamp))) {}
+      : m_tp(t_time_point(std::chrono::milliseconds(timestamp))) {}
 
   /**
    * @brief Constructs a DateTime from a time_point
    *
    * @param milliseconds A std::chrono::time_point with millisecond precision
    */
-  constexpr explicit DateTime(const time_point& milliseconds) noexcept
+  constexpr explicit DateTime(const t_time_point& milliseconds) noexcept
       : m_tp(milliseconds) {}
 
   /**
@@ -319,7 +319,7 @@ class DateTime {
    *
    * @see toISOStringMsec() for ISO format with milliseconds
    */
-  [[nodiscard]] auto toISOString() const -> std::string {
+  [[nodiscard]] auto to_iso_string() const -> std::string {
     return format("%Y-%m-%dT%H:%M:%S");
   }
 
@@ -330,7 +330,7 @@ class DateTime {
    *
    * @see toISOString() for ISO format without milliseconds
    */
-  [[nodiscard]] auto toISOStringMsec() const -> std::string {
+  [[nodiscard]] auto to_iso_string_msec() const -> std::string {
     return format_w_milliseconds("%Y-%m-%dT%H:%M:%S");
   }
 
@@ -422,7 +422,7 @@ class DateTime {
    *
    * @note This method provides direct access to the internal representation
    */
-  [[nodiscard]] constexpr auto get_time_point() const noexcept -> time_point {
+  [[nodiscard]] constexpr auto get_time_point() const noexcept -> t_time_point {
     return m_tp;
   }
 
@@ -525,7 +525,7 @@ class DateTime {
    * @note This is a convenience method equivalent to format() with default
    * parameters
    */
-  [[nodiscard]] auto toString() const -> std::string { return format(); }
+  [[nodiscard]] auto to_string() const -> std::string { return format(); }
 
   /**
    * @brief Stream insertion operator for easy printing
@@ -536,7 +536,7 @@ class DateTime {
    */
   friend auto operator<<(std::ostream& output_stream, const DateTime& date_time)
       -> std::ostream& {
-    return output_stream << date_time.toString();
+    return output_stream << date_time.to_string();
   }
 
   /**

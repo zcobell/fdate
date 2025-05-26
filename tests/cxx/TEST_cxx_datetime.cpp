@@ -460,7 +460,7 @@ TEST_CASE("DateTime parse method", "[datetime]") {
   }
 }
 
-TEST_CASE("DateTime format and toISOString methods", "[datetime]") {
+TEST_CASE("DateTime format and to_iso_string methods", "[datetime]") {
   DateTime dt(2022, 1, 31, 12, 34, 56, 789);
 
   SECTION("Default format") { CHECK(dt.format() == "2022-01-31 12:34:56"); }
@@ -475,8 +475,8 @@ TEST_CASE("DateTime format and toISOString methods", "[datetime]") {
   }
 
   SECTION("ISO string format") {
-    CHECK(dt.toISOString() == "2022-01-31T12:34:56");
-    CHECK(dt.toISOStringMsec() == "2022-01-31T12:34:56.789");
+    CHECK(dt.to_iso_string() == "2022-01-31T12:34:56");
+    CHECK(dt.to_iso_string_msec() == "2022-01-31T12:34:56.789");
   }
 
   SECTION("Format with various specifiers") {
@@ -687,7 +687,7 @@ TEST_CASE("DateTime serialization roundtrip", "[datetime]") {
   DateTime original(2022, 3, 15, 14, 30, 45, 500);
 
   // Convert to string
-  std::string iso = original.toISOStringMsec();
+  std::string iso = original.to_iso_string_msec();
 
   // Parse back with appropriate format
   auto parsed = DateTime::parse(iso, "%Y-%m-%dT%H:%M:%S");
