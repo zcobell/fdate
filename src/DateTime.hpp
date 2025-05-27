@@ -57,6 +57,50 @@ class DateTime {
   /** @brief Internal time point storage */
   t_time_point m_tp;
 
+  /**
+   * @brief Parses a DateTime from a string using a specific format
+   *
+   * Uses the Howard Hinnant date library for parsing. Automatically detects
+   * and handles millisecond precision based on the presence of a decimal point
+   * in the appropriate position within the input string.
+   *
+   * @param str The string to parse
+   * @param format The strftime-style format string (default: "%Y-%m-%d
+   * %H:%M:%S")
+   * @return std::optional<DateTime> containing the parsed DateTime, or
+   * std::nullopt if parsing failed
+   *
+   * @note If the string has a '.' at position (length-4), millisecond parsing
+   * is attempted
+   * @see parse() for automatic format detection
+   */
+  static auto parse_string(const std::string& str,
+                           const std::string& format = "%Y-%m-%d %H:%M:%S")
+      -> std::optional<DateTime> {
+    std::istringstream input_stream(str);
+    date::sys_time<std::chrono::milliseconds> this_time_point;
+
+    // If the user has provided a string that has milliseconds (i.e., position 4
+    // from the end has a period)
+    if (str.size() >= 4 && str[str.size() - 4] == '.') {
+      // Parse using milliseconds
+      date::from_stream(input_stream, format.c_str(), this_time_point);
+    } else {
+      // Parse without milliseconds
+      auto tp_temp = date::sys_time<std::chrono::seconds>{};
+      date::from_stream(input_stream, format.c_str(), tp_temp);
+      this_time_point =
+          std::chrono::time_point_cast<std::chrono::milliseconds>(tp_temp);
+    }
+
+    // Check if parsing was successful
+    if (input_stream.fail() || input_stream.bad()) {
+      return std::nullopt;  // Parsing failed
+    }
+
+    return std::make_optional<DateTime>(this_time_point);
+  }
+
  public:
   /** @brief Constant representing an invalid timestamp value */
   static constexpr auto INVALID_TIMESTAMP =
@@ -195,7 +239,8 @@ class DateTime {
    * @note Formats are tried in order from most specific to least specific
    * @see parse_string() for single format parsing
    */
-  static auto parse(const std::string& str, const std::string& format = "auto")
+  static auto strptime(const std::string& str,
+                       const std::string& format = "auto")
       -> std::optional<DateTime> {
     if (format == "auto") {
       // All formats use YYYY-MM-DD ordering to avoid ambiguity
@@ -227,50 +272,6 @@ class DateTime {
   }
 
   /**
-   * @brief Parses a DateTime from a string using a specific format
-   *
-   * Uses the Howard Hinnant date library for parsing. Automatically detects
-   * and handles millisecond precision based on the presence of a decimal point
-   * in the appropriate position within the input string.
-   *
-   * @param str The string to parse
-   * @param format The strftime-style format string (default: "%Y-%m-%d
-   * %H:%M:%S")
-   * @return std::optional<DateTime> containing the parsed DateTime, or
-   * std::nullopt if parsing failed
-   *
-   * @note If the string has a '.' at position (length-4), millisecond parsing
-   * is attempted
-   * @see parse() for automatic format detection
-   */
-  static auto parse_string(const std::string& str,
-                           const std::string& format = "%Y-%m-%d %H:%M:%S")
-      -> std::optional<DateTime> {
-    std::istringstream input_stream(str);
-    date::sys_time<std::chrono::milliseconds> this_time_point;
-
-    // If the user has provided a string that has milliseconds (i.e., position 4
-    // from the end has a period)
-    if (str.size() >= 4 && str[str.size() - 4] == '.') {
-      // Parse using milliseconds
-      date::from_stream(input_stream, format.c_str(), this_time_point);
-    } else {
-      // Parse without milliseconds
-      auto tp_temp = date::sys_time<std::chrono::seconds>{};
-      date::from_stream(input_stream, format.c_str(), tp_temp);
-      this_time_point =
-          std::chrono::time_point_cast<std::chrono::milliseconds>(tp_temp);
-    }
-
-    // Check if parsing was successful
-    if (input_stream.fail() || input_stream.bad()) {
-      return std::nullopt;  // Parsing failed
-    }
-
-    return std::make_optional<DateTime>(this_time_point);
-  }
-
-  /**
    * @brief Gets the timestamp as milliseconds since Unix epoch
    *
    * @return int64_t The number of milliseconds since 1970-01-01 00:00:00.000
@@ -289,8 +290,8 @@ class DateTime {
    * @note This method truncates to seconds precision
    * @see format_w_milliseconds() for millisecond precision formatting
    */
-  [[nodiscard]] auto format(const std::string& fmt = "%Y-%m-%d %H:%M:%S") const
-      -> std::string {
+  [[nodiscard]] auto strftime(
+      const std::string& fmt = "%Y-%m-%d %H:%M:%S") const -> std::string {
     auto tp_sec = std::chrono::time_point_cast<std::chrono::seconds>(m_tp);
     std::ostringstream oss;
     date::to_stream(oss, fmt.c_str(), tp_sec);
@@ -305,7 +306,7 @@ class DateTime {
    *
    * @see format() for seconds precision formatting
    */
-  [[nodiscard]] auto format_w_milliseconds(
+  [[nodiscard]] auto strftime_w_milliseconds(
       const std::string& fmt = "%Y-%m-%d %H:%M:%S") const -> std::string {
     std::ostringstream oss;
     date::to_stream(oss, fmt.c_str(), m_tp);
@@ -320,7 +321,7 @@ class DateTime {
    * @see toISOStringMsec() for ISO format with milliseconds
    */
   [[nodiscard]] auto to_iso_string() const -> std::string {
-    return format("%Y-%m-%dT%H:%M:%S");
+    return strftime("%Y-%m-%dT%H:%M:%S");
   }
 
   /**
@@ -331,7 +332,7 @@ class DateTime {
    * @see toISOString() for ISO format without milliseconds
    */
   [[nodiscard]] auto to_iso_string_msec() const -> std::string {
-    return format_w_milliseconds("%Y-%m-%dT%H:%M:%S");
+    return strftime_w_milliseconds("%Y-%m-%dT%H:%M:%S");
   }
 
   // Getters
@@ -518,16 +519,6 @@ class DateTime {
   }
 
   /**
-   * @brief Converts the DateTime to a string representation
-   *
-   * @return std::string The DateTime formatted as "YYYY-MM-DD HH:MM:SS"
-   *
-   * @note This is a convenience method equivalent to format() with default
-   * parameters
-   */
-  [[nodiscard]] auto to_string() const -> std::string { return format(); }
-
-  /**
    * @brief Stream insertion operator for easy printing
    *
    * @param output_stream The output stream to write to
@@ -536,7 +527,7 @@ class DateTime {
    */
   friend auto operator<<(std::ostream& output_stream, const DateTime& date_time)
       -> std::ostream& {
-    return output_stream << date_time.to_string();
+    return output_stream << date_time.strftime();
   }
 
   /**

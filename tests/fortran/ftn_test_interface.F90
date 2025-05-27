@@ -29,7 +29,7 @@ contains
       dt = t_datetime(date_string)
       ts = t_timedelta(days, hours, minutes, seconds)
       dt = dt + ts
-      write (*, *) dt%format("%Y-%m-%dT%H:%M:%S")
+      write (*, *) dt%strftime("%Y-%m-%dT%H:%M:%S")
 
    end subroutine arithmetic_test
 

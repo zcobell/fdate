@@ -424,7 +424,7 @@ contains
       call assert_equal(dt1%timestamp(), dt2%timestamp(), "From timestamp - timestamp")
    end subroutine test_datetime_from_timestamp
 
-   subroutine test_datetime_parse()
+   subroutine test_datetime_strptime()
       type(t_datetime) :: dt1, dt2, dt3
 
       ! Default format
@@ -459,34 +459,34 @@ contains
       call assert_equal(34, dt3%minute(), "Parse with ms - minute")
       call assert_equal(56, dt3%second(), "Parse with ms - second")
       call assert_equal(789, dt3%millisecond(), "Parse with ms - millisecond")
-   end subroutine test_datetime_parse
+   end subroutine test_datetime_strptime
 
-   subroutine test_datetime_format()
+   subroutine test_datetime_strftime()
       type(t_datetime) :: dt
 
       dt = t_datetime(2022, 1, 31, 12, 34, 56, 789)
 
       ! Default format
-      call assert_equal("2022-01-31 12:34:56", dt%format("%Y-%m-%d %H:%M:%S"), "Format default")
+      call assert_equal("2022-01-31 12:34:56", dt%strftime("%Y-%m-%d %H:%M:%S"), "Format default")
 
       ! Custom format
-      call assert_equal("31/01/2022 12:34:56", dt%format("%d/%m/%Y %H:%M:%S"), "Format custom")
+      call assert_equal("31/01/2022 12:34:56", dt%strftime("%d/%m/%Y %H:%M:%S"), "Format custom")
 
       ! Format with milliseconds
-      call assert_equal("2022-01-31 12:34:56.789", dt%format("%Y-%m-%d %H:%M:%S", .true.), "Format with ms")
+      call assert_equal("2022-01-31 12:34:56.789", dt%strftime("%Y-%m-%d %H:%M:%S", .true.), "Format with ms")
 
       ! ISO string format
       call assert_equal("2022-01-31T12:34:56", dt%to_iso_string(), "ISO string format")
 
       ! Format with various specifiers
-      call assert_equal("2022", dt%format("%Y"), "Format year")
-      call assert_equal("01", dt%format("%m"), "Format month")
-      call assert_equal("31", dt%format("%d"), "Format day")
-      call assert_equal("12", dt%format("%H"), "Format hour")
-      call assert_equal("34", dt%format("%M"), "Format minute")
-      call assert_equal("56", dt%format("%S"), "Format second")
-      call assert_equal("2022-01", dt%format("%Y-%m"), "Format year-month")
-   end subroutine test_datetime_format
+      call assert_equal("2022", dt%strftime("%Y"), "Format year")
+      call assert_equal("01", dt%strftime("%m"), "Format month")
+      call assert_equal("31", dt%strftime("%d"), "Format day")
+      call assert_equal("12", dt%strftime("%H"), "Format hour")
+      call assert_equal("34", dt%strftime("%M"), "Format minute")
+      call assert_equal("56", dt%strftime("%S"), "Format second")
+      call assert_equal("2022-01", dt%strftime("%Y-%m"), "Format year-month")
+   end subroutine test_datetime_strftime
 
    subroutine test_datetime_now()
       type(t_datetime) :: dt_now
@@ -730,7 +730,7 @@ program test_datetime
                               test_timedelta_overflow_handling
    use datetime_tests, only: test_datetime_default, test_datetime_ymd, &
                              test_datetime_complete, test_datetime_from_timestamp, &
-                             test_datetime_parse, test_datetime_format, test_datetime_now, &
+                             test_datetime_strptime, test_datetime_strftime, test_datetime_now, &
                              test_datetime_addition_with_timedelta, test_datetime_subtraction_with_timedelta, &
                              test_datetime_difference, test_datetime_comparisons, &
                              test_datetime_date_wrapping, test_datetime_leap_year_handling, &
@@ -766,8 +766,8 @@ program test_datetime
    call run_test(test_datetime_ymd, "DateTime YMD Constructor")
    call run_test(test_datetime_complete, "DateTime Complete Constructor")
    call run_test(test_datetime_from_timestamp, "DateTime From Timestamp")
-   call run_test(test_datetime_parse, "DateTime Parse")
-   call run_test(test_datetime_format, "DateTime Format")
+   call run_test(test_datetime_strptime, "DateTime strptime")
+   call run_test(test_datetime_strftime, "DateTime strftime")
    call run_test(test_datetime_now, "DateTime Now")
    call run_test(test_datetime_addition_with_timedelta, "DateTime Addition with TimeDelta")
    call run_test(test_datetime_subtraction_with_timedelta, "DateTime Subtraction with TimeDelta")

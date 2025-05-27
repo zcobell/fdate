@@ -22,7 +22,7 @@ int parse_test(int argc, char *argv[]) {
   const auto input_string = std::string(argv[2]);
 
   // Create a DateTime object
-  const auto dt = DateTime::parse(input_string);
+  const auto dt = DateTime::strptime(input_string);
 
   // Check if the DateTime object is valid
   if (!dt) {
@@ -47,7 +47,7 @@ int arithmetic_test(int argc, char *argv[]) {
   const auto input_string = std::string(argv[2]);
 
   // Create a DateTime object
-  const auto start_time = DateTime::parse(input_string);
+  const auto start_time = DateTime::strptime(input_string);
 
   // Check if the DateTime object is valid
   if (!start_time) {
@@ -66,7 +66,7 @@ int arithmetic_test(int argc, char *argv[]) {
   const auto result = *start_time + dt;
 
   // Write out the result
-  std::cout << result.format("%Y-%m-%dT%H:%M:%S") << std::endl;
+  std::cout << result.strftime("%Y-%m-%dT%H:%M:%S") << std::endl;
 
   return 0;
 }

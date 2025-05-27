@@ -91,7 +91,7 @@ module mod_datetime
       !> @brief Get the timestamp (milliseconds since epoch)
       procedure :: timestamp => datetime_timestamp
       !> @brief Format the datetime to a string
-      procedure :: format => datetime_format
+      procedure :: strftime => datetime_strftime
       !> @brief Convert to ISO 8601 string format
       procedure :: to_iso_string => datetime_to_iso_string
       !> @brief Check if the datetime object is valid
@@ -111,8 +111,8 @@ module mod_datetime
       module procedure :: datetime_ymd_hms
       module procedure :: datetime_complete
       module procedure :: datetime_from_timestamp
-      module procedure :: datetime_parse
-      module procedure :: datetime_parse_auto
+      module procedure :: datetime_strptime
+      module procedure :: datetime_strptime_auto
    end interface t_datetime
 
    ! Operator interfaces
@@ -359,15 +359,15 @@ module mod_datetime
       end function f_datetime_now
 
       !> @brief Parse a DateTime from a string
-      function f_datetime_parse(str, fmt, str_len, format_len) result(dt_ms) &
-         bind(C, name="f_datetime_parse")
+      function f_datetime_strptime(str, fmt, str_len, format_len) result(dt_ms) &
+         bind(C, name="f_datetime_strptime")
          import :: c_int64_t, c_char, c_int
          implicit none
          integer(c_int), intent(in), value :: str_len, format_len
          character(kind=c_char), intent(in) :: fmt(format_len)
          character(kind=c_char), intent(inout) :: str(str_len)
          integer(c_int64_t) :: dt_ms
-      end function f_datetime_parse
+      end function f_datetime_strptime
 
       !> @brief Get the year component from a DateTime
       function f_datetime_get_year(dt_ms) result(year) bind(C, name="f_datetime_get_year")
@@ -453,26 +453,26 @@ module mod_datetime
       end function f_datetime_difference
 
       !> @brief Format a DateTime to a string
-      subroutine f_datetime_format(dt_ms, format, buffer, format_len, buffer_size) &
-         bind(C, name="f_datetime_format")
+      subroutine f_datetime_strftime(dt_ms, format_str, buffer, format_len, buffer_size) &
+         bind(C, name="f_datetime_strftime")
          import :: c_int64_t, c_char, c_int
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
          integer(c_int), intent(in), value :: format_len, buffer_size
-         character(kind=c_char), intent(in) :: format(format_len)
+         character(kind=c_char), intent(in) :: format_str(format_len)
          character(kind=c_char), intent(inout) :: buffer(buffer_size)
-      end subroutine f_datetime_format
+      end subroutine f_datetime_strftime
 
       !> @brief Get the timestamp (milliseconds since epoch) from a DateTime
-      subroutine f_datetime_format_ms(dt_ms, format, buffer, format_len, buffer_size) &
-         bind(C, name="f_datetime_format_milliseconds")
+      subroutine f_datetime_strftime_ms(dt_ms, format_str, buffer, format_len, buffer_size) &
+         bind(C, name="f_datetime_strftime_milliseconds")
          import :: c_int64_t, c_char, c_int
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
          integer(c_int), intent(in), value :: format_len, buffer_size
-         character(kind=c_char), intent(in) :: format(format_len)
+         character(kind=c_char), intent(in) :: format_str(format_len)
          character(kind=c_char), intent(inout) :: buffer(buffer_size)
-      end subroutine f_datetime_format_ms
+      end subroutine f_datetime_strftime_ms
 
       !> @brief Convert a DateTime to an ISO 8601 string
       subroutine f_datetime_to_iso_string(dt_ms, buffer, buffer_size) &
@@ -918,43 +918,43 @@ contains
 
    !> @brief Parse a DateTime from a string
    !> @param str String representation of a DateTime
-   !> @param format Format specification (similar to strftime)
+   !> @param format_str Format specification (similar to strftime)
    !> @return DateTime parsed from the string
-   function datetime_parse(str, format) result(dt)
+   function datetime_strptime(str, format_str) result(dt)
       implicit none
-      character(len=*), intent(in) :: str, format
+      character(len=*), intent(in) :: str, format_str
       type(t_datetime) :: dt
 
       ! Convert Fortran strings to C-compatible character arrays
-      character(kind=c_char, len=1) :: c_str(len_trim(str) + 1), c_format(len_trim(format) + 1)
+      character(kind=c_char, len=1) :: c_str(len_trim(str) + 1), c_format(len_trim(format_str) + 1)
       integer :: i
       logical :: has_milliseconds
 
       ! If the 4th character from the end of the format string is a dot, it indicates milliseconds
-      has_milliseconds = (len_trim(format) >= 4 .and. format(len_trim(format) - 3:len_trim(format) - 3) == '.')
+      has_milliseconds = (len_trim(format_str) >= 4 .and. format_str(len_trim(format_str) - 3:len_trim(format_str) - 3) == '.')
 
       do i = 1, len_trim(str)
          c_str(i) = str(i:i)
       end do
       c_str(len_trim(str) + 1) = c_null_char
 
-      do i = 1, len_trim(format)
-         c_format(i) = format(i:i)
+      do i = 1, len_trim(format_str)
+         c_format(i) = format_str(i:i)
       end do
-      c_format(len_trim(format) + 1) = c_null_char
+      c_format(len_trim(format_str) + 1) = c_null_char
 
-      dt%timestamp_ms = f_datetime_parse(c_str, c_format, len_trim(str), len_trim(format))
-   end function datetime_parse
+      dt%timestamp_ms = f_datetime_strptime(c_str, c_format, len_trim(str), len_trim(format_str))
+   end function datetime_strptime
 
    !> @brief Parse a DateTime from a string with automatic format detection
    !> @param str String representation of a DateTime
    !> @return DateTime parsed from the string
-   function datetime_parse_auto(str) result(dt)
+   function datetime_strptime_auto(str) result(dt)
       implicit none
       character(len=*), intent(in) :: str
       type(t_datetime) :: dt
-      dt = datetime_parse(str, "auto")
-   end function datetime_parse_auto
+      dt = datetime_strptime(str, "auto")
+   end function datetime_strptime_auto
 
    !> @brief Get the current DateTime
    !> @return DateTime representing the current time
@@ -1057,7 +1057,7 @@ contains
    !> @param this DateTime object
    !> @param format Format specification (similar to strftime)
    !> @return String representation of the DateTime
-   function datetime_format(this, date_format, show_milliseconds) result(str)
+   function datetime_strftime(this, date_format, show_milliseconds) result(str)
       implicit none
       class(t_datetime), intent(in) :: this
       character(len=*), intent(in) :: date_format
@@ -1081,14 +1081,14 @@ contains
       end if
 
       if (show_milliseconds_l) then
-         call f_datetime_format_ms(this%timestamp_ms, c_format, c_str, len_trim(date_format), DATETIME_STRING_BUFFER_SIZE + 1)
+         call f_datetime_strftime_ms(this%timestamp_ms, c_format, c_str, len_trim(date_format), DATETIME_STRING_BUFFER_SIZE + 1)
       else
-         call f_datetime_format(this%timestamp_ms, c_format, c_str, len_trim(date_format), DATETIME_STRING_BUFFER_SIZE + 1)
+         call f_datetime_strftime(this%timestamp_ms, c_format, c_str, len_trim(date_format), DATETIME_STRING_BUFFER_SIZE + 1)
       end if
 
       call c_f_string(c_str, str)
 
-   end function datetime_format
+   end function datetime_strftime
 
    !> @brief Convert a DateTime to an ISO 8601 string
    !> @param this DateTime object
@@ -1110,9 +1110,9 @@ contains
       end if
 
       if (msec_l) then
-         str = datetime_format(this, "%Y-%m-%dT%H:%M:%S", .true.)
+         str = datetime_strftime(this, "%Y-%m-%dT%H:%M:%S", .true.)
       else
-         str = datetime_format(this, "%Y-%m-%dT%H:%M:%S", .false.)
+         str = datetime_strftime(this, "%Y-%m-%dT%H:%M:%S", .false.)
       end if
 
    end function datetime_to_iso_string

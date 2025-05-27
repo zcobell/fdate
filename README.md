@@ -181,10 +181,10 @@ program string_operations
    dt = t_datetime(2024, 3, 14, 9, 26, 53, 589)
    
    ! Format to different string representations
-   formatted_string = dt%format('%Y-%m-%d %H:%M:%S')
+   formatted_string = dt%strftime('%Y-%m-%d %H:%M:%S')
    write(*,*) 'Standard format: ', trim(formatted_string)
    
-   formatted_string = dt%format('%B %d, %Y at %I:%M %p')
+   formatted_string = dt%strftime('%B %d, %Y at %I:%M %p')
    write(*,*) 'Verbose format: ', trim(formatted_string)
    
    ! ISO 8601 format
@@ -192,9 +192,9 @@ program string_operations
    write(*,*) 'ISO format: ', trim(formatted_string)
    
    ! Some Custom formats
-   formatted_string = dt%format('%A, %B %d, %Y') ! Full weekday and month names
+   formatted_string = dt%strftime('%A, %B %d, %Y') ! Full weekday and month names
    write(*,*) 'Custom format: ', trim(formatted_string)
-   formatted_string = dt%format('%Y-%m-%dT%H:%M:%S',.true.) ! ISO with milliseconds
+   formatted_string = dt%strftime('%Y-%m-%dT%H:%M:%S',.true.) ! ISO with milliseconds
    write(*,*) 'ISO with milliseconds: ', trim(formatted_string)
    
    ! Parse a date string
@@ -203,7 +203,7 @@ program string_operations
   
    ! Check if parsing was successful
    if (parsed_dt%valid()) then
-       write(*,*) 'Parsed date: ', parsed_dt%format('%Y-%m-%d %H:%M:%S')
+       write(*,*) 'Parsed date: ', parsed_dt%strftime('%Y-%m-%d %H:%M:%S')
    else
        write(*,*) 'Failed to parse date string'
    end if
@@ -213,7 +213,7 @@ end program string_operations
 
 ## Format Specifiers
 
-The library supports standard strftime format specifiers for date formatting:
+The library supports typical format specifiers for date formatting:
 
 | Specifier | Description | Example |
 |-----------|-------------|---------|

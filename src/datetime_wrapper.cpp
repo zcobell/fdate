@@ -380,8 +380,8 @@ auto f_datetime_now() -> int64_t { return DateTime::now().timestamp(); }
  * @param format_len Length of the format string
  * @return int64_t DateTime as milliseconds since epoch
  */
-auto f_datetime_parse(const char* str, const char* format, const int str_len,
-                      const int format_len) -> int64_t {
+auto f_datetime_strptime(const char* str, const char* format, const int str_len,
+                         const int format_len) -> int64_t {
   // Cast the lengths coming from fortran over to size_t
   if (str_len <= 0 || format == nullptr) {
     return DateTime::INVALID_TIMESTAMP;
@@ -399,7 +399,7 @@ auto f_datetime_parse(const char* str, const char* format, const int str_len,
     const std::string str_cpp(str, str_len_t);
     const std::string format_cpp(format, format_len_t);
 
-    const auto date_time = DateTime::parse(str_cpp, format_cpp);
+    const auto date_time = DateTime::strptime(str_cpp, format_cpp);
     if (date_time.has_value()) {
       return date_time->timestamp();
     } else {
@@ -538,8 +538,8 @@ auto f_datetime_difference(const int64_t dt1_ms, const int64_t dt2_ms)
  * @param format_len Length of the format string
  * @param buffer_size Size of the output buffer
  */
-void f_datetime_format(const int64_t dt_ms, const char* format, char* buffer,
-                       const int format_len, const int buffer_size) {
+void f_datetime_strftime(const int64_t dt_ms, const char* format, char* buffer,
+                         const int format_len, const int buffer_size) {
   if (format_len <= 0 || buffer_size <= 0 || format == nullptr ||
       buffer == nullptr) {
     std::cerr << "[ERROR]: Invalid format/buffer size or null buffer/format\n";
@@ -551,7 +551,7 @@ void f_datetime_format(const int64_t dt_ms, const char* format, char* buffer,
 
   const DateTime date(dt_ms);
   const std::string format_cpp(format, format_len_t);
-  const std::string str = date.format(format_cpp);
+  const std::string str = date.strftime(format_cpp);
   strncpy(buffer, str.c_str(), buffer_size_t - 1);
   buffer[buffer_size_t - 1] = '\0';
 }
@@ -565,9 +565,9 @@ void f_datetime_format(const int64_t dt_ms, const char* format, char* buffer,
  * @param format_len Length of the format string
  * @param buffer_size Size of the output buffer
  */
-void f_datetime_format_milliseconds(const int64_t dt_ms, const char* format,
-                                    char* buffer, const int format_len,
-                                    const int buffer_size) {
+void f_datetime_strftime_milliseconds(const int64_t dt_ms, const char* format,
+                                      char* buffer, const int format_len,
+                                      const int buffer_size) {
   if (format_len <= 0 || buffer_size <= 0 || format == nullptr ||
       buffer == nullptr) {
     std::cerr << "[ERROR]: Invalid format/buffer size or null format/buffer\n";
@@ -579,7 +579,7 @@ void f_datetime_format_milliseconds(const int64_t dt_ms, const char* format,
 
   const DateTime date(dt_ms);
   const std::string format_cpp(format, format_len_t);
-  const std::string str = date.format_w_milliseconds(format_cpp);
+  const std::string str = date.strftime_w_milliseconds(format_cpp);
   strncpy(buffer, str.c_str(), buffer_size_t - 1);
   buffer[buffer_size_t - 1] = '\0';
 }

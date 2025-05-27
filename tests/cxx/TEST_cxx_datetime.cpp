@@ -408,7 +408,7 @@ TEST_CASE("DateTime constructors", "[datetime]") {
 
 TEST_CASE("DateTime parse method", "[datetime]") {
   SECTION("Default format") {
-    auto dt = DateTime::parse("2022-01-31 12:34:56");
+    auto dt = DateTime::strptime("2022-01-31 12:34:56");
 
     CHECK(dt.has_value());
     CHECK(dt->year() == 2022);
@@ -421,7 +421,7 @@ TEST_CASE("DateTime parse method", "[datetime]") {
   }
 
   SECTION("Custom format") {
-    auto dt = DateTime::parse("31/01/2022 12:34:56", "%d/%m/%Y %H:%M:%S");
+    auto dt = DateTime::strptime("31/01/2022 12:34:56", "%d/%m/%Y %H:%M:%S");
 
     CHECK(dt.has_value());
     CHECK(dt->year() == 2022);
@@ -434,7 +434,7 @@ TEST_CASE("DateTime parse method", "[datetime]") {
   }
 
   SECTION("With milliseconds in string") {
-    auto dt = DateTime::parse("2022-01-31 12:34:56.789");
+    auto dt = DateTime::strptime("2022-01-31 12:34:56.789");
 
     CHECK(dt.has_value());
     CHECK(dt->year() == 2022);
@@ -447,7 +447,8 @@ TEST_CASE("DateTime parse method", "[datetime]") {
   }
 
   SECTION("With %f format specifier") {
-    auto dt = DateTime::parse("2022-01-31 12:34:56.789", "%Y-%m-%d %H:%M:%S");
+    auto dt =
+        DateTime::strptime("2022-01-31 12:34:56.789", "%Y-%m-%d %H:%M:%S");
 
     CHECK(dt.has_value());
     CHECK(dt->year() == 2022);
@@ -463,14 +464,14 @@ TEST_CASE("DateTime parse method", "[datetime]") {
 TEST_CASE("DateTime format and to_iso_string methods", "[datetime]") {
   DateTime dt(2022, 1, 31, 12, 34, 56, 789);
 
-  SECTION("Default format") { CHECK(dt.format() == "2022-01-31 12:34:56"); }
+  SECTION("Default format") { CHECK(dt.strftime() == "2022-01-31 12:34:56"); }
 
   SECTION("Custom format") {
-    CHECK(dt.format("%d/%m/%Y %H:%M:%S") == "31/01/2022 12:34:56");
+    CHECK(dt.strftime("%d/%m/%Y %H:%M:%S") == "31/01/2022 12:34:56");
   }
 
   SECTION("Format with milliseconds") {
-    CHECK(dt.format_w_milliseconds("%Y-%m-%d %H:%M:%S") ==
+    CHECK(dt.strftime_w_milliseconds("%Y-%m-%d %H:%M:%S") ==
           "2022-01-31 12:34:56.789");
   }
 
@@ -480,13 +481,13 @@ TEST_CASE("DateTime format and to_iso_string methods", "[datetime]") {
   }
 
   SECTION("Format with various specifiers") {
-    CHECK(dt.format("%Y") == "2022");
-    CHECK(dt.format("%m") == "01");
-    CHECK(dt.format("%d") == "31");
-    CHECK(dt.format("%H") == "12");
-    CHECK(dt.format("%M") == "34");
-    CHECK(dt.format("%S") == "56");
-    CHECK(dt.format("%Y-%m") == "2022-01");
+    CHECK(dt.strftime("%Y") == "2022");
+    CHECK(dt.strftime("%m") == "01");
+    CHECK(dt.strftime("%d") == "31");
+    CHECK(dt.strftime("%H") == "12");
+    CHECK(dt.strftime("%M") == "34");
+    CHECK(dt.strftime("%S") == "56");
+    CHECK(dt.strftime("%Y-%m") == "2022-01");
   }
 }
 
@@ -669,14 +670,14 @@ TEST_CASE("TimeDelta arithmetic with different units", "[timedelta]") {
 TEST_CASE("DateTime parsing edge cases", "[datetime]") {
   SECTION("Invalid date string handling") {
     // This tests that the code doesn't crash, not specific results
-    auto dt = DateTime::parse("not a date");
+    auto dt = DateTime::strptime("not a date");
 
     // Just verify we can access methods without crashing
     CHECK_FALSE(dt.has_value());
   }
 
   SECTION("Partially valid date string") {
-    auto dt = DateTime::parse("2022-01-XX");
+    auto dt = DateTime::strptime("2022-01-XX");
 
     // This should not crash, but dt should be invalid
     CHECK_FALSE(dt.has_value());
@@ -690,7 +691,7 @@ TEST_CASE("DateTime serialization roundtrip", "[datetime]") {
   std::string iso = original.to_iso_string_msec();
 
   // Parse back with appropriate format
-  auto parsed = DateTime::parse(iso, "%Y-%m-%dT%H:%M:%S");
+  auto parsed = DateTime::strptime(iso, "%Y-%m-%dT%H:%M:%S");
 
   // Should be the same timestamp
   CHECK(parsed.has_value());
