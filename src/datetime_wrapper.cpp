@@ -681,4 +681,104 @@ auto f_datetime_invalid_timestamp() -> int64_t {
   return DateTime::INVALID_TIMESTAMP;
 }
 
+/** 
+ * @brief Parse a DateTime from a string using an array of format options
+ *
+ * @param str String representation of a DateTime
+ * @param formats Array of format strings (similar to strftime)
+ * @param str_len Length of the string
+ * @param formats_len Array of lengths for each format string
+ * @param num_formats Number of format strings in the array
+ * @return int64_t DateTime as milliseconds since epoch, or INVALID_TIMESTAMP if
+ * all formats fail
+ */
+auto f_datetime_strptime_with_formats(const char* str, const char** formats,
+                                      const int str_len, const int* formats_len,
+                                      const int num_formats) -> int64_t {
+  if (str_len <= 0 || str == nullptr || formats == nullptr ||
+      formats_len == nullptr || num_formats <= 0) {
+    return DateTime::INVALID_TIMESTAMP;
+  }
+
+  try {
+    const auto str_len_t = static_cast<size_t>(str_len);
+    const std::string str_cpp(str, str_len_t);
+
+    // Try each format until one succeeds
+    for (int i = 0; i < num_formats; ++i) {
+      if (formats[i] == nullptr || formats_len[i] <= 0) {
+        continue;
+      }
+
+      const auto format_len_t = static_cast<size_t>(formats_len[i]);
+      const std::string format_cpp(formats[i], format_len_t);
+
+      const auto date_time = DateTime::strptime(str_cpp, format_cpp);
+      if (date_time.has_value()) {
+        return date_time->timestamp();
+      }
+    }
+
+    return DateTime::INVALID_TIMESTAMP;
+  } catch (...) {
+    return DateTime::INVALID_TIMESTAMP;
+  }
+}
+
+/**
+ * @brief Parse a DateTime with automatic format detection, falling back to
+ * custom formats
+ *
+ * @param str String representation of a DateTime
+ * @param fallback_formats Array of fallback format strings to try after
+ * auto-detection fails
+ * @param str_len Length of the string
+ * @param formats_len Array of lengths for each fallback format string
+ * @param num_formats Number of fallback format strings in the array
+ * @return int64_t DateTime as milliseconds since epoch, or INVALID_TIMESTAMP if
+ * all attempts fail
+ */
+auto f_datetime_strptime_auto_with_fallback(const char* str,
+                                            const char** fallback_formats,
+                                            const int str_len,
+                                            const int* formats_len,
+                                            const int num_formats) -> int64_t {
+  if (str_len <= 0 || str == nullptr) {
+    return DateTime::INVALID_TIMESTAMP;
+  }
+
+  try {
+    const auto str_len_t = static_cast<size_t>(str_len);
+    const std::string str_cpp(str, str_len_t);
+
+    // First try automatic format detection
+    const auto date_time = DateTime::strptime(str_cpp, "auto");
+    if (date_time.has_value()) {
+      return date_time->timestamp();
+    }
+
+    // If auto-detection failed and we have fallback formats, try them
+    if (fallback_formats != nullptr && formats_len != nullptr &&
+        num_formats > 0) {
+      for (int i = 0; i < num_formats; ++i) {
+        if (fallback_formats[i] == nullptr || formats_len[i] <= 0) {
+          continue;
+        }
+
+        const auto format_len_t = static_cast<size_t>(formats_len[i]);
+        const std::string format_cpp(fallback_formats[i], format_len_t);
+
+        const auto fallback_date_time = DateTime::strptime(str_cpp, format_cpp);
+        if (fallback_date_time.has_value()) {
+          return fallback_date_time->timestamp();
+        }
+      }
+    }
+
+    return DateTime::INVALID_TIMESTAMP;
+  } catch (...) {
+    return DateTime::INVALID_TIMESTAMP;
+  }
+}
+
 }  // extern "C"
