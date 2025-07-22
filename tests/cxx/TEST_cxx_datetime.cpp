@@ -738,3 +738,268 @@ TEST_CASE("DateTime get_time_point method", "[datetime]") {
   CHECK(dt.minute() == dt2.minute());
   CHECK(dt.second() == dt2.second());
 }
+
+// ====================================================
+// Array-based parsing tests
+// ====================================================
+
+// Helper function to test array parsing directly without Fortran interface
+namespace {
+// Test function that mimics the C wrapper functionality
+auto test_array_parsing(const std::string& str,
+                        const std::vector<std::string>& formats)
+    -> std::optional<DateTime> {
+  for (const auto& format : formats) {
+    auto result = DateTime::strptime(str, format);
+    if (result.has_value()) {
+      return result;
+    }
+  }
+  return std::nullopt;
+}
+}  // namespace
+
+TEST_CASE("Array-based parsing with multiple formats",
+          "[datetime][array_parsing]") {
+  SECTION("Parse with first format succeeding") {
+    std::string date_str = "2024-03-15 14:30:25";
+    std::vector<std::string> formats = {
+        "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Parse with second format succeeding") {
+    std::string date_str = "2024/03/15 14:30:25";
+    std::vector<std::string> formats = {
+        "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Parse with third format succeeding") {
+    std::string date_str = "15-03-2024 14:30:25";
+    std::vector<std::string> formats = {
+        "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Parse with compact format") {
+    std::string date_str = "20240315143025";
+    std::vector<std::string> formats = {"%Y-%m-%d %H:%M:%S",
+                                        "%Y/%m/%d %H:%M:%S", "%Y%m%d%H%M%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Parse with ISO format variations") {
+    std::string date_str = "2024-03-15T14:30:25Z";
+    std::vector<std::string> formats = {
+        "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Parse with dot-separated format") {
+    std::string date_str = "2024.03.15 14:30:25";
+    std::vector<std::string> formats = {
+        "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+}
+
+TEST_CASE("Array-based parsing failure cases", "[datetime][array_parsing]") {
+  SECTION("All formats fail") {
+    std::string date_str = "invalid-date-string";
+    std::vector<std::string> formats = {
+        "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    CHECK_FALSE(result.has_value());
+  }
+
+  SECTION("Empty format array") {
+    std::string date_str = "2024-03-15 14:30:25";
+    std::vector<std::string> formats = {};
+
+    auto result = test_array_parsing(date_str, formats);
+    CHECK_FALSE(result.has_value());
+  }
+
+  SECTION("Empty string with valid formats") {
+    std::string date_str = "";
+    std::vector<std::string> formats = {"%Y-%m-%d %H:%M:%S",
+                                        "%Y/%m/%d %H:%M:%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    CHECK_FALSE(result.has_value());
+  }
+
+  SECTION("Invalid format strings") {
+    std::string date_str = "2024-03-15 14:30:25";
+    std::vector<std::string> formats = {"invalid-format",
+                                        "%Y-%z-%d",  // Invalid specifier
+                                        ""};
+
+    auto result = test_array_parsing(date_str, formats);
+    CHECK_FALSE(result.has_value());
+  }
+}
+
+TEST_CASE("Array-based parsing with edge cases", "[datetime][array_parsing]") {
+  SECTION("Single format in array") {
+    std::string date_str = "2024-03-15 14:30:25";
+    std::vector<std::string> formats = {"%Y-%m-%d %H:%M:%S"};
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+  }
+
+  SECTION("Many formats with success at end") {
+    std::string date_str = "03/15/2024 14:30:25";
+    std::vector<std::string> formats = {
+        "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S",
+        "%Y.%m.%d %H:%M:%S", "%Y%m%d%H%M%S",
+        "%m/%d/%Y %H:%M:%S"  // This should succeed
+    };
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Date-only formats") {
+    std::string date_str = "2024-03-15";
+    std::vector<std::string> formats = {
+        "%Y-%m-%d %H:%M:%S",  // This won't match (has time)
+        "%Y-%m-%d"            // This will match
+    };
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 0);  // Default time
+    CHECK(result->minute() == 0);
+    CHECK(result->second() == 0);
+  }
+
+  SECTION("Time with milliseconds") {
+    std::string date_str = "2024-03-15 14:30:25.123";
+    std::vector<std::string> formats = {
+        "%Y-%m-%d %H:%M:%S",
+        "%Y-%m-%d %H:%M:%S.%f"  // Format with milliseconds
+    };
+
+    auto result = test_array_parsing(date_str, formats);
+    REQUIRE(result.has_value());
+
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+    CHECK(result->millisecond() == 123);
+  }
+}
+
+TEST_CASE("Auto-detection with fallback formats", "[datetime][array_parsing]") {
+  SECTION("Auto-detection succeeds") {
+    std::string date_str = "2024-03-15 14:30:25";
+
+    // First try auto-detection (should succeed)
+    auto auto_result = DateTime::strptime(date_str, "auto");
+    REQUIRE(auto_result.has_value());
+
+    CHECK(auto_result->year() == 2024);
+    CHECK(auto_result->month() == 3);
+    CHECK(auto_result->day() == 15);
+    CHECK(auto_result->hour() == 14);
+    CHECK(auto_result->minute() == 30);
+    CHECK(auto_result->second() == 25);
+  }
+
+  SECTION("Auto-detection fails, fallback succeeds") {
+    std::string date_str =
+        "15/Mar/2024 14:30:25";  // Not in auto-detected formats
+    std::vector<std::string> fallback_formats = {"%d/%b/%Y %H:%M:%S"};
+
+    // Auto-detection should fail
+    auto auto_result = DateTime::strptime(date_str, "auto");
+    CHECK_FALSE(auto_result.has_value());
+
+    // But manual parsing with the right format should succeed
+    auto manual_result = DateTime::strptime(date_str, "%d/%b/%Y %H:%M:%S");
+    REQUIRE(manual_result.has_value());
+
+    CHECK(manual_result->year() == 2024);
+    CHECK(manual_result->month() == 3);
+    CHECK(manual_result->day() == 15);
+    CHECK(manual_result->hour() == 14);
+    CHECK(manual_result->minute() == 30);
+    CHECK(manual_result->second() == 25);
+  }
+}

@@ -24,6 +24,8 @@ The library uses a design where both `t_DateTime` and `t_TimeDelta` objects are 
 ### DateTime Operations
 - Create dates from components (year, month, day, hour, minute, second, millisecond)
 - Parse dates from strings with custom format specifiers
+- Parse dates using arrays of format options (tries each format until one succeeds)
+- Parse with automatic format detection plus custom fallback formats
 - Format dates to strings (including ISO 8601)
 - Get current system time
 - Extract individual components (year, month, day, etc.)
@@ -209,6 +211,46 @@ program string_operations
    end if
    
 end program string_operations
+```
+
+### Array-Based Parsing with Multiple Format Options
+
+The library supports parsing with multiple format options, trying each format in order until one succeeds:
+
+```fortran
+program array_parsing_examples
+   use mod_datetime, only: t_datetime
+   implicit none
+   
+   type(t_datetime) :: parsed_dt
+   character(len=30) :: date_strings(3) = [ &
+      '2024/03/14 09:26:53        ', &  ! Slash-separated format
+      '14-Mar-2024 09:26:53       ', &  ! Month name format  
+      '20240314092653             '  ]  ! Compact format
+   character(len=30) :: formats(4) = [ &
+      '%Y/%m/%d %H:%M:%S          ', &  ! Slash format
+      '%d-%b-%Y %H:%M:%S          ', &  ! Month name format
+      '%Y%m%d%H%M%S               ', &  ! Compact format
+      '%Y-%m-%d %H:%M:%S          '  ]  ! Standard format
+   integer :: i
+   
+   ! Try parsing with an array of format options
+   do i = 1, size(date_strings)
+      parsed_dt = t_datetime(trim(date_strings(i)), formats)
+      
+      if (parsed_dt%valid()) then
+         write(*,*) 'Successfully parsed: ', trim(date_strings(i))
+         write(*,*) 'Result: ', parsed_dt%strftime('%Y-%m-%d %H:%M:%S')
+      else
+         write(*,*) 'Failed to parse: ', trim(date_strings(i))
+      end if
+   end do
+
+   ! Parse with auto-detection and custom fallbacks
+   parsed_dt = t_datetime('2024.03.14T09:26:53', ['%Y.%m.%dT%H:%M:%S     ', &
+                                                   '%Y.%m.%d %H:%M:%S     '])
+   
+end program array_parsing_examples
 ```
 
 ## Format Specifiers

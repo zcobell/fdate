@@ -719,6 +719,234 @@ contains
 
    end subroutine test_datetime_invalid
 
+   ! ====================================================
+   ! Array-based parsing tests
+   ! ====================================================
+
+   subroutine test_datetime_array_parsing_basic()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(3)
+
+      ! Test basic array parsing with first format succeeding
+      formats(1) = '%Y-%m-%d %H:%M:%S          '
+      formats(2) = '%Y/%m/%d %H:%M:%S          '
+      formats(3) = '%d-%m-%Y %H:%M:%S          '
+
+      parsed_dt = t_datetime('2024-03-15 14:30:25', formats)
+
+      call assert_true(parsed_dt%valid(), "Array parsing should succeed with first format")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 14, "Hour should be 14")
+      call assert_equal(parsed_dt%minute(), 30, "Minute should be 30")
+      call assert_equal(parsed_dt%second(), 25, "Second should be 25")
+   end subroutine test_datetime_array_parsing_basic
+
+   subroutine test_datetime_array_parsing_second_format()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(3)
+
+      ! Test array parsing with second format succeeding
+      formats(1) = '%Y-%m-%d %H:%M:%S          '
+      formats(2) = '%Y/%m/%d %H:%M:%S          '
+      formats(3) = '%d-%m-%Y %H:%M:%S          '
+
+      parsed_dt = t_datetime('2024/03/15 14:30:25', formats)
+
+      call assert_true(parsed_dt%valid(), "Array parsing should succeed with second format")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 14, "Hour should be 14")
+      call assert_equal(parsed_dt%minute(), 30, "Minute should be 30")
+      call assert_equal(parsed_dt%second(), 25, "Second should be 25")
+   end subroutine test_datetime_array_parsing_second_format
+
+   subroutine test_datetime_array_parsing_third_format()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(3)
+
+      ! Test array parsing with third format succeeding
+      formats(1) = '%Y-%m-%d %H:%M:%S          '
+      formats(2) = '%Y/%m/%d %H:%M:%S          '
+      formats(3) = '%d-%m-%Y %H:%M:%S          '
+
+      parsed_dt = t_datetime('15-03-2024 14:30:25', formats)
+
+      call assert_true(parsed_dt%valid(), "Array parsing should succeed with third format")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 14, "Hour should be 14")
+      call assert_equal(parsed_dt%minute(), 30, "Minute should be 30")
+      call assert_equal(parsed_dt%second(), 25, "Second should be 25")
+   end subroutine test_datetime_array_parsing_third_format
+
+   subroutine test_datetime_array_parsing_compact_format()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(4)
+
+      ! Test compact format parsing
+      formats(1) = '%Y-%m-%d %H:%M:%S          '
+      formats(2) = '%Y/%m/%d %H:%M:%S          '
+      formats(3) = '%d-%m-%Y %H:%M:%S          '
+      formats(4) = '%Y%m%d%H%M%S               '
+
+      parsed_dt = t_datetime('20240315143025', formats)
+
+      call assert_true(parsed_dt%valid(), "Array parsing should succeed with compact format")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 14, "Hour should be 14")
+      call assert_equal(parsed_dt%minute(), 30, "Minute should be 30")
+      call assert_equal(parsed_dt%second(), 25, "Second should be 25")
+   end subroutine test_datetime_array_parsing_compact_format
+
+   subroutine test_datetime_array_parsing_iso_variations()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(4)
+
+      ! Test ISO format variations
+      formats(1) = '%Y-%m-%dT%H:%M:%SZ         '
+      formats(2) = '%Y-%m-%dT%H:%M:%S          '
+      formats(3) = '%Y-%m-%d %H:%M:%S          '
+      formats(4) = '%Y/%m/%d %H:%M:%S          '
+
+      parsed_dt = t_datetime('2024-03-15T14:30:25Z', formats)
+
+      call assert_true(parsed_dt%valid(), "Array parsing should succeed with ISO Z format")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 14, "Hour should be 14")
+      call assert_equal(parsed_dt%minute(), 30, "Minute should be 30")
+      call assert_equal(parsed_dt%second(), 25, "Second should be 25")
+   end subroutine test_datetime_array_parsing_iso_variations
+
+   subroutine test_datetime_array_parsing_dot_separated()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(4)
+
+      ! Test dot-separated format parsing
+      formats(1) = '%Y-%m-%d %H:%M:%S          '
+      formats(2) = '%Y/%m/%d %H:%M:%S          '
+      formats(3) = '%d-%m-%Y %H:%M:%S          '
+      formats(4) = '%Y.%m.%d %H:%M:%S          '
+
+      parsed_dt = t_datetime('2024.03.15 14:30:25', formats)
+
+      call assert_true(parsed_dt%valid(), "Array parsing should succeed with dot-separated format")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 14, "Hour should be 14")
+      call assert_equal(parsed_dt%minute(), 30, "Minute should be 30")
+      call assert_equal(parsed_dt%second(), 25, "Second should be 25")
+   end subroutine test_datetime_array_parsing_dot_separated
+
+   subroutine test_datetime_array_parsing_failures()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(3)
+
+      ! Test parsing failure when no formats match
+      formats(1) = '%Y-%m-%d %H:%M:%S          '
+      formats(2) = '%Y/%m/%d %H:%M:%S          '
+      formats(3) = '%d-%m-%Y %H:%M:%S          '
+
+      parsed_dt = t_datetime('invalid-date-string', formats)
+
+      call assert_false(parsed_dt%valid(), "Array parsing should fail with invalid date string")
+   end subroutine test_datetime_array_parsing_failures
+
+   subroutine test_datetime_array_parsing_single_format()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(1)
+
+      ! Test array parsing with single format
+      formats(1) = '%Y-%m-%d %H:%M:%S          '
+
+      parsed_dt = t_datetime('2024-03-15 14:30:25', formats)
+
+      call assert_true(parsed_dt%valid(), "Array parsing should succeed with single format")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 14, "Hour should be 14")
+      call assert_equal(parsed_dt%minute(), 30, "Minute should be 30")
+      call assert_equal(parsed_dt%second(), 25, "Second should be 25")
+   end subroutine test_datetime_array_parsing_single_format
+
+   subroutine test_datetime_array_parsing_date_only()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: formats(2)
+
+      ! Test date-only format parsing (time should default to 00:00:00)
+      formats(1) = '%Y-%m-%d %H:%M:%S          ' ! This won't match (has time)
+      formats(2) = '%Y-%m-%d                   ' ! This will match
+
+      parsed_dt = t_datetime('2024-03-15', formats)
+
+      call assert_true(parsed_dt%valid(), "Array parsing should succeed with date-only format")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 0, "Hour should default to 0")
+      call assert_equal(parsed_dt%minute(), 0, "Minute should default to 0")
+      call assert_equal(parsed_dt%second(), 0, "Second should default to 0")
+   end subroutine test_datetime_array_parsing_date_only
+
+   subroutine test_datetime_auto_with_fallback()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: parsed_dt
+      character(len=30) :: fallback_formats(2)
+
+      ! Test auto-detection with fallback formats
+      fallback_formats(1) = '%d.%m.%Y %H:%M:%S         '
+      fallback_formats(2) = '%Y.%m.%dT%H:%M:%S         '
+
+      ! This format should not be auto-detected, so it should use fallback
+      parsed_dt = t_datetime('2024.03.15T14:30:25', fallback_formats)
+
+      call assert_true(parsed_dt%valid(), "Auto with fallback should succeed")
+      call assert_equal(parsed_dt%year(), 2024, "Year should be 2024")
+      call assert_equal(parsed_dt%month(), 3, "Month should be 3")
+      call assert_equal(parsed_dt%day(), 15, "Day should be 15")
+      call assert_equal(parsed_dt%hour(), 14, "Hour should be 14")
+      call assert_equal(parsed_dt%minute(), 30, "Minute should be 30")
+      call assert_equal(parsed_dt%second(), 25, "Second should be 25")
+   end subroutine test_datetime_auto_with_fallback
+
 end module datetime_tests
 
 program test_datetime
@@ -738,7 +966,12 @@ program test_datetime
                              test_datetime_difference, test_datetime_comparisons, &
                              test_datetime_date_wrapping, test_datetime_leap_year_handling, &
                              test_datetime_serialization_roundtrip, test_datetime_extreme_values, &
-                             test_datetime_invalid
+                             test_datetime_invalid, test_datetime_array_parsing_basic, &
+                             test_datetime_array_parsing_second_format, test_datetime_array_parsing_third_format, &
+                             test_datetime_array_parsing_compact_format, test_datetime_array_parsing_iso_variations, &
+                             test_datetime_array_parsing_dot_separated, test_datetime_array_parsing_failures, &
+                             test_datetime_array_parsing_single_format, test_datetime_array_parsing_date_only, &
+                             test_datetime_auto_with_fallback
    implicit none
 
    integer :: exit_code
@@ -781,6 +1014,20 @@ program test_datetime
    call run_test(test_datetime_serialization_roundtrip, "DateTime Serialization Roundtrip")
    call run_test(test_datetime_extreme_values, "DateTime Extreme Values")
    call run_test(test_datetime_invalid, "DateTime Invalid")
+
+   ! Array-based parsing tests
+   write (*, '(A)') ""
+   write (*, '(A)') "====== DateTime Array Parsing Tests ======"
+   call run_test(test_datetime_array_parsing_basic, "DateTime Array Parsing Basic")
+   call run_test(test_datetime_array_parsing_second_format, "DateTime Array Parsing Second Format")
+   call run_test(test_datetime_array_parsing_third_format, "DateTime Array Parsing Third Format")
+   call run_test(test_datetime_array_parsing_compact_format, "DateTime Array Parsing Compact Format")
+   call run_test(test_datetime_array_parsing_iso_variations, "DateTime Array Parsing ISO Variations")
+   call run_test(test_datetime_array_parsing_dot_separated, "DateTime Array Parsing Dot Separated")
+   call run_test(test_datetime_array_parsing_failures, "DateTime Array Parsing Failures")
+   call run_test(test_datetime_array_parsing_single_format, "DateTime Array Parsing Single Format")
+   call run_test(test_datetime_array_parsing_date_only, "DateTime Array Parsing Date Only")
+   call run_test(test_datetime_auto_with_fallback, "DateTime Auto with Fallback")
 
    ! Print summary
    call print_test_summary()
