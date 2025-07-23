@@ -178,7 +178,7 @@ module mod_datetime
    ! C function interfaces
    interface
       !> @brief Create a TimeDelta with components
-      function f_timedelta_create(days, hours, minutes, seconds, milliseconds) &
+      pure function f_timedelta_create(days, hours, minutes, seconds, milliseconds) &
          result(ts_ms) bind(C, name="f_timedelta_create")
          import :: c_int, c_int64_t
          implicit none
@@ -187,7 +187,7 @@ module mod_datetime
       end function f_timedelta_create
 
       !> @brief Get days component from a TimeDelta
-      function f_timedelta_get_days(ts_ms) result(days) bind(C, name="f_timedelta_get_days")
+      pure function f_timedelta_get_days(ts_ms) result(days) bind(C, name="f_timedelta_get_days")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -195,7 +195,7 @@ module mod_datetime
       end function f_timedelta_get_days
 
       !> @brief Get hours component from a TimeDelta
-      function f_timedelta_get_hours(ts_ms) result(hours) bind(C, name="f_timedelta_get_hours")
+      pure function f_timedelta_get_hours(ts_ms) result(hours) bind(C, name="f_timedelta_get_hours")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -203,7 +203,7 @@ module mod_datetime
       end function f_timedelta_get_hours
 
       !> @brief Get minutes component from a TimeDelta
-      function f_timedelta_get_minutes(ts_ms) result(minutes) bind(C, name="f_timedelta_get_minutes")
+      pure function f_timedelta_get_minutes(ts_ms) result(minutes) bind(C, name="f_timedelta_get_minutes")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -211,7 +211,7 @@ module mod_datetime
       end function f_timedelta_get_minutes
 
       !> @brief Get seconds component from a TimeDelta
-      function f_timedelta_get_seconds(ts_ms) result(seconds) bind(C, name="f_timedelta_get_seconds")
+      pure function f_timedelta_get_seconds(ts_ms) result(seconds) bind(C, name="f_timedelta_get_seconds")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -219,7 +219,7 @@ module mod_datetime
       end function f_timedelta_get_seconds
 
       !> @brief Get milliseconds component from a TimeDelta
-      function f_timedelta_get_milliseconds(ts_ms) result(ms) bind(C, name="f_timedelta_get_milliseconds")
+      pure function f_timedelta_get_milliseconds(ts_ms) result(ms) bind(C, name="f_timedelta_get_milliseconds")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -227,7 +227,7 @@ module mod_datetime
       end function f_timedelta_get_milliseconds
 
       !> @brief Get total days from a TimeDelta
-      function f_timedelta_get_total_days(ts_ms) result(days) bind(C, name="f_timedelta_get_total_days")
+      pure function f_timedelta_get_total_days(ts_ms) result(days) bind(C, name="f_timedelta_get_total_days")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -235,7 +235,7 @@ module mod_datetime
       end function f_timedelta_get_total_days
 
       !> @brief Get total hours from a TimeDelta
-      function f_timedelta_get_total_hours(ts_ms) result(hours) bind(C, name="f_timedelta_get_total_hours")
+      pure function f_timedelta_get_total_hours(ts_ms) result(hours) bind(C, name="f_timedelta_get_total_hours")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -243,7 +243,7 @@ module mod_datetime
       end function f_timedelta_get_total_hours
 
       !> @brief Get total minutes from a TimeDelta
-      function f_timedelta_get_total_minutes(ts_ms) result(minutes) bind(C, name="f_timedelta_get_total_minutes")
+      pure function f_timedelta_get_total_minutes(ts_ms) result(minutes) bind(C, name="f_timedelta_get_total_minutes")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -251,7 +251,7 @@ module mod_datetime
       end function f_timedelta_get_total_minutes
 
       !> @brief Get total seconds from a TimeDelta
-      function f_timedelta_get_total_seconds(ts_ms) result(seconds) bind(C, name="f_timedelta_get_total_seconds")
+      pure function f_timedelta_get_total_seconds(ts_ms) result(seconds) bind(C, name="f_timedelta_get_total_seconds")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -259,7 +259,7 @@ module mod_datetime
       end function f_timedelta_get_total_seconds
 
       !> @brief Add two TimeDeltas
-      function f_timedelta_add(ts1_ms, ts2_ms) result(sum_ms) bind(C, name="f_timedelta_add")
+      pure function f_timedelta_add(ts1_ms, ts2_ms) result(sum_ms) bind(C, name="f_timedelta_add")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
@@ -267,7 +267,7 @@ module mod_datetime
       end function f_timedelta_add
 
       !> @brief Subtract one TimeDelta from another
-      function f_timedelta_subtract(ts1_ms, ts2_ms) result(diff_ms) bind(C, name="f_timedelta_subtract")
+      pure function f_timedelta_subtract(ts1_ms, ts2_ms) result(diff_ms) bind(C, name="f_timedelta_subtract")
          import :: c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
@@ -275,7 +275,7 @@ module mod_datetime
       end function f_timedelta_subtract
 
       !> @brief Multiply a TimeDelta by a factor
-      function f_timedelta_multiply(ts_ms, factor) result(result_ms) bind(C, name="f_timedelta_multiply")
+      pure function f_timedelta_multiply(ts_ms, factor) result(result_ms) bind(C, name="f_timedelta_multiply")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -284,7 +284,7 @@ module mod_datetime
       end function f_timedelta_multiply
 
       !> @brief Divide a TimeDelta by a divisor
-      function f_timedelta_divide(ts_ms, divisor) result(result_ms) bind(C, name="f_timedelta_divide")
+      pure function f_timedelta_divide(ts_ms, divisor) result(result_ms) bind(C, name="f_timedelta_divide")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
@@ -298,11 +298,11 @@ module mod_datetime
          implicit none
          integer(c_int64_t), intent(in), value :: ts_ms
          integer(c_int), intent(in), value :: buffer_size
-         character(kind=c_char), intent(inout) :: buffer(buffer_size)
+         character(kind=c_char), intent(in) :: buffer(buffer_size)
       end subroutine f_timedelta_to_string
 
       !> @brief Check if two TimeDeltas are equal
-      function f_timedelta_equals(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_equals")
+      pure function f_timedelta_equals(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_equals")
          import :: c_int, c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
@@ -310,7 +310,7 @@ module mod_datetime
       end function f_timedelta_equals
 
       !> @brief Check if one TimeDelta is less than another
-      function f_timedelta_less_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_less_than")
+      pure function f_timedelta_less_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_less_than")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
@@ -318,7 +318,7 @@ module mod_datetime
       end function f_timedelta_less_than
 
       !> @brief Check if one TimeDelta is greater than another
-      function f_timedelta_greater_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_greater_than")
+      pure function f_timedelta_greater_than(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_greater_than")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
@@ -326,7 +326,7 @@ module mod_datetime
       end function f_timedelta_greater_than
 
       !> @brief Check if one TimeDelta is less than or equal to another
-      function f_timedelta_less_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_less_equal")
+      pure function f_timedelta_less_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_less_equal")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
@@ -334,7 +334,7 @@ module mod_datetime
       end function f_timedelta_less_equal
 
       !> @brief Check if one TimeDelta is greater than or equal to another
-      function f_timedelta_greater_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_greater_equal")
+      pure function f_timedelta_greater_equal(ts1_ms, ts2_ms) result(result) bind(C, name="f_timedelta_greater_equal")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: ts1_ms, ts2_ms
@@ -343,7 +343,7 @@ module mod_datetime
 
       ! DateTime C functions
       !> @brief Create a DateTime from components
-      function f_datetime_create(year, month, day, hour, minute, second, millisecond) &
+      pure function f_datetime_create(year, month, day, hour, minute, second, millisecond) &
          result(dt_ms) bind(C, name="f_datetime_create")
          import :: c_int, c_int64_t
          implicit none
@@ -365,12 +365,12 @@ module mod_datetime
          implicit none
          integer(c_int), intent(in), value :: str_len, format_len
          character(kind=c_char), intent(in) :: fmt(format_len)
-         character(kind=c_char), intent(inout) :: str(str_len)
+         character(kind=c_char), intent(in) :: str(str_len)
          integer(c_int64_t) :: dt_ms
       end function f_datetime_strptime
 
       !> @brief Get the year component from a DateTime
-      function f_datetime_get_year(dt_ms) result(year) bind(C, name="f_datetime_get_year")
+      pure function f_datetime_get_year(dt_ms) result(year) bind(C, name="f_datetime_get_year")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
@@ -378,7 +378,7 @@ module mod_datetime
       end function f_datetime_get_year
 
       !> @brief Get the month component from a DateTime
-      function f_datetime_get_month(dt_ms) result(month) bind(C, name="f_datetime_get_month")
+      pure function f_datetime_get_month(dt_ms) result(month) bind(C, name="f_datetime_get_month")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
@@ -386,7 +386,7 @@ module mod_datetime
       end function f_datetime_get_month
 
       !> @brief Get the day component from a DateTime
-      function f_datetime_get_day(dt_ms) result(day) bind(C, name="f_datetime_get_day")
+      pure function f_datetime_get_day(dt_ms) result(day) bind(C, name="f_datetime_get_day")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
@@ -394,7 +394,7 @@ module mod_datetime
       end function f_datetime_get_day
 
       !> @brief Get the hour component from a DateTime
-      function f_datetime_get_hour(dt_ms) result(hour) bind(C, name="f_datetime_get_hour")
+      pure function f_datetime_get_hour(dt_ms) result(hour) bind(C, name="f_datetime_get_hour")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
@@ -402,7 +402,7 @@ module mod_datetime
       end function f_datetime_get_hour
 
       !> @brief Get the minute component from a DateTime
-      function f_datetime_get_minute(dt_ms) result(minute) bind(C, name="f_datetime_get_minute")
+      pure function f_datetime_get_minute(dt_ms) result(minute) bind(C, name="f_datetime_get_minute")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
@@ -410,7 +410,7 @@ module mod_datetime
       end function f_datetime_get_minute
 
       !> @brief Get the second component from a DateTime
-      function f_datetime_get_second(dt_ms) result(second) bind(C, name="f_datetime_get_second")
+      pure function f_datetime_get_second(dt_ms) result(second) bind(C, name="f_datetime_get_second")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
@@ -418,7 +418,7 @@ module mod_datetime
       end function f_datetime_get_second
 
       !> @brief Get the millisecond component from a DateTime
-      function f_datetime_get_millisecond(dt_ms) result(ms) bind(C, name="f_datetime_get_millisecond")
+      pure function f_datetime_get_millisecond(dt_ms) result(ms) bind(C, name="f_datetime_get_millisecond")
          import :: c_int, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
@@ -426,7 +426,7 @@ module mod_datetime
       end function f_datetime_get_millisecond
 
       !> @brief Add a TimeDelta to a DateTime
-      function f_datetime_add_timedelta(dt_ms, ts_ms) result(result_ms) &
+      pure function f_datetime_add_timedelta(dt_ms, ts_ms) result(result_ms) &
          bind(C, name="f_datetime_add_timedelta")
          import :: c_int64_t
          implicit none
@@ -435,7 +435,7 @@ module mod_datetime
       end function f_datetime_add_timedelta
 
       !> @brief Subtract a TimeDelta from a DateTime
-      function f_datetime_subtract_timedelta(dt_ms, ts_ms) result(result_ms) &
+      pure function f_datetime_subtract_timedelta(dt_ms, ts_ms) result(result_ms) &
          bind(C, name="f_datetime_subtract_timedelta")
          import :: c_int64_t
          implicit none
@@ -444,7 +444,7 @@ module mod_datetime
       end function f_datetime_subtract_timedelta
 
       !> @brief Calculate the difference between two DateTimes
-      function f_datetime_difference(dt1_ms, dt2_ms) result(ts_ms) &
+      pure function f_datetime_difference(dt1_ms, dt2_ms) result(ts_ms) &
          bind(C, name="f_datetime_difference")
          import :: c_int64_t
          implicit none
@@ -485,7 +485,7 @@ module mod_datetime
       end subroutine f_datetime_to_iso_string
 
       !> @brief Check if two DateTimes are equal
-      function f_datetime_equals(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_equals")
+      pure function f_datetime_equals(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_equals")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
@@ -493,7 +493,7 @@ module mod_datetime
       end function f_datetime_equals
 
       !> @brief Check if one DateTime is less than another
-      function f_datetime_less_than(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_less_than")
+      pure function f_datetime_less_than(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_less_than")
          import :: c_bool, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
@@ -501,7 +501,7 @@ module mod_datetime
       end function f_datetime_less_than
 
       !> @brief Check if one DateTime is greater than another
-      function f_datetime_greater_than(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_greater_than")
+      pure function f_datetime_greater_than(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_greater_than")
          import :: c_bool, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
@@ -509,7 +509,7 @@ module mod_datetime
       end function f_datetime_greater_than
 
       !> @brief Check if one DateTime is less than or equal to another
-      function f_datetime_less_equal(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_less_equal")
+      pure function f_datetime_less_equal(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_less_equal")
          import :: c_bool, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
@@ -517,7 +517,7 @@ module mod_datetime
       end function f_datetime_less_equal
 
       !> @brief Check if one DateTime is greater than or equal to another
-      function f_datetime_greater_equal(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_greater_equal")
+      pure function f_datetime_greater_equal(dt1_ms, dt2_ms) result(result) bind(C, name="f_datetime_greater_equal")
          import :: c_bool, c_int64_t
          implicit none
          integer(c_int64_t), intent(in), value :: dt1_ms, dt2_ms
@@ -525,7 +525,7 @@ module mod_datetime
       end function f_datetime_greater_equal
 
       !> @brief Check if a DateTime object is valid
-      function f_datetime_is_valid(dt_ms) result(valid) bind(C, name="f_datetime_is_valid")
+      pure function f_datetime_is_valid(dt_ms) result(valid) bind(C, name="f_datetime_is_valid")
          import :: c_int64_t, c_bool
          implicit none
          integer(c_int64_t), intent(in), value :: dt_ms
@@ -550,7 +550,7 @@ contains
    !> @param seconds Number of seconds
    !> @param milliseconds Number of milliseconds
    !> @return TimeDelta with the specified duration
-   function timedelta_components(days, hours, minutes, seconds, milliseconds) result(ts)
+   pure function timedelta_components(days, hours, minutes, seconds, milliseconds) result(ts)
       implicit none
       integer, intent(in), optional :: days, hours, minutes, seconds, milliseconds
       type(t_timedelta) :: ts
@@ -593,7 +593,7 @@ contains
    !> @brief Get the days component from a TimeDelta
    !> @param this TimeDelta object
    !> @return Days component
-   function timedelta_days(this) result(days)
+   pure function timedelta_days(this) result(days)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: days64
@@ -605,7 +605,7 @@ contains
    !> @brief Get the hours component from a TimeDelta
    !> @param this TimeDelta object
    !> @return Hours component
-   function timedelta_hours(this) result(hours)
+   pure function timedelta_hours(this) result(hours)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: hours64
@@ -617,7 +617,7 @@ contains
    !> @brief Get the minutes component from a TimeDelta
    !> @param this TimeDelta object
    !> @return Minutes component
-   function timedelta_minutes(this) result(minutes)
+   pure function timedelta_minutes(this) result(minutes)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: minutes64
@@ -629,7 +629,7 @@ contains
    !> @brief Get the seconds component from a TimeDelta
    !> @param this TimeDelta object
    !> @return Seconds component
-   function timedelta_seconds(this) result(seconds)
+   pure function timedelta_seconds(this) result(seconds)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: seconds64
@@ -641,7 +641,7 @@ contains
    !> @brief Get the milliseconds component from a TimeDelta
    !> @param this TimeDelta object
    !> @return Milliseconds component
-   function timedelta_milliseconds(this) result(ms)
+   pure function timedelta_milliseconds(this) result(ms)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(c_int64_t) :: ms64
@@ -653,7 +653,7 @@ contains
    !> @brief Get the total days from a TimeDelta
    !> @param this TimeDelta object
    !> @return Total days
-   function timedelta_total_days(this) result(days)
+   pure function timedelta_total_days(this) result(days)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(kind=8) :: days
@@ -663,7 +663,7 @@ contains
    !> @brief Get the total hours from a TimeDelta
    !> @param this TimeDelta object
    !> @return Total hours
-   function timedelta_total_hours(this) result(hours)
+   pure function timedelta_total_hours(this) result(hours)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(kind=8) :: hours
@@ -673,7 +673,7 @@ contains
    !> @brief Get the total minutes from a TimeDelta
    !> @param this TimeDelta object
    !> @return Total minutes
-   function timedelta_total_minutes(this) result(minutes)
+   pure function timedelta_total_minutes(this) result(minutes)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(kind=8) :: minutes
@@ -683,7 +683,7 @@ contains
    !> @brief Get the total seconds from a TimeDelta
    !> @param this TimeDelta object
    !> @return Total seconds
-   function timedelta_total_seconds(this) result(seconds)
+   pure function timedelta_total_seconds(this) result(seconds)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(kind=8) :: seconds
@@ -693,7 +693,7 @@ contains
    !> @brief Get the total milliseconds from a TimeDelta
    !> @param this TimeDelta object
    !> @return Total milliseconds
-   function timedelta_total_milliseconds(this) result(ms)
+   pure function timedelta_total_milliseconds(this) result(ms)
       implicit none
       class(t_timedelta), intent(in) :: this
       integer(kind=8) :: ms
@@ -717,7 +717,7 @@ contains
    !> @param ts1 First TimeDelta
    !> @param ts2 Second TimeDelta
    !> @return Sum of the two TimeDeltas
-   function timedelta_add_timedelta(ts1, ts2) result(sum_ts)
+   pure function timedelta_add_timedelta(ts1, ts2) result(sum_ts)
       implicit none
       type(t_timedelta), intent(in) :: ts1, ts2
       type(t_timedelta) :: sum_ts
@@ -729,7 +729,7 @@ contains
    !> @param ts1 First TimeDelta
    !> @param ts2 Second TimeDelta
    !> @return Difference of the two TimeDeltas
-   function timedelta_subtract_timedelta(ts1, ts2) result(diff_ts)
+   pure function timedelta_subtract_timedelta(ts1, ts2) result(diff_ts)
       implicit none
       type(t_timedelta), intent(in) :: ts1, ts2
       type(t_timedelta) :: diff_ts
@@ -741,7 +741,7 @@ contains
    !> @param ts TimeDelta to multiply
    !> @param factor Multiplication factor
    !> @return Multiplied TimeDelta
-   function timedelta_multiply(ts, factor) result(product_ts)
+   pure function timedelta_multiply(ts, factor) result(product_ts)
       implicit none
       type(t_timedelta), intent(in) :: ts
       integer, intent(in) :: factor
@@ -754,7 +754,7 @@ contains
    !> @param ts TimeDelta to divide
    !> @param divisor Division factor
    !> @return Divided TimeDelta
-   function timedelta_divide(ts, divisor) result(quotient_ts)
+   pure function timedelta_divide(ts, divisor) result(quotient_ts)
       implicit none
       type(t_timedelta), intent(in) :: ts
       integer, intent(in) :: divisor
@@ -767,7 +767,7 @@ contains
    !> @param ts1 First TimeDelta
    !> @param ts2 Second TimeDelta
    !> @return True if equal, False otherwise
-   function timedelta_equals(ts1, ts2) result(res)
+   pure function timedelta_equals(ts1, ts2) result(res)
       implicit none
       type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
@@ -781,7 +781,7 @@ contains
    !> @param ts1 First TimeDelta
    !> @param ts2 Second TimeDelta
    !> @return True if not equal, False otherwise
-   function timedelta_not_equals(ts1, ts2) result(res)
+   pure function timedelta_not_equals(ts1, ts2) result(res)
       implicit none
       type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
@@ -795,7 +795,7 @@ contains
    !> @param ts1 First TimeDelta
    !> @param ts2 Second TimeDelta
    !> @return True if ts1 < ts2, False otherwise
-   function timedelta_less_than(ts1, ts2) result(res)
+   pure function timedelta_less_than(ts1, ts2) result(res)
       implicit none
       type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
@@ -809,7 +809,7 @@ contains
    !> @param ts1 First TimeDelta
    !> @param ts2 Second TimeDelta
    !> @return True if ts1 > ts2, False otherwise
-   function timedelta_greater_than(ts1, ts2) result(res)
+   pure function timedelta_greater_than(ts1, ts2) result(res)
       implicit none
       type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
@@ -823,7 +823,7 @@ contains
    !> @param ts1 First TimeDelta
    !> @param ts2 Second TimeDelta
    !> @return True if ts1 <= ts2, False otherwise
-   function timedelta_less_equal(ts1, ts2) result(res)
+   pure function timedelta_less_equal(ts1, ts2) result(res)
       implicit none
       type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
@@ -837,7 +837,7 @@ contains
    !> @param ts1 First TimeDelta
    !> @param ts2 Second TimeDelta
    !> @return True if ts1 >= ts2, False otherwise
-   function timedelta_greater_equal(ts1, ts2) result(res)
+   pure function timedelta_greater_equal(ts1, ts2) result(res)
       implicit none
       type(t_timedelta), intent(in) :: ts1, ts2
       logical(c_bool) :: res_t
@@ -853,7 +853,7 @@ contains
 
    !> @brief Create a default DateTime (epoch)
    !> @return DateTime at the epoch
-   function datetime_default() result(dt)
+   pure function datetime_default() result(dt)
       implicit none
       type(t_datetime) :: dt
       dt%timestamp_ms = 0_c_int64_t
@@ -864,7 +864,7 @@ contains
    !> @param month Month (1-12)
    !> @param day Day (1-31)
    !> @return DateTime with the specified date
-   function datetime_ymd(year, month, day) result(dt)
+   pure function datetime_ymd(year, month, day) result(dt)
       implicit none
       integer, intent(in) :: year, month, day
       type(t_datetime) :: dt
@@ -880,7 +880,7 @@ contains
    !> @param minute Minute (0-59)
    !> @param second Second (0-59)
    !> @return DateTime with the specified date and time
-   function datetime_ymd_hms(year, month, day, hour, minute, second) result(dt)
+   pure function datetime_ymd_hms(year, month, day, hour, minute, second) result(dt)
       implicit none
       integer, intent(in) :: year, month, day, hour, minute, second
       type(t_datetime) :: dt
@@ -897,7 +897,7 @@ contains
    !> @param second Second (0-59)
    !> @param millisecond Millisecond (0-999)
    !> @return DateTime with the specified date and time
-   function datetime_complete(year, month, day, hour, minute, second, millisecond) result(dt)
+   pure function datetime_complete(year, month, day, hour, minute, second, millisecond) result(dt)
       implicit none
       integer, intent(in) :: year, month, day, hour, minute, second, millisecond
       type(t_datetime) :: dt
@@ -908,7 +908,7 @@ contains
    !> @brief Create a DateTime from a timestamp
    !> @param timestamp Milliseconds since the epoch
    !> @return DateTime corresponding to the timestamp
-   function datetime_from_timestamp(timestamp) result(dt)
+   pure function datetime_from_timestamp(timestamp) result(dt)
       implicit none
       integer(kind=8), intent(in) :: timestamp
       type(t_datetime) :: dt
@@ -968,7 +968,7 @@ contains
    !> @brief Get the year component from a DateTime
    !> @param this DateTime object
    !> @return Year component
-   function datetime_year(this) result(year)
+   pure function datetime_year(this) result(year)
       implicit none
       class(t_datetime), intent(in) :: this
       integer :: year
@@ -979,7 +979,7 @@ contains
    !> @brief Get the month component from a DateTime
    !> @param this DateTime object
    !> @return Month component (1-12)
-   function datetime_month(this) result(month)
+   pure function datetime_month(this) result(month)
       implicit none
       class(t_datetime), intent(in) :: this
       integer :: month
@@ -990,7 +990,7 @@ contains
    !> @brief Get the day component from a DateTime
    !> @param this DateTime object
    !> @return Day component (1-31)
-   function datetime_day(this) result(day)
+   pure function datetime_day(this) result(day)
       implicit none
       class(t_datetime), intent(in) :: this
       integer :: day
@@ -1001,7 +1001,7 @@ contains
    !> @brief Get the hour component from a DateTime
    !> @param this DateTime object
    !> @return Hour component (0-23)
-   function datetime_hour(this) result(hour)
+   pure function datetime_hour(this) result(hour)
       implicit none
       class(t_datetime), intent(in) :: this
       integer :: hour
@@ -1012,7 +1012,7 @@ contains
    !> @brief Get the minute component from a DateTime
    !> @param this DateTime object
    !> @return Minute component (0-59)
-   function datetime_minute(this) result(minute)
+   pure function datetime_minute(this) result(minute)
       implicit none
       class(t_datetime), intent(in) :: this
       integer :: minute
@@ -1023,7 +1023,7 @@ contains
    !> @brief Get the second component from a DateTime
    !> @param this DateTime object
    !> @return Second component (0-59)
-   function datetime_second(this) result(second)
+   pure function datetime_second(this) result(second)
       implicit none
       class(t_datetime), intent(in) :: this
       integer :: second
@@ -1034,7 +1034,7 @@ contains
    !> @brief Get the millisecond component from a DateTime
    !> @param this DateTime object
    !> @return Millisecond component (0-999)
-   function datetime_millisecond(this) result(ms)
+   pure function datetime_millisecond(this) result(ms)
       implicit none
       class(t_datetime), intent(in) :: this
       integer :: ms
@@ -1045,7 +1045,7 @@ contains
    !> @brief Get the timestamp from a DateTime
    !> @param this DateTime object
    !> @return Timestamp (milliseconds since epoch)
-   function datetime_timestamp(this) result(timestamp)
+   pure function datetime_timestamp(this) result(timestamp)
       implicit none
       class(t_datetime), intent(in) :: this
       integer(kind=8) :: timestamp
@@ -1121,7 +1121,7 @@ contains
    !> @param dt DateTime
    !> @param ts TimeDelta
    !> @return DateTime resulting from the addition
-   function datetime_add_timedelta(dt, ts) result(result_dt)
+   pure function datetime_add_timedelta(dt, ts) result(result_dt)
       implicit none
       type(t_datetime), intent(in) :: dt
       type(t_timedelta), intent(in) :: ts
@@ -1134,7 +1134,7 @@ contains
    !> @param dt DateTime
    !> @param ts TimeDelta
    !> @return DateTime resulting from the subtraction
-   function datetime_subtract_timedelta(dt, ts) result(result_dt)
+   pure function datetime_subtract_timedelta(dt, ts) result(result_dt)
       implicit none
       type(t_datetime), intent(in) :: dt
       type(t_timedelta), intent(in) :: ts
@@ -1147,7 +1147,7 @@ contains
    !> @param dt1 First DateTime
    !> @param dt2 Second DateTime
    !> @return TimeDelta representing the difference
-   function datetime_difference(dt1, dt2) result(ts)
+   pure function datetime_difference(dt1, dt2) result(ts)
       implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       type(t_timedelta) :: ts
@@ -1159,7 +1159,7 @@ contains
    !> @param dt1 First DateTime
    !> @param dt2 Second DateTime
    !> @return True if equal, False otherwise
-   function datetime_equals(dt1, dt2) result(res)
+   pure function datetime_equals(dt1, dt2) result(res)
       implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
@@ -1173,7 +1173,7 @@ contains
    !> @param dt1 First DateTime
    !> @param dt2 Second DateTime
    !> @return True if not equal, False otherwise
-   function datetime_not_equals(dt1, dt2) result(res)
+   pure function datetime_not_equals(dt1, dt2) result(res)
       implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
@@ -1187,7 +1187,7 @@ contains
    !> @param dt1 First DateTime
    !> @param dt2 Second DateTime
    !> @return True if dt1 < dt2, False otherwise
-   function datetime_less_than(dt1, dt2) result(res)
+   pure function datetime_less_than(dt1, dt2) result(res)
       implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
@@ -1201,7 +1201,7 @@ contains
    !> @param dt1 First DateTime
    !> @param dt2 Second DateTime
    !> @return True if dt1 > dt2, False otherwise
-   function datetime_greater_than(dt1, dt2) result(res)
+   pure function datetime_greater_than(dt1, dt2) result(res)
       implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
@@ -1215,7 +1215,7 @@ contains
    !> @param dt1 First DateTime
    !> @param dt2 Second DateTime
    !> @return True if dt1 <= dt2, False otherwise
-   function datetime_less_equal(dt1, dt2) result(res)
+   pure function datetime_less_equal(dt1, dt2) result(res)
       implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
@@ -1229,7 +1229,7 @@ contains
    !> @param dt1 First DateTime
    !> @param dt2 Second DateTime
    !> @return True if dt1 >= dt2, False otherwise
-   function datetime_greater_equal(dt1, dt2) result(res)
+   pure function datetime_greater_equal(dt1, dt2) result(res)
       implicit none
       type(t_datetime), intent(in) :: dt1, dt2
       logical(c_bool) :: res_t
@@ -1242,7 +1242,7 @@ contains
    !> @brief Check if a given datetime object is valid
    !> @param dt DateTime object
    !> @return True if valid, False otherwise
-   function datetime_is_valid(dt) result(is_valid)
+   pure function datetime_is_valid(dt) result(is_valid)
       implicit none
       class(t_datetime), intent(in) :: dt
       logical :: is_valid
