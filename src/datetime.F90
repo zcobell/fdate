@@ -31,6 +31,8 @@ module mod_datetime
 
    integer, parameter :: DATETIME_STRING_BUFFER_SIZE = 64
    integer, parameter :: TIMEDELTA_STRING_BUFFER_SIZE = 64
+   integer, parameter :: DATETIME_MAX_STRING_LENGTH = 10000
+   integer, parameter :: DATETIME_MAX_FORMAT_COUNT = 1000
 
    !> @brief A span of time with various components
    !>
@@ -1013,8 +1015,26 @@ contains
       type(c_ptr), allocatable, target :: formats_ptr_array(:)
       type(c_ptr) :: formats_array_ptr
       integer(c_int), allocatable :: formats_len(:)
-      integer :: i, j
+      integer :: i, j, max_len_safe
       character(kind=c_char), allocatable, target :: format_chars(:, :)
+
+      ! Input validation
+      if (len_trim(str) <= 0 .or. size(formats) <= 0) then
+         dt = t_datetime()
+         return
+      end if
+
+      ! Prevent excessive format counts and string lengths for security
+      if (size(formats) > 1000 .or. len_trim(str) > 10000) then
+         dt = t_datetime()
+         return
+      end if
+
+      ! Calculate maximum format length safely (limit individual formats to 1000 chars)
+      max_len_safe = 0
+      do i = 1, size(formats)
+         max_len_safe = max(max_len_safe, min(len_trim(formats(i)), 1000))
+      end do
 
       ! Convert input string to C format
       do i = 1, len_trim(str)
@@ -1022,14 +1042,14 @@ contains
       end do
       c_str(len_trim(str) + 1) = c_null_char
 
-      ! Allocate arrays
+      ! Allocate arrays with safe maximum length
       allocate (formats_ptr_array(size(formats)))
       allocate (formats_len(size(formats)))
-      allocate (format_chars(maxval(len_trim(formats)) + 1, size(formats)))
+      allocate (format_chars(max_len_safe + 1, size(formats)))
 
       ! Create C-compatible format strings and their pointers
       do i = 1, size(formats)
-         formats_len(i) = len_trim(formats(i))
+         formats_len(i) = min(len_trim(formats(i)), 1000) ! Limit format length
          if (formats_len(i) > 0) then
             do j = 1, formats_len(i)
                format_chars(j, i) = formats(i) (j:j)
@@ -1056,12 +1076,12 @@ contains
 
    !> @brief Parse a DateTime with automatic detection and fallback formats
    !> @param str String representation of a DateTime
-   !> @param fallback_formats Optional array of fallback format strings to try after auto-detection fails
+   !> @param user_formats Optional array of user format strings to try
    !> @return DateTime parsed from the string using auto-detection or fallback formats
-   function datetime_strptime_auto_with_fallback(str, fallback_formats) result(dt)
+   function datetime_strptime_auto_with_fallback(str, user_formats) result(dt)
       implicit none
       character(len=*), intent(in) :: str
-      character(len=*), intent(in), optional :: fallback_formats(:)
+      character(len=*), intent(in), optional :: user_formats(:)
       type(t_datetime) :: dt
 
       ! Variables for C interface
@@ -1069,8 +1089,20 @@ contains
       type(c_ptr), allocatable, target :: formats_ptr_array(:)
       type(c_ptr) :: formats_array_ptr
       integer(c_int), allocatable :: formats_len(:)
-      integer :: i, j, num_formats
+      integer :: i, j, num_formats, max_len_safe
       character(kind=c_char), allocatable, target :: format_chars(:, :)
+
+      ! Input validation
+      if (len_trim(str) <= 0) then
+         dt = t_datetime()
+         return
+      end if
+
+      ! Prevent excessive string length for security
+      if (len_trim(str) > DATETIME_MAX_STRING_LENGTH) then
+         dt = t_datetime()
+         return
+      end if
 
       ! Convert input string to C format
       do i = 1, len_trim(str)
@@ -1078,18 +1110,31 @@ contains
       end do
       c_str(len_trim(str) + 1) = c_null_char
 
-      if (present(fallback_formats)) then
-         num_formats = size(fallback_formats)
+      if (present(user_formats)) then
+         num_formats = size(user_formats)
+
+         ! Prevent excessive format counts for security
+         if (num_formats > DATETIME_MAX_FORMAT_COUNT) then
+            dt = t_datetime()
+            return
+         end if
+
+         ! Calculate maximum format length safely (limit individual formats to 1000 chars)
+         max_len_safe = 0
+         do i = 1, num_formats
+            max_len_safe = max(max_len_safe, min(len_trim(user_formats(i)), 1000))
+         end do
+
          allocate (formats_ptr_array(num_formats))
          allocate (formats_len(num_formats))
-         allocate (format_chars(maxval(len_trim(fallback_formats)) + 1, num_formats))
+         allocate (format_chars(max_len_safe + 1, num_formats))
 
          ! Create C-compatible format strings and their pointers
          do i = 1, num_formats
-            formats_len(i) = len_trim(fallback_formats(i))
+            formats_len(i) = min(len_trim(user_formats(i)), 1000) ! Limit format length
             if (formats_len(i) > 0) then
                do j = 1, formats_len(i)
-                  format_chars(j, i) = fallback_formats(i) (j:j)
+                  format_chars(j, i) = user_formats(i) (j:j)
                end do
                format_chars(formats_len(i) + 1, i) = c_null_char
                formats_ptr_array(i) = c_loc(format_chars(1, i))

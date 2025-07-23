@@ -695,8 +695,19 @@ auto f_datetime_invalid_timestamp() -> int64_t {
 auto f_datetime_strptime_with_formats(const char* str, const char** formats,
                                       const int str_len, const int* formats_len,
                                       const int num_formats) -> int64_t {
+  // Enhanced input validation
   if (str_len <= 0 || str == nullptr || formats == nullptr ||
       formats_len == nullptr || num_formats <= 0) {
+    return DateTime::INVALID_TIMESTAMP;
+  }
+
+  // Prevent excessive format counts that could cause performance issues
+  if (num_formats > 1000) {
+    return DateTime::INVALID_TIMESTAMP;
+  }
+
+  // Validate string length to prevent buffer issues
+  if (str_len > 10000) {
     return DateTime::INVALID_TIMESTAMP;
   }
 
@@ -707,6 +718,11 @@ auto f_datetime_strptime_with_formats(const char* str, const char** formats,
     // Try each format until one succeeds
     for (int i = 0; i < num_formats; ++i) {
       if (formats[i] == nullptr || formats_len[i] <= 0) {
+        continue;
+      }
+
+      // Validate individual format length to prevent excessive memory usage
+      if (formats_len[i] > 1000) {
         continue;
       }
 
