@@ -1003,3 +1003,366 @@ TEST_CASE("Auto-detection with fallback formats", "[datetime][array_parsing]") {
     CHECK(manual_result->second() == 25);
   }
 }
+
+// ====================================================
+// Comprehensive Automatic Format Detection Tests
+// ====================================================
+
+TEST_CASE("DateTime auto-detection comprehensive format coverage",
+          "[datetime][auto]") {
+  // Test each of the 11 auto-detected formats individually
+
+  SECTION("Format 1: %Y-%m-%d %H:%M:%S") {
+    auto result = DateTime::strptime("2024-03-15 14:30:25");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Format 2: %Y-%m-%dT%H:%M:%SZ (ISO with timezone)") {
+    auto result = DateTime::strptime("2024-03-15T14:30:25Z");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Format 3: %Y-%m-%dT%H:%M:%S (ISO format)") {
+    auto result = DateTime::strptime("2024-03-15T14:30:25");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Format 4: %Y/%m/%d %H:%M:%S") {
+    auto result = DateTime::strptime("2024/03/15 14:30:25");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Format 5: %Y.%m.%d %H:%M:%S") {
+    auto result = DateTime::strptime("2024.03.15 14:30:25");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Format 6: %Y%m%d%H%M%S (compact format)") {
+    auto result = DateTime::strptime("20240315143025");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("Format 7: %Y/%m/%d %H:%M") {
+    auto result = DateTime::strptime("2024/03/15 14:30");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 0);
+  }
+
+  SECTION("Format 8: %Y-%m-%d (date only)") {
+    auto result = DateTime::strptime("2024-03-15");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 0);
+    CHECK(result->minute() == 0);
+    CHECK(result->second() == 0);
+  }
+
+  SECTION("Format 9: %Y/%m/%d (date only with slashes)") {
+    auto result = DateTime::strptime("2024/03/15");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 0);
+    CHECK(result->minute() == 0);
+    CHECK(result->second() == 0);
+  }
+
+  SECTION("Format 10: %Y.%m.%d (date only with dots)") {
+    auto result = DateTime::strptime("2024.03.15");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 0);
+    CHECK(result->minute() == 0);
+    CHECK(result->second() == 0);
+  }
+
+  SECTION("Format 11: %Y%m%d (compact date only)") {
+    auto result = DateTime::strptime("20240315");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 0);
+    CHECK(result->minute() == 0);
+    CHECK(result->second() == 0);
+  }
+}
+
+TEST_CASE("DateTime auto-detection with milliseconds", "[datetime][auto]") {
+  SECTION("Standard format with milliseconds") {
+    auto result = DateTime::strptime("2024-03-15 14:30:25.123");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+    CHECK(result->millisecond() == 123);
+  }
+
+  SECTION("ISO format with milliseconds") {
+    auto result = DateTime::strptime("2024-03-15T14:30:25.456");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+    CHECK(result->millisecond() == 456);
+  }
+
+  SECTION("Slash format with milliseconds") {
+    auto result = DateTime::strptime("2024/03/15 14:30:25.789");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+    CHECK(result->millisecond() == 789);
+  }
+}
+
+TEST_CASE("DateTime auto-detection format precedence", "[datetime][auto]") {
+  // Test which format wins when multiple could potentially match
+
+  SECTION("Most specific format wins - full datetime vs date-only") {
+    // This should match the full datetime format, not just the date part
+    auto result = DateTime::strptime("2024-03-15 14:30:25");
+    REQUIRE(result.has_value());
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 25);
+  }
+
+  SECTION("ISO with Z takes precedence over ISO without Z") {
+    auto result = DateTime::strptime("2024-03-15T14:30:25Z");
+    REQUIRE(result.has_value());
+    // Should successfully parse even with Z suffix
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+  }
+
+  SECTION("Minutes-precision format preferred when seconds missing") {
+    auto result = DateTime::strptime("2024/03/15 14:30");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+    CHECK(result->hour() == 14);
+    CHECK(result->minute() == 30);
+    CHECK(result->second() == 0);
+  }
+}
+
+TEST_CASE("DateTime auto-detection edge cases", "[datetime][auto]") {
+  SECTION("Ambiguous date handling - year boundaries") {
+    // Test dates that could be ambiguous
+    auto result = DateTime::strptime("2024-01-01");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 1);
+    CHECK(result->day() == 1);
+  }
+
+  SECTION("Leap year dates") {
+    auto result = DateTime::strptime("2024-02-29");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 2);
+    CHECK(result->day() == 29);
+  }
+
+  SECTION("End of month dates") {
+    auto result = DateTime::strptime("2024-01-31");
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 1);
+    CHECK(result->day() == 31);
+  }
+
+  SECTION("Different separator consistency") {
+    // Ensure formats with mixed separators fail appropriately
+    auto result = DateTime::strptime("2024-03/15 14:30:25");
+    CHECK_FALSE(result.has_value());
+  }
+
+  SECTION("Partial format strings") {
+    // Test strings that partially match formats
+    auto result = DateTime::strptime("2024-03");
+    CHECK_FALSE(result.has_value());
+  }
+}
+
+TEST_CASE("DateTime auto-detection invalid inputs", "[datetime][auto]") {
+  SECTION("Completely invalid strings") {
+    CHECK_FALSE(DateTime::strptime("not a date").has_value());
+    CHECK_FALSE(DateTime::strptime("").has_value());
+    CHECK_FALSE(DateTime::strptime("abc123def").has_value());
+  }
+
+  SECTION("Invalid date values") {
+    CHECK_FALSE(DateTime::strptime("2024-13-15").has_value());  // Invalid month
+    CHECK_FALSE(DateTime::strptime("2024-02-30")
+                    .has_value());  // Invalid day for February
+    CHECK_FALSE(
+        DateTime::strptime("2024-04-31").has_value());  // Invalid day for April
+  }
+
+  SECTION("Invalid time values") {
+    // Test with strings that have non-numeric characters in time positions
+    CHECK_FALSE(DateTime::strptime("2024-03-15 aa:30:25")
+                    .has_value());  // Non-numeric hour
+    CHECK_FALSE(DateTime::strptime("2024-03-15 14:bb:25")
+                    .has_value());  // Non-numeric minute
+    CHECK_FALSE(DateTime::strptime("2024-03-15 14:30:cc")
+                    .has_value());  // Non-numeric second
+  }
+
+  SECTION("Invalid time value rejection") {
+    // The parsing library should reject out-of-range time values
+    // rather than silently normalizing them
+
+    auto result1 = DateTime::strptime("2024-03-15 25:30:25");  // 25 hours
+    CHECK_FALSE(result1.has_value());  // Should fail to parse
+
+    auto result2 = DateTime::strptime("2024-03-15 14:60:25");  // 60 minutes
+    CHECK_FALSE(result2.has_value());  // Should fail to parse
+
+    auto result3 = DateTime::strptime("2024-03-15 14:30:60");  // 60 seconds
+    CHECK_FALSE(result3.has_value());  // Should fail to parse
+  }
+
+  SECTION("Malformed but partially parseable") {
+    // The parsing library may be more lenient than expected, so test truly
+    // malformed strings
+    CHECK_FALSE(
+        DateTime::strptime("2024/03-15").has_value());     // Mixed separators
+    CHECK_FALSE(DateTime::strptime("2024-").has_value());  // Incomplete date
+    CHECK_FALSE(
+        DateTime::strptime("202a-03-15").has_value());  // Non-numeric year
+  }
+}
+
+TEST_CASE("DateTime auto-detection performance characteristics",
+          "[datetime][auto][performance]") {
+  // Basic performance comparison between auto and manual format specification
+
+  SECTION("Auto vs manual parsing speed comparison") {
+    const std::string test_string = "2024-03-15 14:30:25";
+    const int iterations = 1000;
+
+    // Warm up
+    for (int i = 0; i < 10; ++i) {
+      DateTime::strptime(test_string);
+      DateTime::strptime(test_string, "%Y-%m-%d %H:%M:%S");
+    }
+
+    // Test auto parsing
+    auto start_auto = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < iterations; ++i) {
+      auto result = DateTime::strptime(test_string);
+      REQUIRE(result.has_value());  // Ensure it's working
+    }
+    auto end_auto = std::chrono::high_resolution_clock::now();
+
+    // Test manual parsing
+    auto start_manual = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < iterations; ++i) {
+      auto result = DateTime::strptime(test_string, "%Y-%m-%d %H:%M:%S");
+      REQUIRE(result.has_value());  // Ensure it's working
+    }
+    auto end_manual = std::chrono::high_resolution_clock::now();
+
+    auto auto_duration = std::chrono::duration_cast<std::chrono::microseconds>(
+        end_auto - start_auto);
+    auto manual_duration =
+        std::chrono::duration_cast<std::chrono::microseconds>(end_manual -
+                                                              start_manual);
+
+    // Auto should be slower but not more than 10x slower for the first format
+    // match This is more of a sanity check than a strict requirement
+    CHECK(auto_duration.count() > 0);
+    CHECK(manual_duration.count() > 0);
+
+    // Log the performance for informational purposes
+    INFO("Auto parsing took: " << auto_duration.count() << " microseconds");
+    INFO("Manual parsing took: " << manual_duration.count() << " microseconds");
+    INFO("Ratio (auto/manual): " << static_cast<double>(auto_duration.count()) /
+                                        manual_duration.count());
+  }
+
+  SECTION("Auto parsing worst case - last format matches") {
+    // Test parsing time when the last format in the list matches
+    const std::string compact_date =
+        "20240315";  // Should match %Y%m%d (last in list)
+
+    auto result = DateTime::strptime(compact_date);
+    REQUIRE(result.has_value());
+    CHECK(result->year() == 2024);
+    CHECK(result->month() == 3);
+    CHECK(result->day() == 15);
+
+    // Should still complete in reasonable time
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < 100; ++i) {
+      DateTime::strptime(compact_date);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    // Should complete 100 iterations in less than 100ms (very generous)
+    CHECK(duration.count() < 100);
+  }
+}

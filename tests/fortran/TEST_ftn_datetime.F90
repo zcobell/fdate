@@ -947,6 +947,352 @@ contains
       call assert_equal(parsed_dt%second(), 25, "Second should be 25")
    end subroutine test_datetime_auto_with_fallback
 
+   ! ====================================================
+   ! Comprehensive Automatic Format Detection Tests for Fortran
+   ! ====================================================
+
+   subroutine test_datetime_auto_format_coverage_1()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 1: %Y-%m-%d %H:%M:%S (standard format)
+      result = t_datetime('2024-03-15 14:30:25')
+      call assert_true(result%valid(), "Auto-detection should succeed for standard format")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+   end subroutine test_datetime_auto_format_coverage_1
+
+   subroutine test_datetime_auto_format_coverage_2()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 2: %Y-%m-%dT%H:%M:%SZ (ISO with timezone)
+      result = t_datetime('2024-03-15T14:30:25Z')
+      call assert_true(result%valid(), "Auto-detection should succeed for ISO Z format")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+   end subroutine test_datetime_auto_format_coverage_2
+
+   subroutine test_datetime_auto_format_coverage_3()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 3: %Y-%m-%dT%H:%M:%S (ISO format)
+      result = t_datetime('2024-03-15T14:30:25')
+      call assert_true(result%valid(), "Auto-detection should succeed for ISO format")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+   end subroutine test_datetime_auto_format_coverage_3
+
+   subroutine test_datetime_auto_format_coverage_4()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 4: %Y/%m/%d %H:%M:%S (slash format)
+      result = t_datetime('2024/03/15 14:30:25')
+      call assert_true(result%valid(), "Auto-detection should succeed for slash format")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+   end subroutine test_datetime_auto_format_coverage_4
+
+   subroutine test_datetime_auto_format_coverage_5()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 5: %Y.%m.%d %H:%M:%S (dot format)
+      result = t_datetime('2024.03.15 14:30:25')
+      call assert_true(result%valid(), "Auto-detection should succeed for dot format")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+   end subroutine test_datetime_auto_format_coverage_5
+
+   subroutine test_datetime_auto_format_coverage_6()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 6: %Y%m%d%H%M%S (compact format)
+      result = t_datetime('20240315143025')
+      call assert_true(result%valid(), "Auto-detection should succeed for compact format")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+   end subroutine test_datetime_auto_format_coverage_6
+
+   subroutine test_datetime_auto_format_coverage_7()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 7: %Y/%m/%d %H:%M (no seconds)
+      result = t_datetime('2024/03/15 14:30')
+      call assert_true(result%valid(), "Auto-detection should succeed for format without seconds")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 0, "Second should default to 0")
+   end subroutine test_datetime_auto_format_coverage_7
+
+   subroutine test_datetime_auto_format_coverage_8()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 8: %Y-%m-%d (date only)
+      result = t_datetime('2024-03-15')
+      call assert_true(result%valid(), "Auto-detection should succeed for date-only format")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 0, "Hour should default to 0")
+      call assert_equal(result%minute(), 0, "Minute should default to 0")
+      call assert_equal(result%second(), 0, "Second should default to 0")
+   end subroutine test_datetime_auto_format_coverage_8
+
+   subroutine test_datetime_auto_format_coverage_9()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 9: %Y/%m/%d (date only with slashes)
+      result = t_datetime('2024/03/15')
+      call assert_true(result%valid(), "Auto-detection should succeed for slash date-only")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 0, "Hour should default to 0")
+      call assert_equal(result%minute(), 0, "Minute should default to 0")
+      call assert_equal(result%second(), 0, "Second should default to 0")
+   end subroutine test_datetime_auto_format_coverage_9
+
+   subroutine test_datetime_auto_format_coverage_10()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 10: %Y.%m.%d (date only with dots)
+      result = t_datetime('2024.03.15')
+      call assert_true(result%valid(), "Auto-detection should succeed for dot date-only")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 0, "Hour should default to 0")
+      call assert_equal(result%minute(), 0, "Minute should default to 0")
+      call assert_equal(result%second(), 0, "Second should default to 0")
+   end subroutine test_datetime_auto_format_coverage_10
+
+   subroutine test_datetime_auto_format_coverage_11()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test Format 11: %Y%m%d (compact date only)
+      result = t_datetime('20240315')
+      call assert_true(result%valid(), "Auto-detection should succeed for compact date-only")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 0, "Hour should default to 0")
+      call assert_equal(result%minute(), 0, "Minute should default to 0")
+      call assert_equal(result%second(), 0, "Second should default to 0")
+   end subroutine test_datetime_auto_format_coverage_11
+
+   subroutine test_datetime_auto_with_milliseconds()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test standard format with milliseconds
+      result = t_datetime('2024-03-15 14:30:25.123')
+      call assert_true(result%valid(), "Auto-detection should succeed with milliseconds")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+      call assert_equal(result%millisecond(), 123, "Millisecond should be 123")
+
+      ! Test ISO format with milliseconds
+      result = t_datetime('2024-03-15T14:30:25.456')
+      call assert_true(result%valid(), "Auto-detection should succeed with ISO milliseconds")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+      call assert_equal(result%millisecond(), 456, "Millisecond should be 456")
+
+      ! Test slash format with milliseconds
+      result = t_datetime('2024/03/15 14:30:25.789')
+      call assert_true(result%valid(), "Auto-detection should succeed with slash milliseconds")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 25, "Second should be 25")
+      call assert_equal(result%millisecond(), 789, "Millisecond should be 789")
+   end subroutine test_datetime_auto_with_milliseconds
+
+   subroutine test_datetime_auto_format_precedence()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test that most specific format wins - full datetime vs date-only
+      result = t_datetime('2024-03-15 14:30:25')
+      call assert_true(result%valid(), "Full datetime should be parsed correctly")
+      call assert_equal(result%hour(), 14, "Hour should be parsed from full format")
+      call assert_equal(result%minute(), 30, "Minute should be parsed from full format")
+      call assert_equal(result%second(), 25, "Second should be parsed from full format")
+
+      ! Test ISO with Z takes precedence
+      result = t_datetime('2024-03-15T14:30:25Z')
+      call assert_true(result%valid(), "ISO with Z should be parsed correctly")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+
+      ! Test minutes-precision format when seconds missing
+      result = t_datetime('2024/03/15 14:30')
+      call assert_true(result%valid(), "Minutes precision should be parsed correctly")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 3, "Month should be 3")
+      call assert_equal(result%day(), 15, "Day should be 15")
+      call assert_equal(result%hour(), 14, "Hour should be 14")
+      call assert_equal(result%minute(), 30, "Minute should be 30")
+      call assert_equal(result%second(), 0, "Second should default to 0")
+   end subroutine test_datetime_auto_format_precedence
+
+   subroutine test_datetime_auto_edge_cases()
+      use test_utils, only: assert_equal, assert_true, assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test ambiguous date handling - year boundaries
+      result = t_datetime('2024-01-01')
+      call assert_true(result%valid(), "Year boundary date should parse correctly")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 1, "Month should be 1")
+      call assert_equal(result%day(), 1, "Day should be 1")
+
+      ! Test leap year dates
+      result = t_datetime('2024-02-29')
+      call assert_true(result%valid(), "Leap year date should parse correctly")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 2, "Month should be 2")
+      call assert_equal(result%day(), 29, "Day should be 29")
+
+      ! Test end of month dates
+      result = t_datetime('2024-01-31')
+      call assert_true(result%valid(), "End of month date should parse correctly")
+      call assert_equal(result%year(), 2024, "Year should be 2024")
+      call assert_equal(result%month(), 1, "Month should be 1")
+      call assert_equal(result%day(), 31, "Day should be 31")
+
+      ! Test mixed separators should fail
+      result = t_datetime('2024-03/15 14:30:25')
+      call assert_false(result%valid(), "Mixed separators should fail")
+
+      ! Test partial format strings should fail
+      result = t_datetime('2024-03')
+      call assert_false(result%valid(), "Partial format should fail")
+
+   end subroutine test_datetime_auto_edge_cases
+
+   subroutine test_datetime_auto_invalid_inputs()
+      use test_utils, only: assert_false
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: result
+
+      ! Test completely invalid strings
+      result = t_datetime('not a date')
+      call assert_false(result%valid(), "Invalid string should fail")
+
+      result = t_datetime('')
+      call assert_false(result%valid(), "Empty string should fail")
+
+      result = t_datetime('abc123def')
+      call assert_false(result%valid(), "Random string should fail")
+
+      ! Test invalid date values
+      result = t_datetime('2024-13-15')
+      call assert_false(result%valid(), "Invalid month should fail")
+
+      result = t_datetime('2024-02-30')
+      call assert_false(result%valid(), "Invalid day for February should fail")
+
+      result = t_datetime('2024-04-31')
+      call assert_false(result%valid(), "Invalid day for April should fail")
+
+      ! Test invalid time value rejection - parsing library should reject out-of-range values
+      result = t_datetime('2024-03-15 25:30:25')
+      call assert_false(result%valid(), "25 hours should fail to parse")
+
+      result = t_datetime('2024-03-15 14:60:25')
+      call assert_false(result%valid(), "60 minutes should fail to parse")
+
+      result = t_datetime('2024-03-15 14:30:60')
+      call assert_false(result%valid(), "60 seconds should fail to parse")
+
+      ! Test malformed but partially parseable - use truly malformed strings
+      result = t_datetime('2024/03-15')
+      call assert_false(result%valid(), "Mixed separators should fail")
+
+      result = t_datetime('2024-')
+      call assert_false(result%valid(), "Incomplete date should fail")
+
+      result = t_datetime('202a-03-15')
+      call assert_false(result%valid(), "Non-numeric year should fail")
+   end subroutine test_datetime_auto_invalid_inputs
+
 end module datetime_tests
 
 program test_datetime
@@ -971,7 +1317,14 @@ program test_datetime
                              test_datetime_array_parsing_compact_format, test_datetime_array_parsing_iso_variations, &
                              test_datetime_array_parsing_dot_separated, test_datetime_array_parsing_failures, &
                              test_datetime_array_parsing_single_format, test_datetime_array_parsing_date_only, &
-                             test_datetime_auto_with_fallback
+                             test_datetime_auto_with_fallback, test_datetime_auto_format_coverage_1, &
+                             test_datetime_auto_format_coverage_2, test_datetime_auto_format_coverage_3, &
+                             test_datetime_auto_format_coverage_4, test_datetime_auto_format_coverage_5, &
+                             test_datetime_auto_format_coverage_6, test_datetime_auto_format_coverage_7, &
+                             test_datetime_auto_format_coverage_8, test_datetime_auto_format_coverage_9, &
+                             test_datetime_auto_format_coverage_10, test_datetime_auto_format_coverage_11, &
+                             test_datetime_auto_with_milliseconds, test_datetime_auto_format_precedence, &
+                             test_datetime_auto_edge_cases, test_datetime_auto_invalid_inputs
    implicit none
 
    integer :: exit_code
@@ -1028,6 +1381,25 @@ program test_datetime
    call run_test(test_datetime_array_parsing_single_format, "DateTime Array Parsing Single Format")
    call run_test(test_datetime_array_parsing_date_only, "DateTime Array Parsing Date Only")
    call run_test(test_datetime_auto_with_fallback, "DateTime Auto with Fallback")
+
+   ! Comprehensive Automatic Format Detection Tests
+   write (*, '(A)') ""
+   write (*, '(A)') "====== DateTime Auto-Detection Tests ======"
+   call run_test(test_datetime_auto_format_coverage_1, "Auto Format Coverage 1 (Standard)")
+   call run_test(test_datetime_auto_format_coverage_2, "Auto Format Coverage 2 (ISO Z)")
+   call run_test(test_datetime_auto_format_coverage_3, "Auto Format Coverage 3 (ISO)")
+   call run_test(test_datetime_auto_format_coverage_4, "Auto Format Coverage 4 (Slash)")
+   call run_test(test_datetime_auto_format_coverage_5, "Auto Format Coverage 5 (Dot)")
+   call run_test(test_datetime_auto_format_coverage_6, "Auto Format Coverage 6 (Compact)")
+   call run_test(test_datetime_auto_format_coverage_7, "Auto Format Coverage 7 (No Seconds)")
+   call run_test(test_datetime_auto_format_coverage_8, "Auto Format Coverage 8 (Date Only)")
+   call run_test(test_datetime_auto_format_coverage_9, "Auto Format Coverage 9 (Date Only Slash)")
+   call run_test(test_datetime_auto_format_coverage_10, "Auto Format Coverage 10 (Date Only Dot)")
+   call run_test(test_datetime_auto_format_coverage_11, "Auto Format Coverage 11 (Compact Date)")
+   call run_test(test_datetime_auto_with_milliseconds, "Auto Detection With Milliseconds")
+   call run_test(test_datetime_auto_format_precedence, "Auto Detection Format Precedence")
+   call run_test(test_datetime_auto_edge_cases, "Auto Detection Edge Cases")
+   call run_test(test_datetime_auto_invalid_inputs, "Auto Detection Invalid Inputs")
 
    ! Print summary
    call print_test_summary()
