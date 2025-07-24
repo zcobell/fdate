@@ -24,7 +24,7 @@
 !> memory management issues while providing a clean Fortran API.
 
 module mod_datetime
-   use, intrinsic :: iso_c_binding, only: c_int, c_int64_t, c_char, c_null_char, c_bool, c_ptr, c_null_ptr, c_loc
+   use, intrinsic :: iso_c_binding, only: c_int, c_int64_t, c_char, c_null_char, c_bool, c_ptr, c_null_ptr, c_loc, c_double
    implicit none
 
    private
@@ -90,6 +90,12 @@ module mod_datetime
       procedure :: second => datetime_second
       !> @brief Get the millisecond component
       procedure :: millisecond => datetime_millisecond
+      !> @brief Get the Julian Day Number
+      procedure :: julian_day_number => datetime_julian_day_number
+      !> @brief Get the Julian Day (with fractional part)
+      procedure :: julian_day => datetime_julian_day
+      !> @brief Get the Julian Century (JC)
+      procedure :: julian_century => datetime_julian_century
       !> @brief Get the timestamp (milliseconds since epoch)
       procedure :: timestamp => datetime_timestamp
       !> @brief Format the datetime to a string
@@ -427,6 +433,30 @@ module mod_datetime
          integer(c_int64_t), intent(in), value :: dt_ms
          integer(c_int) :: ms
       end function f_datetime_get_millisecond
+
+      !> @brief Get the Julian Day Number from a DateTime
+      pure function f_datetime_get_julian_day_number(dt_ms) result(jdn) bind(C, name="f_datetime_get_julian_day_number")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         integer(c_int64_t) :: jdn
+      end function f_datetime_get_julian_day_number
+
+      !> @brief Get the Julian Day (with fractional part) from a DateTime
+      pure function f_datetime_get_julian_day(dt_ms) result(jd) bind(C, name="f_datetime_get_julian_day")
+         import :: c_int64_t, c_double
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         real(c_double) :: jd
+      end function f_datetime_get_julian_day
+
+      !> @brief Get the Julian Century from a DateTime
+      pure function f_datetime_get_julian_century(dt_ms) result(jc) bind(C, name="f_datetime_get_julian_century")
+         import :: c_int64_t, c_double
+         implicit none
+         integer(c_int64_t), intent(in), value :: dt_ms
+         real(c_double) :: jc
+      end function f_datetime_get_julian_century
 
       !> @brief Add a TimeDelta to a DateTime
       pure function f_datetime_add_timedelta(dt_ms, ts_ms) result(result_ms) &
@@ -1239,6 +1269,39 @@ contains
 
       ms = f_datetime_get_millisecond(this%timestamp_ms)
    end function datetime_millisecond
+
+   !> @brief Get the Julian Day Number from a DateTime
+   !> @param this DateTime object
+   !> @return Julian Day Number (integer days since JD epoch)
+   pure function datetime_julian_day_number(this) result(jdn)
+      implicit none
+      class(t_datetime), intent(in) :: this
+      integer(kind=8) :: jdn
+
+      jdn = f_datetime_get_julian_day_number(this%timestamp_ms)
+   end function datetime_julian_day_number
+
+   !> @brief Get the Julian Day (with fractional part) from a DateTime
+   !> @param this DateTime object
+   !> @return Julian Day with fractional part (days.fraction since JD epoch)
+   pure function datetime_julian_day(this) result(jd)
+      implicit none
+      class(t_datetime), intent(in) :: this
+      real(kind=8) :: jd
+
+      jd = f_datetime_get_julian_day(this%timestamp_ms)
+   end function datetime_julian_day
+
+   !> @brief Get the Julian Century from a DateTime
+   !> @param this DateTime object
+   !> @return Julian Century (time unit used in astronomy)
+   pure function datetime_julian_century(this) result(jc)
+      implicit none
+      class(t_datetime), intent(in) :: this
+      real(kind=8) :: jc
+
+      jc = f_datetime_get_julian_century(this%timestamp_ms)
+   end function datetime_julian_century
 
    !> @brief Get the timestamp from a DateTime
    !> @param this DateTime object

@@ -15,6 +15,7 @@ module test_utils
       module procedure assert_equal_int
       module procedure assert_equal_int8
       module procedure assert_equal_string
+      module procedure assert_equal_real8
    end interface assert_equal
 
    public
@@ -56,6 +57,20 @@ contains
             " (Expected: '", trim(expected), "', Got: '", trim(actual), "')"
       end if
    end subroutine assert_equal_string
+
+   subroutine assert_equal_real8(expected, actual, message)
+      real(kind=8), intent(in) :: expected, actual
+      character(len=*), intent(in) :: message
+      real(kind=8) :: tolerance
+
+      tests_run = tests_run + 1
+      tolerance = 1.0d-10
+      if (abs(expected - actual) > tolerance) then
+         tests_failed = tests_failed + 1
+         write (*, '(3A,F0.12,A,F0.12)') "FAILED: ", message, &
+            " (Expected: ", expected, ", Got: ", actual, ")"
+      end if
+   end subroutine assert_equal_real8
 
    subroutine assert_true(condition, message)
       logical, intent(in) :: condition
@@ -1293,6 +1308,313 @@ contains
       call assert_false(result%valid(), "Non-numeric year should fail")
    end subroutine test_datetime_auto_invalid_inputs
 
+   subroutine test_datetime_julian_day_number()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      use, intrinsic :: iso_fortran_env, only: int64
+      implicit none
+      type(t_datetime) :: dt
+
+      ! Test known Julian Day Numbers for astronomical reference dates
+
+      ! January 1, 2000 12:00 UTC = JDN 2451545
+      dt = t_datetime(2000, 1, 1, 12, 0, 0)
+      call assert_equal(2451545_int64, dt%julian_day_number(), "JDN for Y2K reference")
+
+      ! Unix epoch: January 1, 1970 00:00 UTC = JDN 2440588
+      dt = t_datetime(1970, 1, 1, 0, 0, 0)
+      call assert_equal(2440588_int64, dt%julian_day_number(), "JDN for Unix epoch")
+
+      ! GPS epoch: January 6, 1980 00:00 UTC = JDN 2444245
+      dt = t_datetime(1980, 1, 6, 0, 0, 0)
+      call assert_equal(2444245_int64, dt%julian_day_number(), "JDN for GPS epoch")
+
+      ! Gregorian calendar adoption: October 15, 1582 = JDN 2299161
+      dt = t_datetime(1582, 10, 15, 0, 0, 0)
+      call assert_equal(2299161_int64, dt%julian_day_number(), "JDN for Gregorian calendar adoption")
+
+      ! Test that time components don't affect JDN (should be same for any time on same date)
+      dt = t_datetime(2000, 1, 1, 0, 0, 0)
+      call assert_equal(2451545_int64, dt%julian_day_number(), "JDN same for midnight")
+
+      dt = t_datetime(2000, 1, 1, 23, 59, 59)
+      call assert_equal(2451545_int64, dt%julian_day_number(), "JDN same for end of day")
+   end subroutine test_datetime_julian_day_number
+
+   subroutine test_datetime_julian_day()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: dt
+      real(kind=8) :: jd, expected_jd
+
+      ! Test fractional Julian Day calculation
+
+      ! January 1, 2000 12:00 UTC = JD 2451545.0 (noon is 0.0 fractional day)
+      dt = t_datetime(2000, 1, 1, 12, 0, 0)
+      jd = dt%julian_day()
+      call assert_equal(2451545.0d0, jd, "JD for Y2K at noon")
+
+      ! January 1, 2000 00:00 UTC = JD 2451544.5 (midnight is -0.5 fractional day)
+      dt = t_datetime(2000, 1, 1, 0, 0, 0)
+      jd = dt%julian_day()
+      call assert_equal(2451544.5d0, jd, "JD for Y2K at midnight")
+
+      ! January 1, 2000 18:00 UTC = JD 2451545.25 (6 PM is +0.25 fractional day)
+      dt = t_datetime(2000, 1, 1, 18, 0, 0)
+      jd = dt%julian_day()
+      call assert_equal(2451545.25d0, jd, "JD for Y2K at 6 PM")
+
+      ! January 2, 2000 00:00 UTC = JD 2451545.5 (next day midnight)
+      dt = t_datetime(2000, 1, 2, 0, 0, 0)
+      jd = dt%julian_day()
+      call assert_equal(2451545.5d0, jd, "JD for next day midnight")
+
+      ! Test with minutes and seconds
+      ! January 1, 2000 12:30:00 UTC = JD 2451545.0 + 30/1440 = 2451545.020833...
+      dt = t_datetime(2000, 1, 1, 12, 30, 0)
+      jd = dt%julian_day()
+      expected_jd = 2451545.0d0 + 30.0d0/1440.0d0
+      call assert_equal(expected_jd, jd, "JD for Y2K at 12:30")
+
+      ! Test with milliseconds
+      ! January 1, 2000 12:00:00.500 UTC = JD 2451545.0 + 500/(24*60*60*1000)
+      dt = t_datetime(2000, 1, 1, 12, 0, 0, 500)
+      jd = dt%julian_day()
+      expected_jd = 2451545.0d0 + 500.0d0/86400000.0d0
+      call assert_equal(expected_jd, jd, "JD for Y2K with milliseconds")
+   end subroutine test_datetime_julian_day
+
+   subroutine test_datetime_julian_day_consistency()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      use, intrinsic :: iso_fortran_env, only: int64
+      implicit none
+      type(t_datetime) :: dt
+      integer(kind=8) :: jdn
+      real(kind=8) :: jd, fractional_part
+
+      ! Test that julian_day() = julian_day_number() + fractional_part
+      dt = t_datetime(2020, 3, 15, 14, 30, 45, 123)
+
+      jdn = dt%julian_day_number()
+      jd = dt%julian_day()
+      fractional_part = jd - real(jdn, kind=8)
+
+      ! For 14:30:45.123, fractional part should be (14.5-12)/24 + 45/86400 + 123/86400000
+      ! = 2.5/24 + 45/86400 + 123/86400000 = 0.104340...
+      call assert_true(fractional_part > 0.104d0 .and. fractional_part < 0.105d0, &
+                       "Fractional part should be approximately 0.1043")
+
+      ! Test noon gives fractional part of 0.0
+      dt = t_datetime(2020, 3, 15, 12, 0, 0, 0)
+      jd = dt%julian_day()
+      jdn = dt%julian_day_number()
+      fractional_part = jd - real(jdn, kind=8)
+      call assert_equal(0.0d0, fractional_part, "Noon should give fractional part of 0.0")
+
+      ! Test midnight gives fractional part of -0.5
+      dt = t_datetime(2020, 3, 15, 0, 0, 0, 0)
+      jd = dt%julian_day()
+      jdn = dt%julian_day_number()
+      fractional_part = jd - real(jdn, kind=8)
+      call assert_equal(-0.5d0, fractional_part, "Midnight should give fractional part of -0.5")
+   end subroutine test_datetime_julian_day_consistency
+
+   subroutine test_datetime_julian_day_edge_cases()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      use, intrinsic :: iso_fortran_env, only: int64
+      implicit none
+      type(t_datetime) :: dt
+      integer(kind=8) :: jdn
+      real(kind=8) :: jd
+
+      ! Test early date
+      dt = t_datetime(1, 1, 1, 12, 0, 0)
+      jdn = dt%julian_day_number()
+      jd = dt%julian_day()
+      call assert_true(jdn > 0, "JDN should be positive for year 1")
+      call assert_true(jd > 0.0d0, "JD should be positive for year 1")
+
+      ! Test future date
+      dt = t_datetime(3000, 12, 31, 12, 0, 0)
+      jdn = dt%julian_day_number()
+      jd = dt%julian_day()
+      call assert_true(jdn > 2451545_int64, "JDN should be greater than Y2K for year 3000")
+      call assert_true(jd > 2451545.0d0, "JD should be greater than Y2K for year 3000")
+
+      ! Test leap year: February 29, 2000
+      dt = t_datetime(2000, 2, 29, 12, 0, 0)
+      jdn = dt%julian_day_number()
+      call assert_true(jdn > 0, "JDN should be valid for leap day")
+
+      ! Test sequential days increment by 1
+      dt = t_datetime(2000, 1, 1, 12, 0, 0)
+      jdn = dt%julian_day_number()
+
+      dt = t_datetime(2000, 1, 2, 12, 0, 0)
+      call assert_equal(jdn + 1_int64, dt%julian_day_number(), "Sequential days should increment JDN by 1")
+   end subroutine test_datetime_julian_day_edge_cases
+
+   subroutine test_datetime_julian_century()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: dt
+      real(kind=8) :: jc, expected_jc
+
+      ! Test known Julian Century values for astronomical reference dates
+
+      ! J2000.0 epoch: January 1, 2000 12:00 UTC = Julian Century 0.0
+      ! (JD 2451545.0 corresponds to J2000.0 epoch)
+      dt = t_datetime(2000, 1, 1, 12, 0, 0)
+      jc = dt%julian_century()
+      call assert_equal(0.0d0, jc, "Julian Century for J2000.0 epoch")
+
+      ! Test one century before J2000.0: January 1, 1900 12:00 UTC = JC -1.0
+      dt = t_datetime(1900, 1, 1, 12, 0, 0)
+      jc = dt%julian_century()
+      call assert_equal(-1.0d0, jc, "Julian Century for 1900.0 (one century before J2000)")
+
+      ! Test one century after J2000.0: January 1, 2100 12:00 UTC = JC 1.0
+      dt = t_datetime(2100, 1, 1, 12, 0, 0)
+      jc = dt%julian_century()
+      call assert_equal(1.0d0, jc, "Julian Century for 2100.0 (one century after J2000)")
+
+      ! Test half century after J2000.0: January 1, 2050 12:00 UTC = JC 0.5
+      dt = t_datetime(2050, 1, 1, 12, 0, 0)
+      jc = dt%julian_century()
+      call assert_equal(0.5d0, jc, "Julian Century for 2050.0 (half century after J2000)")
+
+      ! Test Unix epoch: January 1, 1970 00:00 UTC
+      ! JD = 2440587.5, JC = (2440587.5 - 2451545.0) / 36525 = -0.300019...
+      dt = t_datetime(1970, 1, 1, 0, 0, 0)
+      jc = dt%julian_century()
+      expected_jc = (2440587.5d0 - 2451545.0d0)/36525.0d0
+      call assert_equal(expected_jc, jc, "Julian Century for Unix epoch")
+
+      ! Test time components affect Julian Century calculation
+      ! January 1, 2000 00:00 UTC = JD 2451544.5, JC = (2451544.5 - 2451545.0) / 36525
+      dt = t_datetime(2000, 1, 1, 0, 0, 0)
+      jc = dt%julian_century()
+      expected_jc = (2451544.5d0 - 2451545.0d0)/36525.0d0
+      call assert_equal(expected_jc, jc, "Julian Century for J2000 at midnight")
+
+      ! Test time components with more precision
+      ! January 1, 2000 18:00 UTC = JD 2451545.25, JC = (2451545.25 - 2451545.0) / 36525
+      dt = t_datetime(2000, 1, 1, 18, 0, 0)
+      jc = dt%julian_century()
+      expected_jc = (2451545.25d0 - 2451545.0d0)/36525.0d0
+      call assert_equal(expected_jc, jc, "Julian Century for J2000 at 6 PM")
+   end subroutine test_datetime_julian_century
+
+   subroutine test_datetime_julian_century_precision()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: dt
+      real(kind=8) :: jc, expected_jc
+
+      ! Test precision with milliseconds
+      ! January 1, 2000 12:00:00.500 UTC
+      dt = t_datetime(2000, 1, 1, 12, 0, 0, 500)
+      jc = dt%julian_century()
+      ! JD = 2451545.0 + 500/(24*60*60*1000) = 2451545.0 + 500/86400000
+      expected_jc = (2451545.0d0 + 500.0d0/86400000.0d0 - 2451545.0d0)/36525.0d0
+      call assert_equal(expected_jc, jc, "Julian Century with millisecond precision")
+
+      ! Test that small time differences result in small JC differences
+      ! January 1, 2000 12:30:45.123 UTC
+      dt = t_datetime(2000, 1, 1, 12, 30, 45, 123)
+      jc = dt%julian_century()
+      ! Calculate expected JC for this precise time
+      ! JD = 2451545.0 + (30*60 + 45 + 0.123)/(24*60*60) = 2451545.0 + 1845.123/86400
+      expected_jc = (2451545.0d0 + 1845.123d0/86400.0d0 - 2451545.0d0)/36525.0d0
+      call assert_equal(expected_jc, jc, "Julian Century with precise time components")
+
+      ! Test that the Julian Century is continuous (no jumps between days)
+      dt = t_datetime(1999, 12, 31, 23, 59, 59, 999)
+      jc = dt%julian_century()
+      call assert_true(jc < 0.0d0, "Julian Century should be negative before J2000.0")
+
+      dt = t_datetime(2000, 1, 1, 0, 0, 0, 1)
+      jc = dt%julian_century()
+      call assert_true(jc < 0.0d0, "Julian Century should be slightly negative just after midnight on J2000.0")
+   end subroutine test_datetime_julian_century_precision
+
+   subroutine test_datetime_julian_century_edge_cases()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: dt
+      real(kind=8) :: jc
+
+      ! Test very early date
+      dt = t_datetime(1, 1, 1, 12, 0, 0)
+      jc = dt%julian_century()
+      call assert_true(jc < -19.0d0, "Julian Century should be very negative for year 1")
+
+      ! Test far future date
+      dt = t_datetime(3000, 12, 31, 12, 0, 0)
+      jc = dt%julian_century()
+      call assert_true(jc > 10.0d0, "Julian Century should be large positive for year 3000")
+
+      ! Test leap year date: February 29, 2000
+      dt = t_datetime(2000, 2, 29, 12, 0, 0)
+      jc = dt%julian_century()
+      call assert_true(jc > 0.0d0 .and. jc < 0.2d0, "Julian Century should be small positive for leap day 2000")
+
+      ! Test Gregorian calendar adoption: October 15, 1582
+      dt = t_datetime(1582, 10, 15, 12, 0, 0)
+      jc = dt%julian_century()
+      call assert_true(jc < -4.0d0, "Julian Century should be negative for Gregorian calendar adoption")
+
+      ! Test that sequential years show expected JC progression
+      dt = t_datetime(2000, 1, 1, 12, 0, 0)
+      jc = dt%julian_century()
+
+      dt = t_datetime(2001, 1, 1, 12, 0, 0)
+      call assert_true(dt%julian_century() > jc, "Julian Century should increase for next year")
+      call assert_true((dt%julian_century() - jc) < 0.02d0, "One year should be approximately 0.01 Julian Century")
+   end subroutine test_datetime_julian_century_edge_cases
+
+   subroutine test_datetime_julian_century_consistency()
+      use test_utils, only: assert_equal, assert_true
+      use mod_datetime, only: t_datetime
+      implicit none
+      type(t_datetime) :: dt
+      real(kind=8) :: jc, jd, expected_jc
+
+      ! Test that julian_century() = (julian_day() - 2451545.0) / 36525.0
+      dt = t_datetime(2020, 3, 15, 14, 30, 45, 123)
+      jc = dt%julian_century()
+      jd = dt%julian_day()
+      expected_jc = (jd - 2451545.0d0)/36525.0d0
+
+      call assert_equal(expected_jc, jc, "Julian Century should match formula using Julian Day")
+
+      ! Test multiple dates for consistency
+      dt = t_datetime(1995, 7, 4, 6, 12, 30, 456)
+      jc = dt%julian_century()
+      jd = dt%julian_day()
+      expected_jc = (jd - 2451545.0d0)/36525.0d0
+      call assert_equal(expected_jc, jc, "Julian Century consistency test for 1995")
+
+      dt = t_datetime(2025, 11, 22, 18, 45, 12, 789)
+      jc = dt%julian_century()
+      jd = dt%julian_day()
+      expected_jc = (jd - 2451545.0d0)/36525.0d0
+      call assert_equal(expected_jc, jc, "Julian Century consistency test for 2025")
+
+      ! Test that the relationship holds for the J2000.0 epoch exactly
+      dt = t_datetime(2000, 1, 1, 12, 0, 0, 0)
+      jc = dt%julian_century()
+      jd = dt%julian_day()
+      call assert_equal(2451545.0d0, jd, "Julian Day for J2000.0 should be exactly 2451545.0")
+      call assert_equal(0.0d0, jc, "Julian Century for J2000.0 should be exactly 0.0")
+   end subroutine test_datetime_julian_century_consistency
+
 end module datetime_tests
 
 program test_datetime
@@ -1324,7 +1646,9 @@ program test_datetime
                              test_datetime_auto_format_coverage_8, test_datetime_auto_format_coverage_9, &
                              test_datetime_auto_format_coverage_10, test_datetime_auto_format_coverage_11, &
                              test_datetime_auto_with_milliseconds, test_datetime_auto_format_precedence, &
-                             test_datetime_auto_edge_cases, test_datetime_auto_invalid_inputs
+                             test_datetime_auto_edge_cases, test_datetime_auto_invalid_inputs, &
+                             test_datetime_julian_day_number, test_datetime_julian_day, &
+                             test_datetime_julian_day_consistency, test_datetime_julian_day_edge_cases
    implicit none
 
    integer :: exit_code
@@ -1400,6 +1724,14 @@ program test_datetime
    call run_test(test_datetime_auto_format_precedence, "Auto Detection Format Precedence")
    call run_test(test_datetime_auto_edge_cases, "Auto Detection Edge Cases")
    call run_test(test_datetime_auto_invalid_inputs, "Auto Detection Invalid Inputs")
+
+   ! Julian Day tests
+   write (*, '(A)') ""
+   write (*, '(A)') "========== DateTime Julian Day Tests =========="
+   call run_test(test_datetime_julian_day_number, "DateTime Julian Day Number")
+   call run_test(test_datetime_julian_day, "DateTime Julian Day")
+   call run_test(test_datetime_julian_day_consistency, "DateTime Julian Day Consistency")
+   call run_test(test_datetime_julian_day_edge_cases, "DateTime Julian Day Edge Cases")
 
    ! Print summary
    call print_test_summary()

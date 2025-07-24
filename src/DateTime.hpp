@@ -100,8 +100,7 @@ class DateTime {
 
     // Additional validation: ensure the entire string was consumed
     // This prevents partial matches where invalid time components are ignored
-    char remaining_char;
-    if (input_stream >> remaining_char) {
+    if (char remaining_char; input_stream >> remaining_char) {
       // There are unconsumed non-whitespace characters, which suggests
       // the format didn't match the full input string
       return std::nullopt;
@@ -422,6 +421,69 @@ class DateTime {
         (time_since_midnight - std::chrono::hours(hour()) -
          std::chrono::minutes(minute()) - std::chrono::seconds(second())) /
         std::chrono::milliseconds(1));
+  }
+
+  /**
+   * @brief Gets the Julian Day Number (JDN) for this date.
+   *
+   * The Julian Day Number is the integer number of days that have elapsed
+   * since the beginning of the Julian Period on January 1, 4713 BCE
+   * (proleptic Julian calendar) which corresponds to November 24, 4714 BCE
+   * in the proleptic Gregorian calendar.
+   *
+   * @return int64_t The Julian Day Number (integer days since JD epoch)
+   */
+  // cppcheck-suppress functionStatic
+  [[nodiscard]] constexpr auto julianDayNumber() const noexcept -> int64_t {
+    const auto y = this->year();
+    const auto m = static_cast<int64_t>(this->month());
+    const auto d = static_cast<int64_t>(this->day());
+
+    // Julian Day Number formula for Gregorian calendar
+    const auto a = (14 - m) / 12;
+    const auto y_adj = y + 4800 - a;
+    const auto m_adj = m + 12 * a - 3;
+
+    return d + (153 * m_adj + 2) / 5 + 365 * y_adj + y_adj / 4 - y_adj / 100 +
+           y_adj / 400 - 32045;
+  }
+
+  /**
+   * @brief Gets the Julian Day (JD) with fractional day for this date and time
+   *
+   * The Julian Day is the continuous count of days since the beginning of
+   * the Julian Period, including the fractional part representing the time
+   * of day. Julian Day 0.0 begins at noon (12:00 UTC) on January 1, 4713 BCE.
+   *
+   * @return double The Julian Day with fractional part (days.fraction since JD
+   * epoch)
+   */
+  [[nodiscard]] constexpr auto julianDay() const noexcept -> double {
+    const auto jdn = static_cast<double>(julianDayNumber());
+    const auto h = static_cast<double>(hour());
+    const auto min = static_cast<double>(minute());
+    const auto s = static_cast<double>(second());
+    const auto ms = static_cast<double>(millisecond());
+
+    // Convert time to fractional day (Julian Day starts at noon, so subtract 12
+    // hours)
+    const auto fractional_day =
+        (h - 12.0) / 24.0 + min / 1440.0 + s / 86400.0 + ms / 86400000.0;
+
+    return jdn + fractional_day;
+  }
+
+  /**
+   *  @brief Computes the Julian century (JC) for this DateTime
+   *
+   *  The Julian century is a time unit used in astronomy, defined as
+   *  100 Julian years, where one Julian year is exactly 365.25 days.
+   *  It is used to measure time intervals in astronomical calculations.
+   */
+  [[nodiscard]] constexpr auto julianCentury() const noexcept -> double {
+    // Julian Day 2451545.0 corresponds to J2000.0 epoch
+    const auto jd = julianDay();
+    return (jd - 2451545.0) / 36525.0;  // Convert to Julian centuries
   }
 
   /**
