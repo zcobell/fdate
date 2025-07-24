@@ -98,6 +98,15 @@ class DateTime {
       return std::nullopt;  // Parsing failed
     }
 
+    // Additional validation: ensure the entire string was consumed
+    // This prevents partial matches where invalid time components are ignored
+    char remaining_char;
+    if (input_stream >> remaining_char) {
+      // There are unconsumed non-whitespace characters, which suggests
+      // the format didn't match the full input string
+      return std::nullopt;
+    }
+
     return std::make_optional<DateTime>(this_time_point);
   }
 
