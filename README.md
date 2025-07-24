@@ -29,6 +29,7 @@ The library uses a design where both `t_DateTime` and `t_TimeDelta` objects are 
 - Format dates to strings (including ISO 8601)
 - Get current system time
 - Extract individual components (year, month, day, etc.)
+- Julian Day Number and Julian Day calculations for astronomical applications
 - Full comparison operators (`==`, `<`, `>`, `<=`, `>=`, `/=`)
 - Add/subtract TimeDeltas to/from DateTime objects
 
@@ -252,6 +253,57 @@ program array_parsing_examples
    
 end program array_parsing_examples
 ```
+
+### Julian Day Calculations
+
+The library provides Julian Day Number (JDN) and Julian Day (JD) calculations for astronomical applications:
+
+```fortran
+program julian_day_examples
+   use mod_datetime, only: t_datetime
+   implicit none
+   
+   type(t_datetime) :: dt
+   integer(kind=8) :: jdn
+   real(kind=8) :: jd
+   
+   ! Create datetime objects for well-known astronomical dates
+   
+   ! January 1, 2000 at noon UTC (J2000.0 epoch)
+   dt = t_datetime(2000, 1, 1, 12, 0, 0)
+   jdn = dt%julian_day_number()    ! Returns 2451545
+   jd = dt%julian_day()            ! Returns 2451545.0
+   
+   write(*,*) 'Y2K noon JDN:', jdn
+   write(*,*) 'Y2K noon JD:', jd
+   
+   ! January 1, 2000 at midnight UTC
+   dt = t_datetime(2000, 1, 1, 0, 0, 0)
+   jd = dt%julian_day()            ! Returns 2451544.5
+   write(*,*) 'Y2K midnight JD:', jd
+   
+   ! Current time with fractional day
+   dt = t_datetime(2025, 7, 24, 15, 30, 45, 500)
+   jdn = dt%julian_day_number()    ! Integer days since JD epoch
+   jd = dt%julian_day()            ! Fractional days including time
+   
+   write(*,*) 'Current JDN:', jdn
+   write(*,*) 'Current JD with time:', jd
+   
+   ! Julian Day calculations are useful for:
+   ! - Astronomical computations
+   ! - Converting between different calendar systems  
+   ! - High-precision time interval calculations
+   ! - Satellite orbital mechanics
+   
+end program julian_day_examples
+```
+
+**Julian Day Notes:**
+- Julian Day Number (JDN) is the integer count of days since January 1, 4713 BCE (proleptic Julian calendar)
+- Julian Day (JD) includes fractional time, where JD 0.0 begins at noon UTC
+- Commonly used in astronomy for precise time calculations
+- The library uses overflow-safe 64-bit integer arithmetic for reliability
 
 ## Format Specifiers
 

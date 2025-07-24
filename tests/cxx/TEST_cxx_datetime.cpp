@@ -1,4 +1,5 @@
 #define CATCH_CONFIG_MAIN
+#include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <chrono>
 #include <thread>
@@ -985,7 +986,6 @@ TEST_CASE("Auto-detection with fallback formats", "[datetime][array_parsing]") {
   SECTION("Auto-detection fails, fallback succeeds") {
     std::string date_str =
         "15/Mar/2024 14:30:25";  // Not in auto-detected formats
-    std::vector<std::string> fallback_formats = {"%d/%b/%Y %H:%M:%S"};
 
     // Auto-detection should fail
     auto auto_result = DateTime::strptime(date_str, "auto");
@@ -1338,8 +1338,9 @@ TEST_CASE("DateTime auto-detection performance characteristics",
     // Log the performance for informational purposes
     INFO("Auto parsing took: " << auto_duration.count() << " microseconds");
     INFO("Manual parsing took: " << manual_duration.count() << " microseconds");
-    INFO("Ratio (auto/manual): " << static_cast<double>(auto_duration.count()) /
-                                        manual_duration.count());
+    INFO("Ratio (auto/manual): "
+         << static_cast<double>(auto_duration.count()) /
+                static_cast<double>(manual_duration.count()));
   }
 
   SECTION("Auto parsing worst case - last format matches") {
@@ -1364,5 +1365,95 @@ TEST_CASE("DateTime auto-detection performance characteristics",
 
     // Should complete 100 iterations in less than 100ms (very generous)
     CHECK(duration.count() < 100);
+  }
+}
+
+TEST_CASE("DateTime Julian Day functionality", "[datetime][julian]") {
+  SECTION("Julian Day Number calculation") {
+    // Test well-known Julian Day Numbers
+
+    // July 24, 2025 (JDN 2460881)
+    DateTime dt_2000(2025, 7, 24, 0, 0, 0);
+    CHECK(dt_2000.julianDayNumber() == 2460881);
+
+    // January 1, 1970 (Unix epoch) = JDN 2440588
+    DateTime dt_1970(1970, 1, 1, 12, 0, 0);
+    CHECK(dt_1970.julianDayNumber() == 2440588);
+
+    // May 23, 1968 (Julian Day 0 of GPS week) = JDN 2440000
+    DateTime dt_gps(1968, 5, 23, 12, 0, 0);
+    CHECK(dt_gps.julianDayNumber() == 2440000);
+
+    // October 15, 1582 (Gregorian calendar adoption) = JDN 2299161
+    DateTime dt_greg(1582, 10, 15, 12, 0, 0);
+    CHECK(dt_greg.julianDayNumber() == 2299161);
+  }
+
+  SECTION("Julian Day with fractional part") {
+    // Test fractional Julian Day calculations
+
+    // January 1, 2000 00:00 UTC (midnight) = JD 2451544.5
+    DateTime dt_midnight(2000, 1, 1, 0, 0, 0);
+    CHECK(dt_midnight.julianDay() == Catch::Approx(2451544.5).epsilon(1e-6));
+
+    // January 1, 2000 12:00 UTC (noon) = JD 2451545.0
+    DateTime dt_noon(2000, 1, 1, 12, 0, 0);
+    CHECK(dt_noon.julianDay() == Catch::Approx(2451545.0).epsilon(1e-6));
+
+    // January 1, 2000 18:00 UTC (6 PM) = JD 2451545.25
+    DateTime dt_evening(2000, 1, 1, 18, 0, 0);
+    CHECK(dt_evening.julianDay() == Catch::Approx(2451545.25).epsilon(1e-6));
+
+    // Test with minutes, seconds, and milliseconds
+    // January 1, 2000 12:30:30.500 UTC
+    DateTime dt_precise(2000, 1, 1, 12, 30, 30, 500);
+    double expected_jd = 2451545.0 + (30.0 / 1440.0) + (30.5 / 86400.0);
+    CHECK(dt_precise.julianDay() == Catch::Approx(expected_jd).epsilon(1e-6));
+  }
+
+  SECTION("Julian Day edge cases") {
+    // Test very early date
+    DateTime dt_early(1, 1, 1, 12, 0, 0);
+    int64_t jdn_early = dt_early.julianDayNumber();
+    CHECK(jdn_early > 0);  // Should be positive
+
+    // Test far future date
+    DateTime dt_future(3000, 12, 31, 12, 0, 0);
+    int64_t jdn_future = dt_future.julianDayNumber();
+    CHECK(jdn_future > 2451545);  // Should be much larger than Y2K
+
+    // Test February 20 of a non-leap year
+    DateTime dt_non_leap(2021, 2, 20, 12, 0, 0);
+    int64_t jdn_non_leap = dt_non_leap.julianDayNumber();
+    CHECK(jdn_non_leap == 2459266);  // 50 days after Jan 1, 2021
+
+    // Test leap year boundary (February 29, 2000)
+    DateTime dt_leap(2000, 2, 29, 12, 0, 0);
+    int64_t jdn_leap = dt_leap.julianDayNumber();
+    CHECK(jdn_leap == 2451604);  // 59 days after Jan 1, 2000
+
+    // Test century year that's not a leap year (1900)
+    DateTime dt_1900(1900, 2, 28, 12, 0, 0);
+    DateTime dt_1900_next(1900, 3, 1, 12, 0, 0);
+    CHECK(dt_1900_next.julianDayNumber() - dt_1900.julianDayNumber() == 1);
+  }
+
+  SECTION("Julian Day consistency checks") {
+    // Test that consecutive days differ by 1
+    DateTime dt1(2023, 6, 15, 12, 0, 0);
+    DateTime dt2(2023, 6, 16, 12, 0, 0);
+    CHECK(dt2.julianDayNumber() - dt1.julianDayNumber() == 1);
+
+    // Test fractional day progression
+    DateTime dt_start(2023, 6, 15, 0, 0, 0);  // midnight
+    DateTime dt_end(2023, 6, 15, 23, 59, 59,
+                    999);  // just before midnight next day
+
+    double jd_start = dt_start.julianDay();
+    double jd_end = dt_end.julianDay();
+
+    // Should be almost exactly 1 day difference
+    CHECK((jd_end - jd_start) ==
+          Catch::Approx(0.99999998835846782).epsilon(1e-6));
   }
 }

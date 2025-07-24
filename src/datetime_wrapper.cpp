@@ -488,6 +488,39 @@ auto f_datetime_get_millisecond(const int64_t dt_ms) -> int64_t {
 }
 
 /**
+ * @brief Get the Julian Day Number (JDN) for a DateTime
+ *
+ * @param dt_ms DateTime as milliseconds since epoch
+ * @return int64_t Julian Day Number (integer days since JD epoch)
+ */
+auto f_datetime_get_julian_day_number(const int64_t dt_ms) -> int64_t {
+  const DateTime date(dt_ms);
+  return date.julianDayNumber();
+}
+
+/**
+ * @brief Get the Julian Day (JD) with fractional day for a DateTime
+ *
+ * @param dt_ms DateTime as milliseconds since epoch
+ * @return double Julian Day with fractional part (days.fraction since JD epoch)
+ */
+auto f_datetime_get_julian_day(const int64_t dt_ms) -> double {
+  const DateTime date(dt_ms);
+  return date.julianDay();
+}
+
+/**
+ * @brief Get the Julian Century (JC) for a DateTime
+ *
+ * @param dt_ms DateTime as milliseconds since epoch
+ * @return double Julian Century (time unit used in astronomy)
+ */
+auto f_datetime_get_julian_century(const int64_t dt_ms) -> double {
+  const DateTime date(dt_ms);
+  return date.julianCentury();
+}
+
+/**
  * @brief Add a TimeDelta to a DateTime
  *
  * @param dt_ms DateTime as milliseconds since epoch
@@ -681,7 +714,7 @@ auto f_datetime_invalid_timestamp() -> int64_t {
   return DateTime::INVALID_TIMESTAMP;
 }
 
-/** 
+/**
  * @brief Parse a DateTime from a string using an array of format options
  *
  * @param str String representation of a DateTime
