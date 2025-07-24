@@ -673,4 +673,12 @@ auto f_datetime_is_valid(const int64_t dt_ms) -> bool {
   return dt_ms != DateTime::INVALID_TIMESTAMP;
 }
 
+/**
+ * Returns the invalid timestamp constant.
+ * @return int64_t The invalid timestamp constant.
+ */
+auto f_datetime_invalid_timestamp() -> int64_t {
+  return DateTime::INVALID_TIMESTAMP;
+}
+
 }  // extern "C"

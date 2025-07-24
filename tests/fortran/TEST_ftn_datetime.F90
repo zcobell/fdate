@@ -691,7 +691,7 @@ contains
 
    subroutine test_datetime_invalid()
       use test_utils, only: assert_equal, assert_true, assert_false
-      use mod_datetime, only: t_datetime
+      use mod_datetime, only: t_datetime, null_datetime
       implicit none
       type(t_datetime) :: dt_invalid, dt_valid
 
@@ -713,6 +713,9 @@ contains
 
       dt_valid = t_datetime("2025-01-01")
       call assert_true(dt_valid%valid(), "Valid date from string should be valid")
+
+      dt_invalid = null_datetime()
+      call assert_false(dt_invalid%valid(), "Null DateTime should not be valid")
 
    end subroutine test_datetime_invalid
 

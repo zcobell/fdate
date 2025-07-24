@@ -531,9 +531,16 @@ module mod_datetime
          integer(c_int64_t), intent(in), value :: dt_ms
          logical(c_bool) :: valid
       end function f_datetime_is_valid
+
+      !> @brief Interface to get the invalid DateTime constant
+      pure function f_datetime_invalid_timestamp() result(invalid_ts) bind(C, name="f_datetime_invalid_timestamp")
+         import :: c_int64_t
+         implicit none
+         integer(c_int64_t) :: invalid_ts
+      end function f_datetime_invalid_timestamp
    end interface
 
-   public :: t_timedelta, t_datetime, now
+   public :: t_timedelta, t_datetime, now, null_datetime
    public :: operator(+), operator(-), operator(*), operator(/), operator(==)
    public :: operator(/=), operator(<), operator(>), operator(<=), operator(>=)
 
@@ -1267,5 +1274,11 @@ contains
          f_string(i:i) = c_string(i)
       end do
    end subroutine c_f_string
+
+   ! Create a null datetime object
+   pure function null_datetime() result(dt)
+      type(t_datetime) :: dt
+      dt%timestamp_ms = f_datetime_invalid_timestamp()
+   end function null_datetime
 
 end module mod_datetime
