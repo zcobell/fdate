@@ -48,7 +48,6 @@
  * multithreaded environments.
  */
 class DateTime {
- private:
   /** @brief Internal time point type with millisecond precision */
   using t_time_point = std::chrono::time_point<std::chrono::system_clock,
                                                std::chrono::milliseconds>;
@@ -193,28 +192,6 @@ class DateTime {
    */
   constexpr explicit DateTime(const t_time_point& milliseconds) noexcept
       : m_tp(milliseconds) {}
-
-  /**
-   * @brief Copy constructor
-   */
-  constexpr DateTime(const DateTime&) noexcept = default;
-
-  /**
-   * @brief Copy assignment operator
-   * @return Reference to this DateTime object
-   */
-  constexpr auto operator=(const DateTime&) noexcept -> DateTime& = default;
-
-  /**
-   * @brief Move constructor
-   */
-  constexpr DateTime(DateTime&&) noexcept = default;
-
-  /**
-   * @brief Move assignment operator
-   * @return Reference to this DateTime object
-   */
-  constexpr auto operator=(DateTime&&) noexcept -> DateTime& = default;
 
   /**
    * @brief Parses a DateTime from a string using automatic or specified format

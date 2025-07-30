@@ -20,7 +20,6 @@
 #include <chrono>
 #include <iomanip>
 #include <sstream>
-#include <stdexcept>
 #include <string>
 
 #include "date_hh.h"
@@ -46,7 +45,6 @@
  * @see DateTime for date and time point operations
  */
 class TimeDelta {
- private:
   /** @brief Internal duration storage with millisecond precision */
   std::chrono::milliseconds m_duration;
 
@@ -84,16 +82,6 @@ class TimeDelta {
   constexpr TimeDelta() noexcept : m_duration(std::chrono::milliseconds{0}) {}
 
   /**
-   * @brief Default destructor
-   */
-  ~TimeDelta() = default;
-
-  /**
-   * @brief Move constructor
-   */
-  constexpr TimeDelta(TimeDelta&&) noexcept = default;
-
-  /**
    * @brief Constructs a TimeDelta from a components structure
    *
    * @param components A structure containing the individual time components
@@ -127,29 +115,6 @@ class TimeDelta {
                                const int milliseconds) noexcept
       : TimeDelta(s_TimedeltaComponents{days, hours, minutes, seconds,
                                         milliseconds}) {}
-
-  /**
-   * @brief Copy constructor
-   */
-  constexpr TimeDelta(const TimeDelta&) noexcept = default;
-
-  /**
-   * @brief Copy assignment operator
-   *
-   * @param other The TimeDelta to copy from
-   * @return Reference to this TimeDelta object
-   */
-  [[nodiscard]] constexpr auto operator=(const TimeDelta&) noexcept
-      -> TimeDelta& = default;
-
-  /**
-   * @brief Move assignment operator
-   *
-   * @param other The TimeDelta to move from
-   * @return Reference to this TimeDelta object
-   */
-  [[nodiscard]] constexpr auto operator=(TimeDelta&&) noexcept
-      -> TimeDelta& = default;
 
   // Static factory methods
 
