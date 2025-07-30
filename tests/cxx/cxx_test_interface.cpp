@@ -25,13 +25,13 @@ int parse_test(int argc, char *argv[]) {
   const auto dt = DateTime::strptime(input_string);
 
   // Check if the DateTime object is valid
-  if (!dt) {
+  if (!dt.valid()) {
     std::cerr << "Invalid DateTime string: " << input_string << std::endl;
     return 1;
   }
 
   // Write out the number of seconds since the epoch
-  std::cout << dt->timestamp() << std::endl;
+  std::cout << dt.timestamp() << std::endl;
 
   return 0;
 }
@@ -50,7 +50,7 @@ int arithmetic_test(int argc, char *argv[]) {
   const auto start_time = DateTime::strptime(input_string);
 
   // Check if the DateTime object is valid
-  if (!start_time) {
+  if (!start_time.valid()) {
     std::cerr << "Invalid DateTime string: " << input_string << std::endl;
     return 1;
   }
@@ -63,7 +63,7 @@ int arithmetic_test(int argc, char *argv[]) {
   const auto dt = TimeDelta(days, hours, minutes, seconds, 0);
 
   // Add
-  const auto result = *start_time + dt;
+  const auto result = start_time + dt;
 
   // Write out the result
   std::cout << result.strftime("%Y-%m-%dT%H:%M:%S") << std::endl;
