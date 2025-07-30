@@ -19,7 +19,6 @@
 #include <cstdint>
 #include <cstring>
 #include <iostream>
-#include <optional>
 #include <string>
 
 #include "DateTime.hpp"
@@ -400,8 +399,8 @@ auto f_datetime_strptime(const char* str, const char* format, const int str_len,
     const std::string format_cpp(format, format_len_t);
 
     const auto date_time = DateTime::strptime(str_cpp, format_cpp);
-    if (date_time.has_value()) {
-      return date_time->timestamp();
+    if (date_time.valid()) {
+      return date_time.timestamp();
     } else {
       return DateTime::INVALID_TIMESTAMP;
     }
@@ -763,8 +762,8 @@ auto f_datetime_strptime_with_formats(const char* str, const char** formats,
       const std::string format_cpp(formats[i], format_len_t);
 
       const auto date_time = DateTime::strptime(str_cpp, format_cpp);
-      if (date_time.has_value()) {
-        return date_time->timestamp();
+      if (date_time.valid()) {
+        return date_time.timestamp();
       }
     }
 
@@ -802,8 +801,8 @@ auto f_datetime_strptime_auto_with_fallback(const char* str,
 
     // First try automatic format detection
     const auto date_time = DateTime::strptime(str_cpp, "auto");
-    if (date_time.has_value()) {
-      return date_time->timestamp();
+    if (date_time.valid()) {
+      return date_time.timestamp();
     }
 
     // If auto-detection failed and we have fallback formats, try them
@@ -818,8 +817,8 @@ auto f_datetime_strptime_auto_with_fallback(const char* str,
         const std::string format_cpp(fallback_formats[i], format_len_t);
 
         const auto fallback_date_time = DateTime::strptime(str_cpp, format_cpp);
-        if (fallback_date_time.has_value()) {
-          return fallback_date_time->timestamp();
+        if (fallback_date_time.valid()) {
+          return fallback_date_time.timestamp();
         }
       }
     }

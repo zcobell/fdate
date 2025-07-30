@@ -21,7 +21,6 @@
 #include <cassert>
 #include <chrono>
 #include <limits>
-#include <optional>
 #include <sstream>
 #include <string>
 
@@ -67,8 +66,8 @@ class DateTime {
    * @param str The string to parse
    * @param format The strftime-style format string (default: "%Y-%m-%d
    * %H:%M:%S")
-   * @return std::optional<DateTime> containing the parsed DateTime, or
-   * std::nullopt if parsing failed
+   * @return DateTime containing the parsed DateTime, or an invalid DateTime
+   * if parsing failed (check with .valid())
    *
    * @note If the string has a '.' at position (length-4), millisecond parsing
    * is attempted
@@ -76,7 +75,7 @@ class DateTime {
    */
   static auto parse_string(const std::string& str,
                            const std::string& format = "%Y-%m-%d %H:%M:%S")
-      -> std::optional<DateTime> {
+      -> DateTime {
     std::istringstream input_stream(str);
     date::sys_time<std::chrono::milliseconds> this_time_point;
 
@@ -95,7 +94,7 @@ class DateTime {
 
     // Check if parsing was successful
     if (input_stream.fail() || input_stream.bad()) {
-      return std::nullopt;  // Parsing failed
+      return DateTime(INVALID_TIME_POINT);  // Parsing failed
     }
 
     // Additional validation: ensure the entire string was consumed
@@ -103,10 +102,10 @@ class DateTime {
     if (char remaining_char; input_stream >> remaining_char) {
       // There are unconsumed non-whitespace characters, which suggests
       // the format didn't match the full input string
-      return std::nullopt;
+      return DateTime(INVALID_TIME_POINT);
     }
 
-    return std::make_optional<DateTime>(this_time_point);
+    return DateTime(this_time_point);
   }
 
  public:
@@ -241,15 +240,14 @@ class DateTime {
    * @param str The string to parse
    * @param format The format string to use, or "auto" for automatic detection
    * (default: "auto")
-   * @return std::optional<DateTime> containing the parsed DateTime, or
-   * std::nullopt if parsing failed
+   * @return DateTime containing the parsed DateTime, or an invalid DateTime
+   * if parsing failed (check with .valid())
    *
    * @note Formats are tried in order from most specific to least specific
    * @see parse_string() for single format parsing
    */
   static auto strptime(const std::string& str,
-                       const std::string& format = "auto")
-      -> std::optional<DateTime> {
+                       const std::string& format = "auto") -> DateTime {
     if (format == "auto") {
       // All formats use YYYY-MM-DD ordering to avoid ambiguity
       // Ordered from the most specific to the least specific
@@ -269,11 +267,11 @@ class DateTime {
 
       for (const auto& fmt : format_options) {
         const auto result = parse_string(str, fmt);
-        if (result.has_value()) {
+        if (result.valid()) {
           return result;
         }
       }
-      return std::nullopt;
+      return DateTime(INVALID_TIME_POINT);
     } else {
       return parse_string(str, format);
     }

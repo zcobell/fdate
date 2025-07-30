@@ -21,6 +21,7 @@ macro(fdate_enable_cppcheck WARNINGS_AS_ERRORS CPPCHECK_OPTIONS)
           # We cannot act on a bug/missing feature of cppcheck
           --suppress=cppcheckError
           --suppress=internalAstError
+          --check-level=exhaustive
           # if a file does not have an internalAstError, we get an
           # unmatchedSuppression error
           --suppress=unmatchedSuppression

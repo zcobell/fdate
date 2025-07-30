@@ -411,54 +411,54 @@ TEST_CASE("DateTime parse method", "[datetime]") {
   SECTION("Default format") {
     auto dt = DateTime::strptime("2022-01-31 12:34:56");
 
-    CHECK(dt.has_value());
-    CHECK(dt->year() == 2022);
-    CHECK(dt->month() == 1);
-    CHECK(dt->day() == 31);
-    CHECK(dt->hour() == 12);
-    CHECK(dt->minute() == 34);
-    CHECK(dt->second() == 56);
-    CHECK(dt->millisecond() == 0);
+    CHECK(dt.valid());
+    CHECK(dt.year() == 2022);
+    CHECK(dt.month() == 1);
+    CHECK(dt.day() == 31);
+    CHECK(dt.hour() == 12);
+    CHECK(dt.minute() == 34);
+    CHECK(dt.second() == 56);
+    CHECK(dt.millisecond() == 0);
   }
 
   SECTION("Custom format") {
     auto dt = DateTime::strptime("31/01/2022 12:34:56", "%d/%m/%Y %H:%M:%S");
 
-    CHECK(dt.has_value());
-    CHECK(dt->year() == 2022);
-    CHECK(dt->month() == 1);
-    CHECK(dt->day() == 31);
-    CHECK(dt->hour() == 12);
-    CHECK(dt->minute() == 34);
-    CHECK(dt->second() == 56);
-    CHECK(dt->millisecond() == 0);
+    CHECK(dt.valid());
+    CHECK(dt.year() == 2022);
+    CHECK(dt.month() == 1);
+    CHECK(dt.day() == 31);
+    CHECK(dt.hour() == 12);
+    CHECK(dt.minute() == 34);
+    CHECK(dt.second() == 56);
+    CHECK(dt.millisecond() == 0);
   }
 
   SECTION("With milliseconds in string") {
     auto dt = DateTime::strptime("2022-01-31 12:34:56.789");
 
-    CHECK(dt.has_value());
-    CHECK(dt->year() == 2022);
-    CHECK(dt->month() == 1);
-    CHECK(dt->day() == 31);
-    CHECK(dt->hour() == 12);
-    CHECK(dt->minute() == 34);
-    CHECK(dt->second() == 56);
-    CHECK(dt->millisecond() == 789);
+    CHECK(dt.valid());
+    CHECK(dt.year() == 2022);
+    CHECK(dt.month() == 1);
+    CHECK(dt.day() == 31);
+    CHECK(dt.hour() == 12);
+    CHECK(dt.minute() == 34);
+    CHECK(dt.second() == 56);
+    CHECK(dt.millisecond() == 789);
   }
 
   SECTION("With %f format specifier") {
     auto dt =
         DateTime::strptime("2022-01-31 12:34:56.789", "%Y-%m-%d %H:%M:%S");
 
-    CHECK(dt.has_value());
-    CHECK(dt->year() == 2022);
-    CHECK(dt->month() == 1);
-    CHECK(dt->day() == 31);
-    CHECK(dt->hour() == 12);
-    CHECK(dt->minute() == 34);
-    CHECK(dt->second() == 56);
-    CHECK(dt->millisecond() == 789);
+    CHECK(dt.valid());
+    CHECK(dt.year() == 2022);
+    CHECK(dt.month() == 1);
+    CHECK(dt.day() == 31);
+    CHECK(dt.hour() == 12);
+    CHECK(dt.minute() == 34);
+    CHECK(dt.second() == 56);
+    CHECK(dt.millisecond() == 789);
   }
 }
 
@@ -674,14 +674,14 @@ TEST_CASE("DateTime parsing edge cases", "[datetime]") {
     auto dt = DateTime::strptime("not a date");
 
     // Just verify we can access methods without crashing
-    CHECK_FALSE(dt.has_value());
+    CHECK_FALSE(dt.valid());
   }
 
   SECTION("Partially valid date string") {
     auto dt = DateTime::strptime("2022-01-XX");
 
     // This should not crash, but dt should be invalid
-    CHECK_FALSE(dt.has_value());
+    CHECK_FALSE(dt.valid());
   }
 }
 
@@ -695,8 +695,8 @@ TEST_CASE("DateTime serialization roundtrip", "[datetime]") {
   auto parsed = DateTime::strptime(iso, "%Y-%m-%dT%H:%M:%S");
 
   // Should be the same timestamp
-  CHECK(parsed.has_value());
-  CHECK(parsed->timestamp() == original.timestamp());
+  CHECK(parsed.valid());
+  CHECK(parsed.timestamp() == original.timestamp());
 }
 
 TEST_CASE("TimeDelta for measuring elapsed time", "[timedelta]") {
@@ -748,15 +748,14 @@ TEST_CASE("DateTime get_time_point method", "[datetime]") {
 namespace {
 // Test function that mimics the C wrapper functionality
 auto test_array_parsing(const std::string& str,
-                        const std::vector<std::string>& formats)
-    -> std::optional<DateTime> {
+                        const std::vector<std::string>& formats) -> DateTime {
   for (const auto& format : formats) {
     auto result = DateTime::strptime(str, format);
-    if (result.has_value()) {
+    if (result.valid()) {
       return result;
     }
   }
-  return std::nullopt;
+  return DateTime(DateTime::INVALID_TIME_POINT);
 }
 }  // namespace
 
@@ -768,14 +767,14 @@ TEST_CASE("Array-based parsing with multiple formats",
         "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Parse with second format succeeding") {
@@ -784,14 +783,14 @@ TEST_CASE("Array-based parsing with multiple formats",
         "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Parse with third format succeeding") {
@@ -800,14 +799,14 @@ TEST_CASE("Array-based parsing with multiple formats",
         "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Parse with compact format") {
@@ -816,14 +815,14 @@ TEST_CASE("Array-based parsing with multiple formats",
                                         "%Y/%m/%d %H:%M:%S", "%Y%m%d%H%M%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Parse with ISO format variations") {
@@ -832,14 +831,14 @@ TEST_CASE("Array-based parsing with multiple formats",
         "%Y-%m-%dT%H:%M:%SZ", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Parse with dot-separated format") {
@@ -848,14 +847,14 @@ TEST_CASE("Array-based parsing with multiple formats",
         "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 }
 
@@ -866,7 +865,7 @@ TEST_CASE("Array-based parsing failure cases", "[datetime][array_parsing]") {
         "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S", "%d-%m-%Y %H:%M:%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    CHECK_FALSE(result.has_value());
+    CHECK_FALSE(result.valid());
   }
 
   SECTION("Empty format array") {
@@ -874,7 +873,7 @@ TEST_CASE("Array-based parsing failure cases", "[datetime][array_parsing]") {
     std::vector<std::string> formats = {};
 
     auto result = test_array_parsing(date_str, formats);
-    CHECK_FALSE(result.has_value());
+    CHECK_FALSE(result.valid());
   }
 
   SECTION("Empty string with valid formats") {
@@ -883,7 +882,7 @@ TEST_CASE("Array-based parsing failure cases", "[datetime][array_parsing]") {
                                         "%Y/%m/%d %H:%M:%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    CHECK_FALSE(result.has_value());
+    CHECK_FALSE(result.valid());
   }
 
   SECTION("Invalid format strings") {
@@ -893,7 +892,7 @@ TEST_CASE("Array-based parsing failure cases", "[datetime][array_parsing]") {
                                         ""};
 
     auto result = test_array_parsing(date_str, formats);
-    CHECK_FALSE(result.has_value());
+    CHECK_FALSE(result.valid());
   }
 }
 
@@ -903,11 +902,11 @@ TEST_CASE("Array-based parsing with edge cases", "[datetime][array_parsing]") {
     std::vector<std::string> formats = {"%Y-%m-%d %H:%M:%S"};
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
   }
 
   SECTION("Many formats with success at end") {
@@ -919,14 +918,14 @@ TEST_CASE("Array-based parsing with edge cases", "[datetime][array_parsing]") {
     };
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Date-only formats") {
@@ -937,14 +936,14 @@ TEST_CASE("Array-based parsing with edge cases", "[datetime][array_parsing]") {
     };
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 0);  // Default time
-    CHECK(result->minute() == 0);
-    CHECK(result->second() == 0);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 0);  // Default time
+    CHECK(result.minute() == 0);
+    CHECK(result.second() == 0);
   }
 
   SECTION("Time with milliseconds") {
@@ -955,15 +954,15 @@ TEST_CASE("Array-based parsing with edge cases", "[datetime][array_parsing]") {
     };
 
     auto result = test_array_parsing(date_str, formats);
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
 
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
-    CHECK(result->millisecond() == 123);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
+    CHECK(result.millisecond() == 123);
   }
 }
 
@@ -973,14 +972,14 @@ TEST_CASE("Auto-detection with fallback formats", "[datetime][array_parsing]") {
 
     // First try auto-detection (should succeed)
     auto auto_result = DateTime::strptime(date_str, "auto");
-    REQUIRE(auto_result.has_value());
+    REQUIRE(auto_result.valid());
 
-    CHECK(auto_result->year() == 2024);
-    CHECK(auto_result->month() == 3);
-    CHECK(auto_result->day() == 15);
-    CHECK(auto_result->hour() == 14);
-    CHECK(auto_result->minute() == 30);
-    CHECK(auto_result->second() == 25);
+    CHECK(auto_result.year() == 2024);
+    CHECK(auto_result.month() == 3);
+    CHECK(auto_result.day() == 15);
+    CHECK(auto_result.hour() == 14);
+    CHECK(auto_result.minute() == 30);
+    CHECK(auto_result.second() == 25);
   }
 
   SECTION("Auto-detection fails, fallback succeeds") {
@@ -989,18 +988,18 @@ TEST_CASE("Auto-detection with fallback formats", "[datetime][array_parsing]") {
 
     // Auto-detection should fail
     auto auto_result = DateTime::strptime(date_str, "auto");
-    CHECK_FALSE(auto_result.has_value());
+    CHECK_FALSE(auto_result.valid());
 
     // But manual parsing with the right format should succeed
     auto manual_result = DateTime::strptime(date_str, "%d/%b/%Y %H:%M:%S");
-    REQUIRE(manual_result.has_value());
+    REQUIRE(manual_result.valid());
 
-    CHECK(manual_result->year() == 2024);
-    CHECK(manual_result->month() == 3);
-    CHECK(manual_result->day() == 15);
-    CHECK(manual_result->hour() == 14);
-    CHECK(manual_result->minute() == 30);
-    CHECK(manual_result->second() == 25);
+    CHECK(manual_result.year() == 2024);
+    CHECK(manual_result.month() == 3);
+    CHECK(manual_result.day() == 15);
+    CHECK(manual_result.hour() == 14);
+    CHECK(manual_result.minute() == 30);
+    CHECK(manual_result.second() == 25);
   }
 }
 
@@ -1014,161 +1013,161 @@ TEST_CASE("DateTime auto-detection comprehensive format coverage",
 
   SECTION("Format 1: %Y-%m-%d %H:%M:%S") {
     auto result = DateTime::strptime("2024-03-15 14:30:25");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Format 2: %Y-%m-%dT%H:%M:%SZ (ISO with timezone)") {
     auto result = DateTime::strptime("2024-03-15T14:30:25Z");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Format 3: %Y-%m-%dT%H:%M:%S (ISO format)") {
     auto result = DateTime::strptime("2024-03-15T14:30:25");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Format 4: %Y/%m/%d %H:%M:%S") {
     auto result = DateTime::strptime("2024/03/15 14:30:25");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Format 5: %Y.%m.%d %H:%M:%S") {
     auto result = DateTime::strptime("2024.03.15 14:30:25");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Format 6: %Y%m%d%H%M%S (compact format)") {
     auto result = DateTime::strptime("20240315143025");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("Format 7: %Y/%m/%d %H:%M") {
     auto result = DateTime::strptime("2024/03/15 14:30");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 0);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 0);
   }
 
   SECTION("Format 8: %Y-%m-%d (date only)") {
     auto result = DateTime::strptime("2024-03-15");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 0);
-    CHECK(result->minute() == 0);
-    CHECK(result->second() == 0);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 0);
+    CHECK(result.minute() == 0);
+    CHECK(result.second() == 0);
   }
 
   SECTION("Format 9: %Y/%m/%d (date only with slashes)") {
     auto result = DateTime::strptime("2024/03/15");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 0);
-    CHECK(result->minute() == 0);
-    CHECK(result->second() == 0);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 0);
+    CHECK(result.minute() == 0);
+    CHECK(result.second() == 0);
   }
 
   SECTION("Format 10: %Y.%m.%d (date only with dots)") {
     auto result = DateTime::strptime("2024.03.15");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 0);
-    CHECK(result->minute() == 0);
-    CHECK(result->second() == 0);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 0);
+    CHECK(result.minute() == 0);
+    CHECK(result.second() == 0);
   }
 
   SECTION("Format 11: %Y%m%d (compact date only)") {
     auto result = DateTime::strptime("20240315");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 0);
-    CHECK(result->minute() == 0);
-    CHECK(result->second() == 0);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 0);
+    CHECK(result.minute() == 0);
+    CHECK(result.second() == 0);
   }
 }
 
 TEST_CASE("DateTime auto-detection with milliseconds", "[datetime][auto]") {
   SECTION("Standard format with milliseconds") {
     auto result = DateTime::strptime("2024-03-15 14:30:25.123");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
-    CHECK(result->millisecond() == 123);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
+    CHECK(result.millisecond() == 123);
   }
 
   SECTION("ISO format with milliseconds") {
     auto result = DateTime::strptime("2024-03-15T14:30:25.456");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
-    CHECK(result->millisecond() == 456);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
+    CHECK(result.millisecond() == 456);
   }
 
   SECTION("Slash format with milliseconds") {
     auto result = DateTime::strptime("2024/03/15 14:30:25.789");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
-    CHECK(result->millisecond() == 789);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
+    CHECK(result.millisecond() == 789);
   }
 }
 
@@ -1178,30 +1177,30 @@ TEST_CASE("DateTime auto-detection format precedence", "[datetime][auto]") {
   SECTION("Most specific format wins - full datetime vs date-only") {
     // This should match the full datetime format, not just the date part
     auto result = DateTime::strptime("2024-03-15 14:30:25");
-    REQUIRE(result.has_value());
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 25);
+    REQUIRE(result.valid());
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 25);
   }
 
   SECTION("ISO with Z takes precedence over ISO without Z") {
     auto result = DateTime::strptime("2024-03-15T14:30:25Z");
-    REQUIRE(result.has_value());
+    REQUIRE(result.valid());
     // Should successfully parse even with Z suffix
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
   }
 
   SECTION("Minutes-precision format preferred when seconds missing") {
     auto result = DateTime::strptime("2024/03/15 14:30");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
-    CHECK(result->hour() == 14);
-    CHECK(result->minute() == 30);
-    CHECK(result->second() == 0);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
+    CHECK(result.hour() == 14);
+    CHECK(result.minute() == 30);
+    CHECK(result.second() == 0);
   }
 }
 
@@ -1209,64 +1208,64 @@ TEST_CASE("DateTime auto-detection edge cases", "[datetime][auto]") {
   SECTION("Ambiguous date handling - year boundaries") {
     // Test dates that could be ambiguous
     auto result = DateTime::strptime("2024-01-01");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 1);
-    CHECK(result->day() == 1);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 1);
+    CHECK(result.day() == 1);
   }
 
   SECTION("Leap year dates") {
     auto result = DateTime::strptime("2024-02-29");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 2);
-    CHECK(result->day() == 29);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 2);
+    CHECK(result.day() == 29);
   }
 
   SECTION("End of month dates") {
     auto result = DateTime::strptime("2024-01-31");
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 1);
-    CHECK(result->day() == 31);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 1);
+    CHECK(result.day() == 31);
   }
 
   SECTION("Different separator consistency") {
     // Ensure formats with mixed separators fail appropriately
     auto result = DateTime::strptime("2024-03/15 14:30:25");
-    CHECK_FALSE(result.has_value());
+    CHECK_FALSE(result.valid());
   }
 
   SECTION("Partial format strings") {
     // Test strings that partially match formats
     auto result = DateTime::strptime("2024-03");
-    CHECK_FALSE(result.has_value());
+    CHECK_FALSE(result.valid());
   }
 }
 
 TEST_CASE("DateTime auto-detection invalid inputs", "[datetime][auto]") {
   SECTION("Completely invalid strings") {
-    CHECK_FALSE(DateTime::strptime("not a date").has_value());
-    CHECK_FALSE(DateTime::strptime("").has_value());
-    CHECK_FALSE(DateTime::strptime("abc123def").has_value());
+    CHECK_FALSE(DateTime::strptime("not a date").valid());
+    CHECK_FALSE(DateTime::strptime("").valid());
+    CHECK_FALSE(DateTime::strptime("abc123def").valid());
   }
 
   SECTION("Invalid date values") {
-    CHECK_FALSE(DateTime::strptime("2024-13-15").has_value());  // Invalid month
-    CHECK_FALSE(DateTime::strptime("2024-02-30")
-                    .has_value());  // Invalid day for February
+    CHECK_FALSE(DateTime::strptime("2024-13-15").valid());  // Invalid month
     CHECK_FALSE(
-        DateTime::strptime("2024-04-31").has_value());  // Invalid day for April
+        DateTime::strptime("2024-02-30").valid());  // Invalid day for February
+    CHECK_FALSE(
+        DateTime::strptime("2024-04-31").valid());  // Invalid day for April
   }
 
   SECTION("Invalid time values") {
     // Test with strings that have non-numeric characters in time positions
-    CHECK_FALSE(DateTime::strptime("2024-03-15 aa:30:25")
-                    .has_value());  // Non-numeric hour
+    CHECK_FALSE(
+        DateTime::strptime("2024-03-15 aa:30:25").valid());  // Non-numeric hour
     CHECK_FALSE(DateTime::strptime("2024-03-15 14:bb:25")
-                    .has_value());  // Non-numeric minute
+                    .valid());  // Non-numeric minute
     CHECK_FALSE(DateTime::strptime("2024-03-15 14:30:cc")
-                    .has_value());  // Non-numeric second
+                    .valid());  // Non-numeric second
   }
 
   SECTION("Invalid time value rejection") {
@@ -1274,23 +1273,21 @@ TEST_CASE("DateTime auto-detection invalid inputs", "[datetime][auto]") {
     // rather than silently normalizing them
 
     auto result1 = DateTime::strptime("2024-03-15 25:30:25");  // 25 hours
-    CHECK_FALSE(result1.has_value());  // Should fail to parse
+    CHECK_FALSE(result1.valid());  // Should fail to parse
 
     auto result2 = DateTime::strptime("2024-03-15 14:60:25");  // 60 minutes
-    CHECK_FALSE(result2.has_value());  // Should fail to parse
+    CHECK_FALSE(result2.valid());  // Should fail to parse
 
     auto result3 = DateTime::strptime("2024-03-15 14:30:60");  // 60 seconds
-    CHECK_FALSE(result3.has_value());  // Should fail to parse
+    CHECK_FALSE(result3.valid());  // Should fail to parse
   }
 
   SECTION("Malformed but partially parseable") {
     // The parsing library may be more lenient than expected, so test truly
     // malformed strings
-    CHECK_FALSE(
-        DateTime::strptime("2024/03-15").has_value());     // Mixed separators
-    CHECK_FALSE(DateTime::strptime("2024-").has_value());  // Incomplete date
-    CHECK_FALSE(
-        DateTime::strptime("202a-03-15").has_value());  // Non-numeric year
+    CHECK_FALSE(DateTime::strptime("2024/03-15").valid());  // Mixed separators
+    CHECK_FALSE(DateTime::strptime("2024-").valid());       // Incomplete date
+    CHECK_FALSE(DateTime::strptime("202a-03-15").valid());  // Non-numeric year
   }
 }
 
@@ -1312,7 +1309,7 @@ TEST_CASE("DateTime auto-detection performance characteristics",
     auto start_auto = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < iterations; ++i) {
       auto result = DateTime::strptime(test_string);
-      REQUIRE(result.has_value());  // Ensure it's working
+      REQUIRE(result.valid());  // Ensure it's working
     }
     auto end_auto = std::chrono::high_resolution_clock::now();
 
@@ -1320,7 +1317,7 @@ TEST_CASE("DateTime auto-detection performance characteristics",
     auto start_manual = std::chrono::high_resolution_clock::now();
     for (int i = 0; i < iterations; ++i) {
       auto result = DateTime::strptime(test_string, "%Y-%m-%d %H:%M:%S");
-      REQUIRE(result.has_value());  // Ensure it's working
+      REQUIRE(result.valid());  // Ensure it's working
     }
     auto end_manual = std::chrono::high_resolution_clock::now();
 
@@ -1349,10 +1346,10 @@ TEST_CASE("DateTime auto-detection performance characteristics",
         "20240315";  // Should match %Y%m%d (last in list)
 
     auto result = DateTime::strptime(compact_date);
-    REQUIRE(result.has_value());
-    CHECK(result->year() == 2024);
-    CHECK(result->month() == 3);
-    CHECK(result->day() == 15);
+    REQUIRE(result.valid());
+    CHECK(result.year() == 2024);
+    CHECK(result.month() == 3);
+    CHECK(result.day() == 15);
 
     // Should still complete in reasonable time
     auto start = std::chrono::high_resolution_clock::now();

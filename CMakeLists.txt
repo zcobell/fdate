@@ -7,6 +7,7 @@ check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
 if(COMPILER_SUPPORTS_CXX17)
   set(CMAKE_CXX_STANDARD 17)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
+  set(CMAKE_CXX_EXTENSIONS OFF)
 else()
   message(
     FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} does not support C++17.")
@@ -25,8 +26,6 @@ fdate_local_options()
 add_library(fdate::fdate_options ALIAS fdate_options)
 add_library(fdate::fdate_warnings ALIAS fdate_warnings)
 fdate_setup_dependencies()
-
-option(FDATE_ENABLE_FORTRAN "Build Fortran interface" ON)
 
 add_subdirectory(src)
 
